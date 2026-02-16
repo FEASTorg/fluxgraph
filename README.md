@@ -89,14 +89,14 @@ int main() {
 
 ```
 fluxgraph/
-├── include/fluxgraph/     # Public API headers
-│   ├── core/              # Core types, signal storage, namespaces
-│   ├── transform/         # Signal transforms (planned)
-│   └── model/             # Physics models (planned)
-├── src/                   # Implementation
-├── tests/                 # Unit and analytical tests
-├── examples/              # Example applications (planned)
-└── docs/                  # Documentation (planned)
++-- include/fluxgraph/     # Public API headers
+|   +-- core/              # Core types, signal storage, namespaces
+|   +-- transform/         # Signal transforms
+|   +-- model/             # Physics models
++-- src/                   # Implementation
++-- tests/                 # Unit and analytical tests
++-- examples/              # Example applications
++-- docs/                  # Documentation
 ```
 
 ## Development Status

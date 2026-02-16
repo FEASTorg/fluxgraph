@@ -75,12 +75,12 @@ fluxgraph/
 
 ## Development Status
 
-**Phase 23: Core Library - Week 2** (Current)
+**Phase 23: Core Library - Week 3-4** (Current)
 
 - ✅ Core types (`SignalId`, `DeviceId`, `Variant`)
-- ✅ `SignalStore` with unit metadata
+- ✅ `SignalStore` with unit metadata and physics-driven flags
 - ✅ `SignalNamespace` for path interning
-- ✅ `Command` structure
+- ✅ `Command` structure with typed arguments
 - ✅ Transform interface (`ITransform`)
 - ✅ 8 Transform implementations:
   - `LinearTransform` - Scale and offset with clamping
@@ -91,10 +91,19 @@ fluxgraph/
   - `DeadbandTransform` - Threshold-based zeroing
   - `RateLimiterTransform` - Rate of change limiting (max_rate_per_sec)
   - `MovingAverageTransform` - Sliding window average
-- ✅ Unit tests (107 tests, all passing)
-- 🚧 Models (Week 3-4)
-- 🚧 Graph compiler (Week 3-4)
-- 🚧 Engine (Week 3-4)
+- ✅ Model interface (`IModel`) with stability limits
+- ✅ `ThermalMassModel` - Heat equation physics (Forward Euler)
+- ✅ `GraphSpec` - Protocol-agnostic POD structures
+- ✅ `GraphCompiler` - Topological sort, cycle detection
+- ✅ `Engine` - Five-stage tick execution:
+  1. Snapshot inputs
+  2. Process edges (in topological order)
+  3. Update models
+  4. Commit outputs
+  5. Evaluate rules
+- ✅ 128 tests passing (all unit tests)
+- 🚧 Analytical test suite (Week 5-6)
+- 🚧 YAML config parser (optional, Week 4)
 
 ## License
 

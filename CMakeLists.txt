@@ -17,6 +17,9 @@ option(FLUXGRAPH_BUILD_EXAMPLES "Build examples" ON)
 set(FLUXGRAPH_SOURCES
     src/core/signal_store.cpp
     src/core/namespace.cpp
+    src/model/thermal_mass.cpp
+    src/graph/compiler.cpp
+    src/engine.cpp
 )
 
 # Create static library

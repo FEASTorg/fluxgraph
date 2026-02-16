@@ -23,6 +23,10 @@ add_executable(fluxgraph_tests
     unit/thermal_mass_test.cpp
     unit/compiler_test.cpp
     unit/engine_test.cpp
+    analytical/first_order_lag_analytical_test.cpp
+    analytical/thermal_mass_analytical_test.cpp
+    analytical/delay_analytical_test.cpp
+    analytical/transform_analytical_test.cpp
 )
 
 target_link_libraries(fluxgraph_tests

@@ -5,17 +5,17 @@
 using namespace fluxgraph;
 
 TEST(FirstOrderLagAnalytical, StepResponse) {
-    // System: dy/dt = (u - y) / τ
+    // System: dy/dt = (u - y) / tau
     // Step input: u(t) = 1 for t > 0, initial y(0) = 0
-    // Analytical solution: y(t) = 1 - exp(-t/τ)
+    // Analytical solution: y(t) = 1 - exp(-t/tau)
 
-    FirstOrderLagTransform lag(1.0);  // τ = 1.0 second
+    FirstOrderLagTransform lag(1.0);  // tau = 1.0 second
     double dt = 0.01;  // 10ms timestep
     double t = 0.0;
 
     lag.apply(0.0, 0.0);  // Initialize to 0
 
-    for (int i = 0; i < 500; ++i) {  // Simulate 5 seconds (5*τ)
+    for (int i = 0; i < 500; ++i) {  // Simulate 5 seconds (5*tau)
         t += dt;
         double y_numerical = lag.apply(1.0, dt);
         double y_analytical = 1.0 - std::exp(-t);
@@ -48,9 +48,9 @@ TEST(FirstOrderLagAnalytical, MultipleTimeConstants) {
 }
 
 TEST(FirstOrderLagAnalytical, ConvergenceRate) {
-    // After τ: 63.2% of final value
-    // After 3τ: 95% of final value
-    // After 5τ: 99.3% of final value
+    // After tau: 63.2% of final value
+    // After 3*tau: 95% of final value
+    // After 5*tau: 99.3% of final value
 
     FirstOrderLagTransform lag(1.0);
     double dt = 0.01;

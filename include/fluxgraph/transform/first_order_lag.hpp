@@ -5,7 +5,7 @@
 
 namespace fluxgraph {
 
-/// First-order lag (low-pass filter): dy/dt = (x - y) / τ
+/// First-order lag (low-pass filter): dy/dt = (x - y) / tau
 /// Exponential approach to input with time constant tau_s
 class FirstOrderLagTransform : public ITransform {
 public:
@@ -27,7 +27,7 @@ public:
             return output_;
         }
 
-        // Exponential smoothing: y(t+dt) = y(t) + (x - y(t)) * (1 - e^(-dt/τ))
+        // Exponential smoothing: y(t+dt) = y(t) + (x - y(t)) * (1 - e^(-dt/tau))
         double alpha = 1.0 - std::exp(-dt / tau_s_);
         output_ += alpha * (input - output_);
         return output_;

@@ -20,7 +20,7 @@ public:
     /// @param id Model identifier
     /// @param thermal_mass Heat capacity in J/K
     /// @param heat_transfer_coeff Heat transfer coefficient in W/K
-    /// @param initial_temp Initial temperature in °C
+    /// @param initial_temp Initial temperature in degC
     /// @param temp_signal_path Signal path for temperature output (e.g., "chamber_air/temperature")
     /// @param power_signal_path Signal path for power input (e.g., "chamber_air/heating_power")
     /// @param ambient_signal_path Signal path for ambient temperature (e.g., "chamber_air/ambient_temp")

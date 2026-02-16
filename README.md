@@ -75,21 +75,30 @@ fluxgraph/
 
 ## Development Status
 
-**Phase 23: Core Library - Week 1** (Current)
+**Phase 23: Core Library - Week 2** (Current)
 
 - ✅ Core types (`SignalId`, `DeviceId`, `Variant`)
 - ✅ `SignalStore` with unit metadata
 - ✅ `SignalNamespace` for path interning
 - ✅ `Command` structure
-- ✅ Unit tests (35+ tests)
-- 🚧 Transforms (Week 2)
+- ✅ Transform interface (`ITransform`)
+- ✅ 8 Transform implementations:
+  - `LinearTransform` - Scale and offset with clamping
+  - `FirstOrderLagTransform` - Exponential smoothing (tau_s)
+  - `DelayTransform` - Time delay with ring buffer (delay_sec)
+  - `NoiseTransform` - Gaussian noise (amplitude, deterministic seed)
+  - `SaturationTransform` - Min/max clamping
+  - `DeadbandTransform` - Threshold-based zeroing
+  - `RateLimiterTransform` - Rate of change limiting (max_rate_per_sec)
+  - `MovingAverageTransform` - Sliding window average
+- ✅ Unit tests (107 tests, all passing)
 - 🚧 Models (Week 3-4)
 - 🚧 Graph compiler (Week 3-4)
 - 🚧 Engine (Week 3-4)
 
 ## License
 
-MIT License - See [LICENSE](LICENSE) for details
+AGPL v3 License - See [LICENSE](LICENSE) for details
 
 ## Contributing
 

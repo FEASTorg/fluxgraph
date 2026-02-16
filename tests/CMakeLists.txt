@@ -12,6 +12,14 @@ add_executable(fluxgraph_tests
     unit/signal_store_test.cpp
     unit/namespace_test.cpp
     unit/command_test.cpp
+    unit/transform_linear_test.cpp
+    unit/transform_lag_test.cpp
+    unit/transform_delay_test.cpp
+    unit/transform_noise_test.cpp
+    unit/transform_saturation_test.cpp
+    unit/transform_deadband_test.cpp
+    unit/transform_rate_limiter_test.cpp
+    unit/transform_moving_average_test.cpp
 )
 
 target_link_libraries(fluxgraph_tests

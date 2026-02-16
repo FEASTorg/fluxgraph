@@ -103,12 +103,12 @@ fluxgraph/
 
 **Phase 23: Core Library - Week 5 Complete**
 
-- ✅ Core types (`SignalId`, `DeviceId`, `Variant`)
-- ✅ `SignalStore` with unit metadata and physics-driven flags
-- ✅ `SignalNamespace` for path interning
-- ✅ `Command` structure with typed arguments
-- ✅ Transform interface (`ITransform`)
-- ✅ 8 Transform implementations:
+- [x] Core types (`SignalId`, `DeviceId`, `Variant`)
+- [x] `SignalStore` with unit metadata and physics-driven flags
+- [x] `SignalNamespace` for path interning
+- [x] `Command` structure with typed arguments
+- [x] Transform interface (`ITransform`)
+- [x] 8 Transform implementations:
   - `LinearTransform` - Scale and offset with clamping
   - `FirstOrderLagTransform` - Exponential smoothing (tau_s)
   - `DelayTransform` - Time delay with ring buffer (delay_sec)
@@ -117,24 +117,24 @@ fluxgraph/
   - `DeadbandTransform` - Threshold-based zeroing
   - `RateLimiterTransform` - Rate of change limiting (max_rate_per_sec)
   - `MovingAverageTransform` - Sliding window average
-- ✅ Model interface (`IModel`) with stability limits
-- ✅ `ThermalMassModel` - Heat equation physics (Forward Euler)
-- ✅ `GraphSpec` - Protocol-agnostic POD structures
-- ✅ `GraphCompiler` - Topological sort, cycle detection, stability validation
-- ✅ `Engine` - Five-stage tick execution:
+- [x] Model interface (`IModel`) with stability limits
+- [x] `ThermalMassModel` - Heat equation physics (Forward Euler)
+- [x] `GraphSpec` - Protocol-agnostic POD structures
+- [x] `GraphCompiler` - Topological sort, cycle detection, stability validation
+- [x] `Engine` - Five-stage tick execution:
   1. Snapshot inputs
   2. Process edges (in topological order)
   3. Update models
   4. Commit outputs
   5. Evaluate rules
-- ✅ **147 tests passing** (128 unit tests + 19 analytical tests)
-- ✅ **Analytical validation suite** - Validates numerical accuracy vs closed-form solutions:
-  - FirstOrderLag: 1e-3 tolerance vs exp(-t/τ)
-  - ThermalMass: 0.1°C vs heat equation
+- [x] **147 tests passing** (128 unit tests + 19 analytical tests)
+- [x] **Analytical validation suite** - Validates numerical accuracy vs closed-form solutions:
+  - FirstOrderLag: 1e-3 tolerance vs exp(-t/tau)
+  - ThermalMass: 0.1 degC vs heat equation
   - Delay: 1e-6 exact time-shift
   - Linear, Saturation, Deadband, RateLimiter, MovingAverage: exact validation
-- ✅ **Usage examples** - Manual graph composition and physics simulation
-- 🚧 YAML config parser (optional, requires yaml-cpp)
+- [x] **Usage examples** - Manual graph composition and physics simulation
+- [ ] YAML config parser (optional, requires yaml-cpp)
 
 ## License
 

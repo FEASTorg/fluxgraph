@@ -19,7 +19,7 @@ Demonstrates the fundamental FluxGraph API pattern:
 - Manual `GraphSpec` construction (no YAML)
 - Simple signal edge with `LinearTransform` (y = 2x + 1)
 - Input/output "ports" as `SignalId` handles
-- Basic simulation loop: `write()` → `tick()` → `read_value()`
+- Basic simulation loop: `write()` -> `tick()` -> `read_value()`
 
 **Run:**
 ```bash
@@ -30,11 +30,11 @@ Demonstrates the fundamental FluxGraph API pattern:
 ```
 Simple Transform: y = 2*x + 1
 ================================
-Input: 0V → Output: 1V
-Input: 1V → Output: 3V
-Input: 2V → Output: 5V
-Input: 3V → Output: 7V
-Input: 4V → Output: 9V
+Input: 0V -> Output: 1V
+Input: 1V -> Output: 3V
+Input: 2V -> Output: 5V
+Input: 3V -> Output: 7V
+Input: 4V -> Output: 9V
 ```
 
 **Key API Concepts:**
@@ -42,7 +42,7 @@ Input: 4V → Output: 9V
 - `GraphCompiler::compile()` - Validates and optimizes graph
 - `Engine::load()` - Sets up execution state
 - `SignalNamespace::resolve()` - Gets signal IDs from paths
-- `SignalStore::write()` / `read_value()` - Signal I/O
+- `SignalStore::write()` and `read_value()` - Signal I/O
 
 ## Example 2: Thermal Mass Simulation
 
@@ -63,24 +63,24 @@ Shows realistic physics simulation with:
 ```
 Thermal Mass Simulation
 =======================
-t= 0.00s  Heater=500.00W  Temp= 25.23°C  Noisy= 25.15°C
-t= 0.50s  Heater=500.00W  Temp= 25.45°C  Noisy= 25.38°C
+t= 0.00s  Heater=500.00W  Temp= 25.23 degC  Noisy= 25.15 degC
+t= 0.50s  Heater=500.00W  Temp= 25.45 degC  Noisy= 25.38 degC
 ...
-t= 5.00s  Heater=  0.00W  Temp= 27.42°C  Noisy= 27.48°C
-t= 5.50s  Heater=  0.00W  Temp= 27.38°C  Noisy= 27.31°C
+t= 5.00s  Heater=  0.00W  Temp= 27.42 degC  Noisy= 27.48 degC
+t= 5.50s  Heater=  0.00W  Temp= 27.38 degC  Noisy= 27.31 degC
 ...
 ```
 
 **Physics:** 
 - Thermal mass: C = 1000 J/K
 - Heat transfer: h = 10 W/K  
-- Time constant: τ = C/h = 100 seconds
-- Heating: 500W → steady-state ΔT = 50°C above ambient
+- Time constant: tau = C/h = 100 seconds
+- Heating: 500W -> steady-state delta_T = 50 degC above ambient
 
 **Key API Concepts:**
 - `ModelSpec` - Physics model configuration
 - Model input/output signals (power_in, temperature_out)
-- Transform chains (physics → noise filter)
+- Transform chains (physics -> noise filter)
 - Timestep management (dt parameter in `tick()`)
 
 ## Example 3: YAML Configuration (Optional)

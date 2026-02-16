@@ -48,7 +48,7 @@ int main() {
 
         // Read from output port
         double output_val = store.read_value(output_sig);
-        std::cout << "Input: " << input_val << "V → Output: " << output_val << "V\n";
+        std::cout << "Input: " << input_val << "V -> Output: " << output_val << "V\n";
     }
 
     return 0;

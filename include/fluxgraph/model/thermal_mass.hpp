@@ -49,8 +49,8 @@ private:
     SignalId ambient_signal_;
     double thermal_mass_;        // C (J/K)
     double heat_transfer_coeff_; // h (W/K)
-    double temperature_;         // Current temp (°C)
-    double initial_temp_;        // Initial temp for reset (°C)
+    double temperature_;         // Current temp (degC)
+    double initial_temp_;        // Initial temp for reset (degC)
 };
 
 } // namespace fluxgraph

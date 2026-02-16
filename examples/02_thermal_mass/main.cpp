@@ -23,7 +23,7 @@ int main() {
     model.params["ambient_signal"] = std::string("chamber.ambient_temp");
     model.params["thermal_mass"] = 1000.0;  // J/K
     model.params["heat_transfer_coeff"] = 10.0;  // W/K
-    model.params["initial_temp"] = 25.0;  // °C
+    model.params["initial_temp"] = 25.0;  // degC
     spec.models.push_back(model);
 
     // Optional: Add noise to temperature reading
@@ -31,7 +31,7 @@ int main() {
     noise_edge.source_path = "chamber.temperature";
     noise_edge.target_path = "chamber.temperature_noisy";
     noise_edge.transform.type = "noise";
-    noise_edge.transform.params["amplitude"] = 0.1;  // ±0.1°C noise
+    noise_edge.transform.params["amplitude"] = 0.1;  // +/- 0.1 degC noise
     noise_edge.transform.params["seed"] = static_cast<int64_t>(42);
     spec.edges.push_back(noise_edge);
 
@@ -70,8 +70,8 @@ int main() {
 
         std::cout << "t=" << std::setw(5) << t << "s  "
                   << "Heater=" << std::setw(5) << heater_power << "W  "
-                  << "Temp=" << std::setw(6) << temp << "°C  "
-                  << "Noisy=" << std::setw(6) << temp_noisy << "°C\n";
+                  << "Temp=" << std::setw(6) << temp << " degC  "
+                  << "Noisy=" << std::setw(6) << temp_noisy << " degC\n";
     }
 
     return 0;

@@ -1,6 +1,7 @@
-# Examples placeholder
-# Add example executables here as they are created
+# Usage Examples
+#
+# Example 1: Basic transform - Shows fundamental API (manual graph composition)
+# Example 2: Thermal mass - Realistic physics simulation with models
 
-# Example: Basic signal storage
-# add_executable(basic_example basic_example.cpp)
-# target_link_libraries(basic_example PRIVATE fluxgraph)
+add_subdirectory(01_basic_transform)
+add_subdirectory(02_thermal_mass)

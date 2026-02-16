@@ -1,0 +1,2 @@
+add_executable(example_thermal_mass main.cpp)
+target_link_libraries(example_thermal_mass PRIVATE fluxgraph)

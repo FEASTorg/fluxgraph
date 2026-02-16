@@ -38,26 +38,52 @@ ctest --output-on-failure
 
 ### Using FluxGraph
 
+See [`examples/`](examples/) for complete usage patterns. Here's a minimal example:
+
 ```cpp
+#include <fluxgraph/engine.hpp>
 #include <fluxgraph/core/signal_store.hpp>
 #include <fluxgraph/core/namespace.hpp>
+#include <fluxgraph/graph/compiler.hpp>
 
-// Create signal storage and namespace
-fluxgraph::SignalStore store;
-fluxgraph::SignalNamespace ns;
+int main() {
+    // 1. Create namespaces and signal store
+    fluxgraph::SignalNamespace sig_ns;
+    fluxgraph::FunctionNamespace func_ns;
+    fluxgraph::SignalStore store;
 
-// Intern signal paths
-auto temp_id = ns.intern("chamber/temperature");
-auto setpoint_id = ns.intern("chamber/setpoint");
+    // 2. Build graph specification
+    fluxgraph::GraphSpec spec;
+    fluxgraph::EdgeSpec edge;
+    edge.source_path = "sensor.voltage_in";
+    edge.target_path = "sensor.voltage_out";
+    edge.transform.type = "linear";
+    edge.transform.params["scale"] = 2.0;
+    edge.transform.params["offset"] = 1.0;
+    spec.edges.push_back(edge);
 
-// Write signals with units
-store.write(temp_id, 25.0, "degC");
-store.write(setpoint_id, 100.0, "degC");
+    // 3. Compile and load
+    fluxgraph::GraphCompiler compiler;
+    auto program = compiler.compile(spec, sig_ns, func_ns);
+    fluxgraph::Engine engine;
+    engine.load(std::move(program));
 
-// Read signals
-auto temp = store.read(temp_id);
-std::cout << "Temperature: " << temp.value << " " << temp.unit << "\n";
+    // 4. Get signal ports
+    auto input_sig = sig_ns.resolve("sensor.voltage_in");
+    auto output_sig = sig_ns.resolve("sensor.voltage_out");
+
+    // 5. Simulation loop
+    store.write(input_sig, 5.0, "V");
+    engine.tick(0.1, store);
+    double result = store.read_value(output_sig);  // 11.0V (2*5 + 1)
+    
+    return 0;
+}
 ```
+
+**More examples:**
+- [`01_basic_transform`](examples/01_basic_transform/) - Simple signal transformation
+- [`02_thermal_mass`](examples/02_thermal_mass/) - Physics simulation with models
 
 ## Project Structure
 
@@ -75,7 +101,7 @@ fluxgraph/
 
 ## Development Status
 
-**Phase 23: Core Library - Week 3-4** (Current)
+**Phase 23: Core Library - Week 5 Complete**
 
 - ✅ Core types (`SignalId`, `DeviceId`, `Variant`)
 - ✅ `SignalStore` with unit metadata and physics-driven flags
@@ -94,16 +120,21 @@ fluxgraph/
 - ✅ Model interface (`IModel`) with stability limits
 - ✅ `ThermalMassModel` - Heat equation physics (Forward Euler)
 - ✅ `GraphSpec` - Protocol-agnostic POD structures
-- ✅ `GraphCompiler` - Topological sort, cycle detection
+- ✅ `GraphCompiler` - Topological sort, cycle detection, stability validation
 - ✅ `Engine` - Five-stage tick execution:
   1. Snapshot inputs
   2. Process edges (in topological order)
   3. Update models
   4. Commit outputs
   5. Evaluate rules
-- ✅ 128 tests passing (all unit tests)
-- 🚧 Analytical test suite (Week 5-6)
-- 🚧 YAML config parser (optional, Week 4)
+- ✅ **147 tests passing** (128 unit tests + 19 analytical tests)
+- ✅ **Analytical validation suite** - Validates numerical accuracy vs closed-form solutions:
+  - FirstOrderLag: 1e-3 tolerance vs exp(-t/τ)
+  - ThermalMass: 0.1°C vs heat equation
+  - Delay: 1e-6 exact time-shift
+  - Linear, Saturation, Deadband, RateLimiter, MovingAverage: exact validation
+- ✅ **Usage examples** - Manual graph composition and physics simulation
+- 🚧 YAML config parser (optional, requires yaml-cpp)
 
 ## License
 

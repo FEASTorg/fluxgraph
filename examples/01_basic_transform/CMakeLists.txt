@@ -1,0 +1,2 @@
+add_executable(example_basic_transform main.cpp)
+target_link_libraries(example_basic_transform PRIVATE fluxgraph)

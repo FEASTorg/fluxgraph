@@ -352,10 +352,12 @@ auto spec = fluxgraph::loaders::load_json_string(json);
 ```
 
 **Errors:**
+
 - `std::runtime_error` - JSON parse errors, missing required fields, invalid values
 - Error messages include JSON pointer paths (e.g., `/edges/2/transform/type`)
 
 **See also:**
+
 - [JSON_SCHEMA.md](JSON_SCHEMA.md) - Complete schema reference
 - [examples/03_json_graph/](../examples/03_json_graph/) - Working example
 
@@ -397,10 +399,12 @@ auto spec = fluxgraph::loaders::load_yaml_string(yaml);
 ```
 
 **Errors:**
+
 - `std::runtime_error` - YAML parse errors, missing required fields, invalid values
 - Error messages include node paths (e.g., `edges[2].transform.type`)
 
 **See also:**
+
 - [YAML_SCHEMA.md](YAML_SCHEMA.md) - Complete schema reference
 - [examples/04_yaml_graph/](../examples/04_yaml_graph/) - Working example
 

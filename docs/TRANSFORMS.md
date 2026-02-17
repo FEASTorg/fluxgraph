@@ -106,7 +106,7 @@ edge.transform.params["tau_s"] = 2.0;  // 2-second time constant
 
 **Frequency Response:**
 
-- 3dB cutoff frequency: f_c = 1 / (2 _ pi _ tau)
+- 3dB cutoff frequency: f*c = 1 / (2 * pi \_ tau)
 - For tau=1.0: f_c ~= 0.16 Hz
 
 **Analytical Validation:**

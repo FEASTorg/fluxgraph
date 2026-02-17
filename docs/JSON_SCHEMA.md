@@ -6,9 +6,15 @@ A graph file has three top-level arrays (all optional):
 
 ```json
 {
-  "models": [ /* Physics models */ ],
-  "edges": [ /* Signal edges with transforms */ ],
-  "rules": [ /* Conditional actions */ ]
+  "models": [
+    /* Physics models */
+  ],
+  "edges": [
+    /* Signal edges with transforms */
+  ],
+  "rules": [
+    /* Conditional actions */
+  ]
 }
 ```
 
@@ -29,6 +35,7 @@ Models represent physical systems with internal state and differential equations
 ```
 
 **Fields:**
+
 - `id` (string, required) - Unique model identifier
 - `type` (string, required) - Model type (`"thermal_mass"` only in v1.0)
 - `params` (object, required) - Model-specific parameters
@@ -48,6 +55,7 @@ Lumped thermal capacitance with heat transfer: `C * dT/dt = P - h * (T - T_ambie
 | `initial_temp` | number | degC | Initial temperature |
 
 **Example:**
+
 ```json
 {
   "id": "chamber",
@@ -77,12 +85,15 @@ Edges connect signals through transforms, defining the dataflow graph.
   "target": "target.signal.path",
   "transform": {
     "type": "transform_type",
-    "params": { /* transform parameters */ }
+    "params": {
+      /* transform parameters */
+    }
   }
 }
 ```
 
 **Fields:**
+
 - `source` (string, required) - Source signal path
 - `target` (string, required) - Target signal path
 - `transform` (object, required) - Transform specification
@@ -106,6 +117,7 @@ Scale and offset: `y = scale * x + offset`
 | `clamp_max` | number | no | +infinity | Maximum output value |
 
 **Example:**
+
 ```json
 {
   "source": "sensor.raw",
@@ -134,6 +146,7 @@ Low-pass filter: `tau * dy/dt + y = x`
 | `tau_s` | number | Time constant in seconds (must be > 0) |
 
 **Example:**
+
 ```json
 {
   "source": "sensor.noisy",
@@ -161,6 +174,7 @@ Time-shift signal: `y(t) = x(t - delay_sec)`
 | `delay_sec` | number | Delay duration in seconds (must be >= 0) |
 
 **Example:**
+
 ```json
 {
   "source": "input.signal",
@@ -189,6 +203,7 @@ Add Gaussian white noise: `y = x + N(0, amplitude)`
 | `seed` | integer | no | Random seed for repeatability |
 
 **Example:**
+
 ```json
 {
   "source": "sensor.ideal",
@@ -216,6 +231,7 @@ Clamp to bounds: `y = clamp(x, min, max)`
 | `max` | number | Maximum output value|
 
 **Example:**
+
 ```json
 {
   "source": "controller.output",
@@ -242,6 +258,7 @@ Zero output below threshold: `y = (|x| < threshold) ? 0.0 : x`
 | `threshold` | number | Sensitivity threshold (must be >= 0) |
 
 **Example:**
+
 ```json
 {
   "source": "joystick.raw",
@@ -267,6 +284,7 @@ Limit rate of change: `|dy/dt| <= max_rate_per_sec`
 | `max_rate_per_sec` | number | Maximum rate in units/second (must be > 0) |
 
 **Example:**
+
 ```json
 {
   "source": "setpoint.target",
@@ -294,6 +312,7 @@ Sliding window average (FIR filter): `y = (1/N) * sum(x[n-i])` for i=0 to N-1
 | `window_size` | integer | Number of samples to average (must be >= 1) |
 
 **Example:**
+
 ```json
 {
   "source": "sensor.jittery",
@@ -323,7 +342,9 @@ Rules trigger device actions when conditions are met (Phase 22 compatible).
     {
       "device": "device_id",
       "function": "function_name",
-      "args": { /* function arguments */ }
+      "args": {
+        /* function arguments */
+      }
     }
   ],
   "on_error": "log_and_continue"
@@ -331,12 +352,14 @@ Rules trigger device actions when conditions are met (Phase 22 compatible).
 ```
 
 **Fields:**
+
 - `id` (string, required) - Unique rule identifier
 - `condition` (string, required) - Simple comparison (basic parser in v1.0)
 - `actions` (array, required) - Array of action objects
 - `on_error` (string, optional) - Error handling ("log_and_continue" only in v1.0)
 
 **Example:**
+
 ```json
 {
   "id": "heater_on",

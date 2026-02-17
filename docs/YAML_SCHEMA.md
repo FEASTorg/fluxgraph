@@ -38,9 +38,9 @@ Models represent physical systems with internal state and differential equations
 ### Model Object
 
 ```yaml
-- id: unique_identifier        # Unique model identifier
-  type: model_type              # Model type (thermal_mass in v1.0)
-  params:                       # Model-specific parameters
+- id: unique_identifier # Unique model identifier
+  type: model_type # Model type (thermal_mass in v1.0)
+  params: # Model-specific parameters
     param_name: value
 ```
 
@@ -59,6 +59,7 @@ Lumped thermal capacitance with heat transfer: `C * dT/dt = P - h * (T - T_ambie
 | `initial_temp` | number | degC | Initial temperature |
 
 **Example:**
+
 ```yaml
 models:
   - id: chamber
@@ -81,9 +82,9 @@ Edges connect signals through transforms, defining the dataflow graph.
 ### Edge Object
 
 ```yaml
-- source: source.signal.path    # Source signal path
-  target: target.signal.path    # Target signal path
-  transform:                    # Transform specification
+- source: source.signal.path # Source signal path
+  target: target.signal.path # Target signal path
+  transform: # Transform specification
     type: transform_type
     params:
       param_name: value
@@ -108,6 +109,7 @@ Scale and offset: `y = scale * x + offset`
 | `clamp_max` | number | no | +infinity | Maximum output value |
 
 **Example:**
+
 ```yaml
 edges:
   - source: sensor.raw
@@ -133,6 +135,7 @@ Low-pass filter: `tau * dy/dt + y = x`
 | `tau_s` | number | Time constant in seconds (must be > 0) |
 
 **Example:**
+
 ```yaml
 edges:
   - source: sensor.noisy
@@ -157,6 +160,7 @@ Time-shift signal: `y(t) = x(t - delay_sec)`
 | `delay_sec` | number | Delay duration in seconds (must be >= 0) |
 
 **Example:**
+
 ```yaml
 edges:
   - source: input.signal
@@ -182,6 +186,7 @@ Add Gaussian white noise: `y = x + N(0, amplitude)`
 | `seed` | integer | no | Random seed for repeatability |
 
 **Example:**
+
 ```yaml
 edges:
   - source: sensor.ideal
@@ -206,6 +211,7 @@ Clamp to bounds: `y = clamp(x, min, max)`
 | `max` | number | Maximum output value |
 
 **Example:**
+
 ```yaml
 edges:
   - source: controller.output
@@ -229,6 +235,7 @@ Zero output below threshold: `y = (|x| < threshold) ? 0.0 : x`
 | `threshold` | number | Sensitivity threshold (must be >= 0) |
 
 **Example:**
+
 ```yaml
 edges:
   - source: joystick.raw
@@ -251,6 +258,7 @@ Limit rate of change: `|dy/dt| <= max_rate_per_sec`
 | `max_rate_per_sec` | number | Maximum rate in units/second (must be > 0) |
 
 **Example:**
+
 ```yaml
 edges:
   - source: setpoint.target
@@ -275,6 +283,7 @@ Sliding window average (FIR filter): `y = (1/N) * sum(x[n-i])` for i=0 to N-1
 | `window_size` | integer | Number of samples to average (must be >= 1) |
 
 **Example:**
+
 ```yaml
 edges:
   - source: sensor.jittery
@@ -294,17 +303,18 @@ Rules trigger device actions when conditions are met (Phase 22 compatible).
 ### Rule Object
 
 ```yaml
-- id: unique_identifier         # Unique rule identifier
-  condition: "signal > value"   # Simple comparison
-  actions:                      # Array of action objects
+- id: unique_identifier # Unique rule identifier
+  condition: "signal > value" # Simple comparison
+  actions: # Array of action objects
     - device: device_id
       function: function_name
       args:
         arg_name: value
-  on_error: log_and_continue    # Error handling (optional)
+  on_error: log_and_continue # Error handling (optional)
 ```
 
 **Example:**
+
 ```yaml
 rules:
   - id: heater_on
@@ -328,9 +338,9 @@ models:
       temp_signal: chamber.temp
       power_signal: chamber.power
       ambient_signal: ambient.temp
-      thermal_mass: 1000.0          # J/K
-      heat_transfer_coeff: 10.0     # W/K
-      initial_temp: 25.0            # degC
+      thermal_mass: 1000.0 # J/K
+      heat_transfer_coeff: 10.0 # W/K
+      initial_temp: 25.0 # degC
 
 edges:
   # Heater with saturation
@@ -339,8 +349,8 @@ edges:
     transform:
       type: saturation
       params:
-        min: 0.0                    # No cooling
-        max: 1000.0                 # Max 1kW
+        min: 0.0 # No cooling
+        max: 1000.0 # Max 1kW
 
   # Sensor lag (thermal mass)
   - source: chamber.temp
@@ -348,7 +358,7 @@ edges:
     transform:
       type: first_order_lag
       params:
-        tau_s: 0.5                  # 500ms response
+        tau_s: 0.5 # 500ms response
 
   # Measurement noise
   - source: sensor.reading
@@ -356,8 +366,8 @@ edges:
     transform:
       type: noise
       params:
-        amplitude: 0.1              # +/-0.1 degC
-        seed: 42                    # Repeatable
+        amplitude: 0.1 # +/-0.1 degC
+        seed: 42 # Repeatable
 
 rules:
   - id: low_temp_alarm
@@ -366,7 +376,7 @@ rules:
       - device: heater
         function: set_power
         args:
-          power: 1000.0             # Emergency heat
+          power: 1000.0 # Emergency heat
 ```
 
 ## YAML-Specific Features
@@ -386,11 +396,11 @@ _noise: &noise_01
 edges:
   - source: sensor1.raw
     target: sensor1.noisy
-    transform: *noise_01           # Reuse
+    transform: *noise_01 # Reuse
 
   - source: sensor2.raw
     target: sensor2.noisy
-    transform: *noise_01           # Same config
+    transform: *noise_01 # Same config
 ```
 
 ### Multi-line Strings
@@ -414,11 +424,11 @@ YAML supports inline and full-line comments:
 
 ```yaml
 models:
-  - id: chamber                    # Main thermal mass
+  - id: chamber # Main thermal mass
     type: thermal_mass
     params:
-      thermal_mass: 1000.0         # Aluminum block
-      initial_temp: 25.0           # Room temperature
+      thermal_mass: 1000.0 # Aluminum block
+      initial_temp: 25.0 # Room temperature
 ```
 
 ### Compact Collections
@@ -429,7 +439,7 @@ Flow style for short lists:
 edges:
   - source: input.x
     target: output.y
-    transform: {type: linear, params: {scale: 2.0, offset: 0.0}}
+    transform: { type: linear, params: { scale: 2.0, offset: 0.0 } }
 ```
 
 ## Migration from Phase 22
@@ -545,9 +555,9 @@ cmake --build build
 
 Choose based on your use case:
 
-| Format | When to Use |
-|--------|-------------|
-| **JSON** | - Machine-generated graphs<br>- API payloads<br>- Strict validation required<br>- Minimal dependencies |
+| Format   | When to Use                                                                                                                   |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| **JSON** | - Machine-generated graphs<br>- API payloads<br>- Strict validation required<br>- Minimal dependencies                        |
 | **YAML** | - Hand-written configurations<br>- Need comments/documentation<br>- Want anchors/aliases for DRY<br>- Human-readable priority |
 
 **Example:** Use JSON for programmatically generated test cases, YAML for production configurations with extensive documentation.

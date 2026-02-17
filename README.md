@@ -40,10 +40,10 @@ ctest --output-on-failure
 
 FluxGraph core has zero dependencies. Optional graph loaders can be enabled:
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `FLUXGRAPH_JSON_ENABLED` | OFF | Enable JSON graph loader (requires nlohmann/json) |
-| `FLUXGRAPH_YAML_ENABLED` | OFF | Enable YAML graph loader (requires yaml-cpp) |
+| Option                   | Default | Description                                       |
+| ------------------------ | ------- | ------------------------------------------------- |
+| `FLUXGRAPH_JSON_ENABLED` | OFF     | Enable JSON graph loader (requires nlohmann/json) |
+| `FLUXGRAPH_YAML_ENABLED` | OFF     | Enable YAML graph loader (requires yaml-cpp)      |
 
 **Example builds:**
 
@@ -105,12 +105,13 @@ int main() {
     store.write(input_sig, 5.0, "V");
     engine.tick(0.1, store);
     double result = store.read_value(output_sig);  // 11.0V (2*5 + 1)
-    
+
     return 0;
 }
 ```
 
 **More examples:**
+
 - [`01_basic_transform`](examples/01_basic_transform/) - Simple signal transformation
 - [`02_thermal_mass`](examples/02_thermal_mass/) - Physics simulation with models
 - [`03_json_graph`](examples/03_json_graph/) - Load graph from JSON file
@@ -135,6 +136,7 @@ fluxgraph/
 **v1.0.0 - Core Library Complete**
 
 Core library:
+
 - [x] Core types (`SignalId`, `DeviceId`, `Variant`)
 - [x] `SignalStore` with unit metadata and physics-driven flags
 - [x] `SignalNamespace` for path interning
@@ -163,11 +165,13 @@ Core library:
 - [x] **Analytical validation suite** - Numerical accuracy vs closed-form solutions
 
 Optional loaders:
+
 - [x] **JSON loader** - Load graphs from JSON files (optional, requires nlohmann/json)
 - [x] **YAML loader** - Load graphs from YAML files (optional, requires yaml-cpp)
 - [x] **171 total tests** with all loaders enabled
 
 Documentation:
+
 - [x] API reference (see [docs/](docs/))
 - [x] JSON/YAML schema documentation
 - [x] 4 working examples

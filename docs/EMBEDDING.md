@@ -290,14 +290,15 @@ auto spec2 = fluxgraph::loaders::load_yaml_file("graph.yaml");
 
 ### Dependency Details
 
-| Option | Dependency | Linkage | Size Impact |
-|--------|-----------|---------|-------------|
-| `FLUXGRAPH_JSON_ENABLED` | nlohmann/json v3.11.3 | Header-only, PRIVATE | ~5KB compiled |
-| `FLUXGRAPH_YAML_ENABLED` | yaml-cpp master | Static lib, PRIVATE | ~150KB compiled |
+| Option                   | Dependency            | Linkage              | Size Impact     |
+| ------------------------ | --------------------- | -------------------- | --------------- |
+| `FLUXGRAPH_JSON_ENABLED` | nlohmann/json v3.11.3 | Header-only, PRIVATE | ~5KB compiled   |
+| `FLUXGRAPH_YAML_ENABLED` | yaml-cpp master       | Static lib, PRIVATE  | ~150KB compiled |
 
 **Important:** All dependencies use `PRIVATE` linkage. Your application does not need to find or link these libraries directly.
 
 **See Also:**
+
 - [JSON_SCHEMA.md](JSON_SCHEMA.md) - JSON graph format reference
 - [YAML_SCHEMA.md](YAML_SCHEMA.md) - YAML graph format reference
 - [examples/03_json_graph/](../examples/03_json_graph/) - JSON example

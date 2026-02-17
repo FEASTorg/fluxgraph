@@ -1,0 +1,5 @@
+# FluxGraph gRPC Client Dependencies
+grpcio>=1.50.0
+grpcio-tools>=1.50.0
+protobuf>=3.21.0
+pyyaml>=6.0

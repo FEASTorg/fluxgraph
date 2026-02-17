@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.1] - 2024-02-16
 
 ### Fixed
+
 - Removed all unicode and emoji characters for maximum terminal compatibility:
   - Degree symbols (°) replaced with "degC" or "deg"
   - Mathematical symbols (≥, ≤, ±, ∞, π, τ, Δ, ∫) replaced with ASCII equivalents (">=", "<=", "+/-", "infinity", "pi", "tau", "delta", "integral")
@@ -18,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 **Core Library:**
+
 - `SignalStore` - Type-safe signal storage with unit metadata and physics-driven flags
 - `SignalNamespace` - Path-to-ID interning for fast signal lookups
 - `FunctionNamespace` - Function registration and lookup
@@ -26,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Command` - Typed command structure for device actions
 
 **Transform System:**
+
 - `ITransform` interface for stateful signal transforms
 - 8 built-in transforms:
   - `LinearTransform` - Scale, offset, and clamping
@@ -38,10 +41,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `MovingAverageTransform` - Sliding window average (FIR filter)
 
 **Physics Models:**
+
 - `IModel` interface with stability limits
 - `ThermalMassModel` - Lumped capacitance heat equation (Forward Euler integration)
 
 **Graph System:**
+
 - `GraphSpec` - Protocol-agnostic POD structure for graph definition
 - `GraphCompiler` - Topological sort, cycle detection, stability validation
 - `Engine` - Five-stage deterministic tick execution:
@@ -52,6 +57,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   5. Evaluate rules
 
 **Optional Loaders:**
+
 - JSON graph loader (`load_json_file`, `load_json_string`)
   - Requires `-DFLUXGRAPH_JSON_ENABLED=ON`
   - Uses nlohmann/json v3.11.3 (header-only, PRIVATE linkage)
@@ -60,6 +66,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Uses yaml-cpp master branch (static lib, PRIVATE linkage)
 
 **Testing:**
+
 - 153 tests for core library (zero dependencies)
 - 162 tests with JSON or YAML loader enabled
 - 171 tests with both loaders enabled
@@ -70,12 +77,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Linear, Saturation, Deadband, RateLimiter, MovingAverage: exact validation
 
 **Examples:**
+
 - `01_basic_transform` - Simple linear transform
 - `02_thermal_mass` - Physics simulation with thermal mass model
 - `03_json_graph` - Load thermal chamber graph from JSON file
 - `04_yaml_graph` - Load thermal chamber graph from YAML file
 
 **Documentation:**
+
 - API reference (`docs/API.md`)
 - JSON schema documentation (`docs/JSON_SCHEMA.md`)
 - YAML schema documentation (`docs/YAML_SCHEMA.md`)
@@ -83,24 +92,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Transform reference (`docs/TRANSFORMS.md`)
 
 **Build System:**
+
 - CMake 3.20+ build system
 - Conditional compilation for optional loaders
 - FetchContent for automatic dependency management
 - CMake export configuration (`cmake/fluxgraphConfig.cmake.in`)
 
 ### Changed
+
 - N/A (initial release)
 
 ### Deprecated
+
 - N/A (initial release)
 
 ### Removed
+
 - N/A (initial release)
 
 ### Fixed
+
 - N/A (initial release)
 
 ### Security
+
 - N/A (initial release)
 
 ## Design Philosophy

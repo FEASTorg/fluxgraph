@@ -12,6 +12,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Build options
 option(FLUXGRAPH_BUILD_TESTS "Build unit tests" ON)
 option(FLUXGRAPH_BUILD_EXAMPLES "Build examples" ON)
+option(FLUXGRAPH_BUILD_SERVER "Build gRPC server" OFF)
 
 # Optional loader support
 option(FLUXGRAPH_JSON_ENABLED "Enable JSON graph loading (requires nlohmann/json)" OFF)
@@ -96,6 +97,11 @@ endif()
 # Examples
 if(FLUXGRAPH_BUILD_EXAMPLES)
     add_subdirectory(examples)
+endif()
+
+# gRPC Server
+if(FLUXGRAPH_BUILD_SERVER)
+    add_subdirectory(server)
 endif()
 
 # TODO(Phase 23, Week 5): Fix install rules for optional dependencies

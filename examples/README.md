@@ -83,13 +83,69 @@ t= 5.50s  Heater=  0.00W  Temp= 27.38 degC  Noisy= 27.31 degC
 - Transform chains (physics -> noise filter)
 - Timestep management (dt parameter in `tick()`)
 
-## Example 3: YAML Configuration (Optional)
+## Example 3: JSON Graph Loader
 
-**Location:** `03_yaml_config/` *(requires yaml-cpp dependency)*
+**Location:** `03_json_graph/` *(requires -DFLUXGRAPH_JSON_ENABLED=ON)*
 
-Shows the optional YAML config layer for complex graphs. Same execution API, just different graph construction method.
+Demonstrates loading graphs from JSON files:
+- External graph definition in `graph.json`
+- `load_json_file()` API for file loading
+- Same execution model as manual construction
+- Thermal chamber simulation with transforms
 
-See Phase 23 plan for details on YAML parser implementation.
+**Build with JSON support:**
+```bash
+cmake -B build-json -DFLUXGRAPH_JSON_ENABLED=ON
+cmake --build build-json --config Debug
+```
+
+**Run:**
+```bash
+./build-json/examples/03_json_graph/Debug/example_json_graph.exe
+```
+
+**Graph structure (graph.json):**
+- 1 thermal mass model (chamber)
+- 3 signal edges with transforms (saturation, lag, noise)
+- heater -> chamber -> sensor -> display pipeline
+
+**Key API Concepts:**
+- `load_json_file()` - Parse JSON graph definition
+- `load_json_string()` - Parse from string
+- Optional dependency (core library still zero-dep)
+- Identical runtime API after loading
+
+## Example 4: YAML Graph Loader
+
+**Location:** `04_yaml_graph/` *(requires -DFLUXGRAPH_YAML_ENABLED=ON)*
+
+Same thermal simulation as Example 3, but using YAML format:
+- Human-friendly syntax with comments
+- YAML anchors/aliases for reusability
+- Phase 22 compatibility
+- `load_yaml_file()` API
+
+**Build with YAML support:**
+```bash
+cmake -B build-yaml -DFLUXGRAPH_YAML_ENABLED=ON
+cmake --build build-yaml --config Debug
+```
+
+**Run:**
+```bash
+./build-yaml/examples/04_yaml_graph/Debug/example_yaml_graph.exe
+```
+
+**Graph structure (graph.yaml):**
+- Same logical structure as Example 3
+- YAML syntax instead of JSON
+- Supports comments and multi-line strings
+
+**Key API Concepts:**
+- `load_yaml_file()` - Parse YAML graph definition
+- `load_yaml_string()` - Parse from string
+- Optional dependency (core library still zero-dep)
+- Can enable both JSON and YAML simultaneously
 
 ## When to Use Each Approach
 
@@ -106,7 +162,20 @@ See Phase 23 plan for details on YAML parser implementation.
 - Full programmatic control
 - No parsing overhead
 
-### YAML Configuration (Example 3)
+### JSON Configuration (Example 3)
+**Use when:**
+- Modern tooling and validation (JSON Schema)
+- Exchanging with web APIs or JavaScript
+- Strict schema validation needed
+- Machine-generated configs
+
+**Benefits:**
+- Ubiquitous format (every language supports it)
+- Fast parsing with nlohmann/json
+- JSON Schema validation available
+- Compact syntax
+
+### YAML Configuration (Example 4)
 **Use when:**
 - Complex graphs with many edges/models
 - Non-programmers need to edit configs
@@ -115,8 +184,8 @@ See Phase 23 plan for details on YAML parser implementation.
 
 **Benefits:**
 - Human-readable/editable
-- Declarative syntax
-- Separation of config and code
+- Declarative syntax with comments
+- Anchors/aliases for reuse
 - Version control friendly
 
 ## Next Steps

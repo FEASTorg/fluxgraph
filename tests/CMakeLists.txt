@@ -39,6 +39,25 @@ target_link_libraries(fluxgraph_tests
 include(GoogleTest)
 gtest_discover_tests(fluxgraph_tests)
 
+# Optional loader tests (separate executables for conditional compilation)
+if(FLUXGRAPH_JSON_ENABLED)
+    add_executable(json_loader_test unit/json_loader_test.cpp)
+    target_link_libraries(json_loader_test
+        PRIVATE fluxgraph
+        PRIVATE gtest_main
+    )
+    gtest_discover_tests(json_loader_test)
+endif()
+
+if(FLUXGRAPH_YAML_ENABLED)
+    add_executable(yaml_loader_test unit/yaml_loader_test.cpp)
+    target_link_libraries(yaml_loader_test
+        PRIVATE fluxgraph
+        PRIVATE gtest_main
+    )
+    gtest_discover_tests(yaml_loader_test)
+endif()
+
 # Integration tests
 add_subdirectory(integration)
 

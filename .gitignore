@@ -42,6 +42,10 @@
 
 # Build directories
 build/
+build-core/
+build-json/
+build-yaml/
+build-both/
 out/
 cmake-build-*/
 

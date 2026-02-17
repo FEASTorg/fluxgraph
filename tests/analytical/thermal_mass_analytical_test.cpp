@@ -64,7 +64,7 @@ TEST(ThermalMassAnalytical, HeatingToEquilibrium) {
     store.write(power_id, P, "W");
     store.write(ambient_id, T_amb, "degC");
 
-    double T_eq = T_amb + P / h;  // Equilibrium: 20 + 50/10 = 25°C... wait, T0=25, so no change
+    double T_eq = T_amb + P / h;  // Equilibrium: 20 + 50/10 = 25 degC... wait, T0=25, so no change
     // Let me fix this: T0 should be different
 
     double dt = 0.1;
@@ -87,7 +87,7 @@ TEST(ThermalMassAnalytical, HeatingToEquilibrium) {
 }
 
 TEST(ThermalMassAnalytical, EnergyConservation) {
-    // Energy balance: ΔE = ∫(P_in - P_out)dt
+    // Energy balance: delta_E = integral(P_in - P_out)dt
     // where P_out = h*(T - T_amb)
 
     SignalNamespace ns;
@@ -130,5 +130,5 @@ TEST(ThermalMassAnalytical, EnergyConservation) {
 
     // Energy balance: energy_in = energy_out + delta_E
     EXPECT_NEAR(energy_in, energy_out + delta_E, 100.0)  // 100J tolerance
-        << "Ein=" << energy_in << ", Eout=" << energy_out << ", ΔE=" << delta_E;
+        << "Ein=" << energy_in << ", Eout=" << energy_out << ", delta_E=" << delta_E;
 }

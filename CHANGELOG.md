@@ -5,6 +5,14 @@ All notable changes to FluxGraph will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2024-02-16
+
+### Fixed
+- Removed all unicode and emoji characters for maximum terminal compatibility:
+  - Degree symbols (°) replaced with "degC" or "deg"
+  - Mathematical symbols (≥, ≤, ±, ∞, π, τ, Δ, ∫) replaced with ASCII equivalents (">=", "<=", "+/-", "infinity", "pi", "tau", "delta", "integral")
+- Affected files: documentation (JSON_SCHEMA.md, YAML_SCHEMA.md), examples, test files, header comments
+
 ## [1.0.0] - 2024-02-16
 
 ### Added
@@ -57,7 +65,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 171 tests with both loaders enabled
 - 19 analytical validation tests:
   - FirstOrderLag vs exp(-t/tau): 1e-3 tolerance
-  - ThermalMass vs heat equation: 0.1°C tolerance
+  - ThermalMass vs heat equation: 0.1 degC tolerance
   - Delay: 1e-6 exact time-shift
   - Linear, Saturation, Deadband, RateLimiter, MovingAverage: exact validation
 
@@ -108,4 +116,5 @@ FluxGraph follows these principles:
 
 ---
 
+[1.0.1]: https://github.com/FEASTorg/fluxgraph/releases/tag/v1.0.1
 [1.0.0]: https://github.com/FEASTorg/fluxgraph/releases/tag/v1.0.0

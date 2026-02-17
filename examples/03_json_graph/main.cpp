@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
         
         // 7. Run simulation
         std::cout << "Running simulation:\n";
-        std::cout << "Time(s)  Heater(W)  Chamber(°C)  Display(°C)\n";
+        std::cout << "Time(s)  Heater(W)  Chamber(degC)  Display(degC)\n";
         std::cout << "-------  ---------  -----------  -----------\n";
         
         double dt = 0.1;

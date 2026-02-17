@@ -9,10 +9,10 @@ namespace fluxgraph {
 /// Thermal mass model: simple heat capacity with power input and ambient cooling
 /// Physics: dT/dt = (P_in - h*(T - T_amb)) / C
 /// Where:
-///   T = temperature (°C)
+///   T = temperature (degC)
 ///   P_in = net heating power (W)
 ///   h = heat transfer coefficient (W/K)
-///   T_amb = ambient temperature (°C)
+///   T_amb = ambient temperature (degC)
 ///   C = thermal mass (J/K)
 class ThermalMassModel : public IModel {
 public:

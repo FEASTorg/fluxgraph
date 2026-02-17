@@ -57,21 +57,21 @@ TEST(FirstOrderLagAnalytical, ConvergenceRate) {
 
     lag.apply(0.0, 0.0);
 
-    // Simulate to 1*τ
+    // Simulate to 1*tau
     for (int i = 0; i < 100; ++i) {
         lag.apply(1.0, dt);
     }
     double y_1tau = lag.apply(1.0, dt);
     EXPECT_NEAR(y_1tau, 0.632, 0.01);  // 63.2%
 
-    // Continue to 3*τ
+    // Continue to 3*tau
     for (int i = 0; i < 200; ++i) {
         lag.apply(1.0, dt);
     }
     double y_3tau = lag.apply(1.0, dt);
     EXPECT_NEAR(y_3tau, 0.95, 0.01);  // 95%
 
-    // Continue to 5*τ
+    // Continue to 5*tau
     for (int i = 0; i < 200; ++i) {
         lag.apply(1.0, dt);
     }

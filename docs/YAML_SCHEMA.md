@@ -53,10 +53,10 @@ Lumped thermal capacitance with heat transfer: `C * dT/dt = P - h * (T - T_ambie
 |-----------|------|-------|-------------|
 | `temp_signal` | string | - | Output signal path for temperature |
 | `power_signal` | string | W | Input signal path for heating power |
-| `ambient_signal` | string | °C | Input signal path for ambient temperature |
+| `ambient_signal` | string | degC | Input signal path for ambient temperature |
 | `thermal_mass` | number | J/K | Heat capacity (must be > 0) |
 | `heat_transfer_coeff` | number | W/K | Heat transfer coefficient (must be > 0) |
-| `initial_temp` | number | °C | Initial temperature |
+| `initial_temp` | number | degC | Initial temperature |
 
 **Example:**
 ```yaml
@@ -104,8 +104,8 @@ Scale and offset: `y = scale * x + offset`
 |-----------|------|----------|---------|-------------|
 | `scale` | number | yes | - | Multiplicative gain |
 | `offset` | number | yes | - | Additive offset |
-| `clamp_min` | number | no | -∞ | Minimum output value |
-| `clamp_max` | number | no | +∞ | Maximum output value |
+| `clamp_min` | number | no | -infinity | Minimum output value |
+| `clamp_max` | number | no | +infinity | Maximum output value |
 
 **Example:**
 ```yaml
@@ -143,7 +143,7 @@ edges:
         tau_s: 0.5
 ```
 
-**Frequency Response:** 3dB cutoff at f_c = 1 / (2π * tau)
+**Frequency Response:** 3dB cutoff at f_c = 1 / (2*pi * tau)
 
 ### 3. Delay Transform
 
@@ -154,7 +154,7 @@ Time-shift signal: `y(t) = x(t - delay_sec)`
 **Parameters:**
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `delay_sec` | number | Delay duration in seconds (must be ≥ 0) |
+| `delay_sec` | number | Delay duration in seconds (must be >= 0) |
 
 **Example:**
 ```yaml
@@ -226,7 +226,7 @@ Zero output below threshold: `y = (|x| < threshold) ? 0.0 : x`
 **Parameters:**
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `threshold` | number | Sensitivity threshold (must be ≥ 0) |
+| `threshold` | number | Sensitivity threshold (must be >= 0) |
 
 **Example:**
 ```yaml
@@ -243,7 +243,7 @@ edges:
 
 **Type:** `rate_limiter`
 
-Limit rate of change: `|dy/dt| ≤ max_rate_per_sec`
+Limit rate of change: `|dy/dt| <= max_rate_per_sec`
 
 **Parameters:**
 | Parameter | Type | Description |
@@ -261,7 +261,7 @@ edges:
         max_rate_per_sec: 5.0
 ```
 
-**Settling Time:** Approx `ΔV / max_rate_per_sec` for step change
+**Settling Time:** Approx `delta_V / max_rate_per_sec` for step change
 
 ### 8. Moving Average
 
@@ -272,7 +272,7 @@ Sliding window average (FIR filter): `y = (1/N) * sum(x[n-i])` for i=0 to N-1
 **Parameters:**
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `window_size` | integer | Number of samples to average (must be ≥ 1) |
+| `window_size` | integer | Number of samples to average (must be >= 1) |
 
 **Example:**
 ```yaml
@@ -330,7 +330,7 @@ models:
       ambient_signal: ambient.temp
       thermal_mass: 1000.0          # J/K
       heat_transfer_coeff: 10.0     # W/K
-      initial_temp: 25.0            # °C
+      initial_temp: 25.0            # degC
 
 edges:
   # Heater with saturation
@@ -356,7 +356,7 @@ edges:
     transform:
       type: noise
       params:
-        amplitude: 0.1              # ±0.1°C
+        amplitude: 0.1              # +/-0.1 degC
         seed: 42                    # Repeatable
 
 rules:

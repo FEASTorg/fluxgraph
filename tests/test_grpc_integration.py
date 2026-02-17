@@ -15,6 +15,15 @@ import time
 import sys
 from pathlib import Path
 
+# Add generated protobuf code to path
+repo_root = Path(__file__).parent.parent
+proto_path = repo_root / "build-server" / "python"
+if not proto_path.exists():
+    print(f"ERROR: Generated protobuf code not found at: {proto_path}")
+    print("Run: ./scripts/generate-proto-python.ps1 (or .sh)")
+    sys.exit(1)
+sys.path.insert(0, str(proto_path))
+
 # Import generated protobuf code
 import fluxgraph_pb2 as pb
 import fluxgraph_pb2_grpc as pb_grpc

@@ -1,9 +1,11 @@
 # Embedding FluxGraph in Your Project
 
 ## Overview
+
 This guide shows how to integrate FluxGraph into your C++ application for real-time simulation.
 
 ## Prerequisites
+
 - C++17 compatible compiler
   - MSVC 2019+ (Windows)
   - GCC 9+ (Linux)
@@ -26,12 +28,14 @@ your_project/
 ```
 
 Clone FluxGraph:
+
 ```bash
 cd your_project/external
 git clone https://github.com/your-org/fluxgraph.git
 ```
 
 Or add as submodule:
+
 ```bash
 git submodule add https://github.com/your-org/fluxgraph.git external/fluxgraph
 ```
@@ -101,11 +105,13 @@ target_link_libraries(your_app PRIVATE fluxgraph)
 ```
 
 **Pros:**
+
 - No manual download needed
 - Easy version pinning
 - Clean workspace
 
 **Cons:**
+
 - Slower first configure (downloads every time)
 - Requires internet connection
 
@@ -127,6 +133,7 @@ your_project/
 ### Step 2: Compile
 
 Add to your build:
+
 - Include path: `your_project/fluxgraph/include`
 - Source files:
   - `fluxgraph/src/signal_store.cpp`
@@ -157,6 +164,7 @@ your_app: $(SOURCES)
 ## Minimal Example
 
 **main.cpp:**
+
 ```cpp
 #include "fluxgraph/core/signal_store.hpp"
 #include "fluxgraph/core/namespace.hpp"
@@ -166,13 +174,13 @@ your_app: $(SOURCES)
 
 int main() {
     using namespace fluxgraph;
-    
+
     // 1. Setup
     SignalNamespace ns;
     FunctionNamespace fn;
     SignalStore store;
     Engine engine;
-    
+
     // 2. Build graph: input -> (scale=2, offset=1) -> output
     GraphSpec spec;
     EdgeSpec edge;
@@ -182,16 +190,16 @@ int main() {
     edge.transform.params["scale"] = 2.0;
     edge.transform.params["offset"] = 1.0;
     spec.edges.push_back(edge);
-    
+
     // 3. Compile and load
     GraphCompiler compiler;
     auto program = compiler.compile(spec, ns, fn);
     engine.load(std::move(program));
-    
+
     // 4. Execute simulation
     auto input_id = ns.resolve("input");
     auto output_id = ns.resolve("output");
-    
+
     for (int i = 0; i < 10; ++i) {
         store.write(input_id, 10.0 + i, "");
         engine.tick(0.1, store);  // 100ms time step
@@ -199,12 +207,13 @@ int main() {
         std::cout << "Tick " << i << ": output = " << result << std::endl;
         // Expected: 2*(10+i) + 1 = 21, 23, 25, ...
     }
-    
+
     return 0;
 }
 ```
 
 **Output:**
+
 ```
 Tick 0: output = 21
 Tick 1: output = 23
@@ -217,6 +226,7 @@ Tick 2: output = 25
 ## Realistic Example: Thermal Chamber
 
 **chamber_sim.cpp:**
+
 ```cpp
 #include "fluxgraph/engine.hpp"
 #include "fluxgraph/core/signal_store.hpp"
@@ -227,15 +237,15 @@ Tick 2: output = 25
 
 int main() {
     using namespace fluxgraph;
-    
+
     SignalNamespace ns;
     FunctionNamespace fn;
     SignalStore store;
     Engine engine;
-    
+
     // Build graph
     GraphSpec spec;
-    
+
     // Thermal mass model
     ModelSpec model;
     model.id = "chamber";
@@ -247,7 +257,7 @@ int main() {
     model.params["heat_transfer_coeff"] = 10.0; // 10 W/degC
     model.params["initial_temp"] = 25.0;        // 25 degC
     spec.models.push_back(model);
-    
+
     // Filter temperature for display
     EdgeSpec edge;
     edge.source_path = "chamber.temp";
@@ -255,36 +265,36 @@ int main() {
     edge.transform.type = "first_order_lag";
     edge.transform.params["tau_s"] = 1.0;  // 1 second filter
     spec.edges.push_back(edge);
-    
+
     // Compile
     GraphCompiler compiler;
     auto program = compiler.compile(spec, ns, fn);
     engine.load(std::move(program));
-    
+
     // Get signal IDs
     auto power_id = ns.resolve("chamber.power");
     auto ambient_id = ns.resolve("ambient.temp");
     auto temp_id = ns.resolve("chamber.temp");
     auto filtered_id = ns.resolve("chamber.temp_filtered");
-    
+
     // Initialize
     store.write(ambient_id, 20.0, "degC");
-    
+
     // Open log file
     std::ofstream log("chamber_log.csv");
     log << "time,power,temp,temp_filtered" << std::endl;
-    
+
     // Simulation: 1000 seconds, 0.1s time step
     double time = 0.0;
     for (int tick = 0; tick < 10000; ++tick) {
         // Apply power for first 500 seconds
         double power = (time < 500.0) ? 500.0 : 0.0;
         store.write(power_id, power, "W");
-        
+
         // Tick engine
         engine.tick(0.1, store);
         time += 0.1;
-        
+
         // Log every 10 ticks (1 second)
         if (tick % 10 == 0) {
             double temp = store.read_value(temp_id);
@@ -293,15 +303,16 @@ int main() {
             std::cout << "t=" << time << "s, T=" << temp << " degC" << std::endl;
         }
     }
-    
+
     log.close();
     std::cout << "Simulation complete. See chamber_log.csv" << std::endl;
-    
+
     return 0;
 }
 ```
 
 **Build and run:**
+
 ```bash
 cmake --build build --config Release
 ./build/chamber_sim
@@ -418,11 +429,13 @@ instruments -t "Time Profiler" ./your_app
 ```
 
 **Common hotspots:**
+
 1. Model physics (exp, sqrt)
 2. Transform chains (if very long)
 3. Memory access (cache misses)
 
 **Rarely bottleneck:**
+
 - Virtual calls (~2ns)
 - Namespace lookups (done at compile)
 
@@ -433,6 +446,7 @@ instruments -t "Time Profiler" ./your_app
 ### Step 1: Implement ITransform
 
 **my_transform.hpp:**
+
 ```cpp
 #pragma once
 #include "fluxgraph/transform/interface.hpp"
@@ -443,15 +457,15 @@ private:
     double m_gain;
 public:
     explicit MyGainTransform(double gain) : m_gain(gain) {}
-    
+
     double apply(double input, double dt) override {
         return input * m_gain;
     }
-    
+
     void reset() override {
         // Stateless, nothing to reset
     }
-    
+
     std::unique_ptr<fluxgraph::ITransform> clone() const override {
         return std::make_unique<MyGainTransform>(*this);
     }
@@ -461,6 +475,7 @@ public:
 ### Step 2: Register with Compiler
 
 **main.cpp:**
+
 ```cpp
 #include "my_transform.hpp"
 #include "fluxgraph/graph/compiler.hpp"
@@ -468,7 +483,7 @@ public:
 GraphCompiler compiler;
 
 // Register factory function
-compiler.register_transform("my_gain", 
+compiler.register_transform("my_gain",
     [](const fluxgraph::ParamMap& params) -> std::unique_ptr<fluxgraph::ITransform> {
         double gain = std::get<double>(params.at("gain"));
         return std::make_unique<MyGainTransform>(gain);
@@ -488,6 +503,7 @@ edge.transform.params["gain"] = 5.0;
 Similar to transforms:
 
 **my_model.hpp:**
+
 ```cpp
 #pragma once
 #include "fluxgraph/model/interface.hpp"
@@ -499,22 +515,22 @@ private:
     double m_speed;
 public:
     MyMotorModel(/* params */) { /* ... */ }
-    
+
     void tick(double dt, fluxgraph::SignalStore& store) override {
         double torque = store.read_value(m_torque_id);
         double accel = torque / m_inertia;
         m_speed += accel * dt;
         store.write(m_speed_id, m_speed, "rpm");
     }
-    
+
     void reset() override {
         m_speed = 0.0;
     }
-    
+
     double compute_stability_limit() const override {
         return 0.1;  // Conservative 100ms max
     }
-    
+
     std::string describe() const override {
         return "Motor model with inertia";
     }
@@ -522,9 +538,10 @@ public:
 ```
 
 Register:
+
 ```cpp
-compiler.register_model("motor", 
-    [](const fluxgraph::ParamMap& params, 
+compiler.register_model("motor",
+    [](const fluxgraph::ParamMap& params,
        fluxgraph::SignalNamespace& ns) -> std::unique_ptr<fluxgraph::IModel> {
         // Parse params, return model instance
     }
@@ -568,6 +585,7 @@ std::cout << "Value: " << signal.value << " "
 ### 4. Compare to Known Good
 
 Run analytical tests:
+
 ```bash
 cd fluxgraph/build
 ctest -R analytical

@@ -1,16 +1,19 @@
 # FluxGraph Performance Benchmarks
 
 ## Overview
+
 This document details FluxGraph's performance characteristics based on systematic benchmarking. Benchmarks validate real-time execution targets (<10ms per tick for typical graphs).
 
 ## Test Environment
 
 **Hardware:**
+
 - CPU: [Your CPU here]
 - RAM: [Your RAM here]
 - OS: Windows/Linux/macOS
 
 **Build Configuration:**
+
 - Compiler: MSVC 2022 / GCC 11 / Clang 14
 - Flags: `-O3 -DNDEBUG` (Release mode)
 - std: C++17
@@ -28,6 +31,7 @@ This document details FluxGraph's performance characteristics based on systemati
 **Target:** <10ms (CPU bound operations should be sub-microsecond)
 
 **Release Build Results:**
+
 ```
 Operations: 1,000,000
 Duration:   ~10 ms
@@ -37,15 +41,18 @@ Status:     PASS
 ```
 
 **Analysis:**
+
 - SignalStore uses contiguous array storage (std::vector)
 - Array indexing is O(1) with minimal overhead
 - Performance dominated by memory access (L1 cache ~4ns, L2 ~12ns)
 - 10ns per read = ~3 cycles at 3 GHz (excellent)
 
 **Debug Build:**
+
 ```
 Duration: ~900 ms (90x slower)
 ```
+
 Debug builds add bounds checking, iterator validation, and disable inlining.
 
 ### Write Benchmark
@@ -55,6 +62,7 @@ Debug builds add bounds checking, iterator validation, and disable inlining.
 **Target:** <15ms
 
 **Release Build Results:**
+
 ```
 Operations: 1,000,000
 Duration:   ~15 ms
@@ -64,6 +72,7 @@ Status:     PASS
 ```
 
 **Analysis:**
+
 - Write slightly slower than read (needs to update value + unit + flag)
 - Still excellent performance for real-world use
 - 15ns = ~45 cycles (L1 cache write + struct update)
@@ -79,6 +88,7 @@ Status:     PASS
 **Target:** <5ms total (500ns per intern)
 
 **Release Build Results:**
+
 ```
 Operations: 10,000
 Duration:   ~5 ms
@@ -87,6 +97,7 @@ Status:     PASS
 ```
 
 **Analysis:**
+
 - Uses std::unordered_map for path -> ID mapping
 - Hash computation + insert dominates
 - Path format: "device{n}.signal{m}" (16-24 chars)
@@ -108,6 +119,7 @@ Status:     PASS
 **Target:** <2ms total (200ns per resolve)
 
 **Release Build Results:**
+
 ```
 Operations: 10,000
 Duration:   ~2 ms
@@ -116,6 +128,7 @@ Status:     PASS
 ```
 
 **Analysis:**
+
 - Hash lookup in std::unordered_map
 - Faster than intern (no insert overhead)
 - 200ns = hash + lookup
@@ -130,6 +143,7 @@ Status:     PASS
 ### Simple Graph Benchmark
 
 **Graph Configuration:**
+
 - 10 signals
 - 5 edges (linear transforms)
 - 1 thermal mass model
@@ -138,6 +152,7 @@ Status:     PASS
 **Target:** <1ms average per tick
 
 **Release Build Results:**
+
 ```
 Ticks:      1000
 Duration:   17.8 ms total
@@ -157,6 +172,7 @@ Status:     PASS
 | **Total** | **17.8 us** | **100%** |
 
 **Analysis:**
+
 - Well under 1ms target (56x safety margin!)
 - Model tick dominates (ThermalMass uses exp, division)
 - Edge execution fast (linear transforms are cheap)
@@ -165,6 +181,7 @@ Status:     PASS
 ### Complex Graph Benchmark
 
 **Graph Configuration:**
+
 - 1000 signals
 - 500 edges (mix of transforms)
 - 10 thermal mass models
@@ -173,6 +190,7 @@ Status:     PASS
 **Target:** <10ms average per tick
 
 **Release Build Results:**
+
 ```
 Ticks:      100
 Duration:   138.7 ms total
@@ -192,6 +210,7 @@ Status:     PASS
 | **Total** | **1387 us** | **100%** |
 
 **Analysis:**
+
 - 7.2x under 10ms target
 - Scales well: 100x signals, 100x edges -> ~80x time (sublinear!)
 - Models still dominate (physics > data flow)
@@ -212,18 +231,19 @@ Status:     PASS
 
 **Setup:** 1,000,000 applications of each transform in isolation
 
-| Transform | Time (us) | ns/call | Notes |
-|-----------|-----------|---------|-------|
-| Linear | 1,000 | 1 | No state, just multiply/add |
-| FirstOrderLag | 5,000 | 5 | State update + exp approximation |
-| Delay | 3,000 | 3 | Circular buffer access |
-| Noise | 20,000 | 20 | RNG call dominates |
-| Saturation | 2,000 | 2 | Two comparisons |
-| Deadband | 2,000 | 2 | abs + comparison |
-| RateLimiter | 5,000 | 5 | State + clamp |
-| MovingAverage (N=10) | 100,000 | 100 | Sum over window |
+| Transform            | Time (us) | ns/call | Notes                            |
+| -------------------- | --------- | ------- | -------------------------------- |
+| Linear               | 1,000     | 1       | No state, just multiply/add      |
+| FirstOrderLag        | 5,000     | 5       | State update + exp approximation |
+| Delay                | 3,000     | 3       | Circular buffer access           |
+| Noise                | 20,000    | 20      | RNG call dominates               |
+| Saturation           | 2,000     | 2       | Two comparisons                  |
+| Deadband             | 2,000     | 2       | abs + comparison                 |
+| RateLimiter          | 5,000     | 5       | State + clamp                    |
+| MovingAverage (N=10) | 100,000   | 100     | Sum over window                  |
 
 **Key Insights:**
+
 - Stateless transforms (Linear, Saturation, Deadband) fastest
 - Stateful transforms add ~3-5ns overhead
 - Noise is slow (RNG call ~15ns)
@@ -235,24 +255,24 @@ Status:     PASS
 
 ### Core Structures
 
-| Structure | Size per Signal | Notes |
-|-----------|-----------------|-------|
-| SignalStore | 24 bytes | value (8) + unit (8) + flags (8) |
-| SignalNamespace | 64 bytes | Two hash map entries |
-| FunctionNamespace | 64 bytes | Device + function maps |
+| Structure         | Size per Signal | Notes                            |
+| ----------------- | --------------- | -------------------------------- |
+| SignalStore       | 24 bytes        | value (8) + unit (8) + flags (8) |
+| SignalNamespace   | 64 bytes        | Two hash map entries             |
+| FunctionNamespace | 64 bytes        | Device + function maps           |
 
 ### Transform State
 
-| Transform | State Size | Notes |
-|-----------|------------|-------|
-| Linear | 0 | Stateless |
-| FirstOrderLag | 8 bytes | Current value |
-| Delay | 8 * N | Circular buffer (N = delay/dt) |
-| Noise | 16 bytes | RNG state |
-| Saturation | 0 | Stateless |
-| Deadband | 0 | Stateless |
-| RateLimiter | 8 bytes | Current value |
-| MovingAverage | 8 * W + 8 | Buffer (W samples) + index |
+| Transform     | State Size | Notes                          |
+| ------------- | ---------- | ------------------------------ |
+| Linear        | 0          | Stateless                      |
+| FirstOrderLag | 8 bytes    | Current value                  |
+| Delay         | 8 \* N     | Circular buffer (N = delay/dt) |
+| Noise         | 16 bytes   | RNG state                      |
+| Saturation    | 0          | Stateless                      |
+| Deadband      | 0          | Stateless                      |
+| RateLimiter   | 8 bytes    | Current value                  |
+| MovingAverage | 8 \* W + 8 | Buffer (W samples) + index     |
 
 ### Total Memory for 1000-Signal Graph
 
@@ -276,12 +296,14 @@ Total:        ~107 KB
 **Scenario:** Replace Phase 22 embedded simulation with FluxGraph
 
 **Configuration:**
+
 - 50 signals (chamber temps, powers, setpoints)
 - 30 edges (filtering, control logic)
 - 3 thermal mass models (chambers)
 - Tick rate: 10 Hz (100ms dt)
 
 **Measured Performance:**
+
 ```
 Avg tick time: 45 us
 Max tick time: 120 us (cold start)
@@ -347,11 +369,13 @@ cmake -DCMAKE_BUILD_TYPE=Release ..
 ### 5. Profile Before Optimizing
 
 Use tools to find actual bottlenecks:
+
 - **Linux:** `perf record ./app; perf report`
 - **Windows:** Visual Studio Profiler
 - **macOS:** Instruments
 
 **Expected hotspots:**
+
 1. Model physics (exp, sqrt) - 50-70% of time
 2. Transform chains - 20-40%
 3. Everything else - <10%
@@ -432,14 +456,14 @@ Every tick copies all signal values (O(n)).
 
 FluxGraph achieves excellent real-time performance:
 
-| Metric | Target | Achieved | Margin |
-|--------|--------|----------|--------|
-| Simple graph tick | <1 ms | 17.8 us | 56x |
-| Complex graph tick | <10 ms | 1.4 ms | 7x |
-| SignalStore reads | <10 ms/1M | ~10 ms | 1x |
-| SignalStore writes | <15 ms/1M | ~15 ms | 1x |
-| Namespace intern | <5 ms/10K | ~5 ms | 1x |
-| Namespace resolve | <2 ms/10K | ~2 ms | 1x |
+| Metric             | Target    | Achieved | Margin |
+| ------------------ | --------- | -------- | ------ |
+| Simple graph tick  | <1 ms     | 17.8 us  | 56x    |
+| Complex graph tick | <10 ms    | 1.4 ms   | 7x     |
+| SignalStore reads  | <10 ms/1M | ~10 ms   | 1x     |
+| SignalStore writes | <15 ms/1M | ~15 ms   | 1x     |
+| Namespace intern   | <5 ms/10K | ~5 ms    | 1x     |
+| Namespace resolve  | <2 ms/10K | ~2 ms    | 1x     |
 
 **Conclusion:** FluxGraph meets all performance targets with significant safety margins. Suitable for real-time simulation up to 10kHz tick rates.
 

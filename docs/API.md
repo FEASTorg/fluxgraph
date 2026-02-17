@@ -1,7 +1,9 @@
 # FluxGraph Library - API Reference
 
 ## Overview
+
 FluxGraph is a high-performance C++17 signal processing library for real-time simulations. It provides:
+
 - Type-safe signal storage with units
 - Declarative graph-based data flow
 - Modular transforms and physics models
@@ -10,6 +12,7 @@ FluxGraph is a high-performance C++17 signal processing library for real-time si
 ## Core API
 
 ### SignalStore
+
 Central storage for all signal values in your simulation.
 
 ```cpp
@@ -20,8 +23,9 @@ fluxgraph::SignalStore store;
 
 #### Methods
 
-**void write(SignalId id, double value, const char* unit)**
+**void write(SignalId id, double value, const char\* unit)**
 Write a signal value with specified unit. First write declares the unit.
+
 ```cpp
 auto temp_id = namespace.intern("chamber.temp");
 store.write(temp_id, 25.0, "degC");
@@ -29,19 +33,22 @@ store.write(temp_id, 25.0, "degC");
 
 **double read_value(SignalId id)**
 Read current signal value. Returns 0.0 for invalid or unwritten signals.
+
 ```cpp
 double temp = store.read_value(temp_id);
 ```
 
 **Signal read(SignalId id)**
 Read full signal including value, unit, and physics-driven flag.
+
 ```cpp
 auto signal = store.read(sensor_id);
 std::cout << "Value: " << signal.value << " " << signal.unit << std::endl;
 ```
 
-**void declare_unit(SignalId id, const char* unit)**
+**void declare_unit(SignalId id, const char\* unit)**
 Pre-declare expected unit for a signal. Enforces consistency.
+
 ```cpp
 store.declare_unit(temp_id, "degC");
 store.write(temp_id, 25.0, "degF");  // Error: Unit mismatch
@@ -49,6 +56,7 @@ store.write(temp_id, 25.0, "degF");  // Error: Unit mismatch
 
 **void clear()**
 Reset all signal values to 0.0. Unit declarations persist.
+
 ```cpp
 store.clear();  // Values reset, units retained
 ```
@@ -56,6 +64,7 @@ store.clear();  // Values reset, units retained
 ---
 
 ### SignalNamespace
+
 Maps human-readable paths to integer SignalId handles for fast lookups.
 
 ```cpp
@@ -68,6 +77,7 @@ fluxgraph::SignalNamespace namespace;
 
 **SignalId intern(const std::string& path)**
 Register a signal path and get its unique ID. Idempotent.
+
 ```cpp
 auto id1 = ns.intern("device.sensor1");  // Creates new ID
 auto id2 = ns.intern("device.sensor1");  // Returns same ID
@@ -76,6 +86,7 @@ assert(id1 == id2);
 
 **SignalId resolve(const std::string& path)**
 Lookup existing signal ID. Returns INVALID_SIGNAL_ID if not found.
+
 ```cpp
 auto id = ns.resolve("device.sensor2");
 if (id == fluxgraph::INVALID_SIGNAL_ID) {
@@ -85,6 +96,7 @@ if (id == fluxgraph::INVALID_SIGNAL_ID) {
 
 **std::string lookup(SignalId id)**
 Reverse lookup SignalId to path. Returns empty string for invalid IDs.
+
 ```cpp
 std::string path = ns.lookup(signal_id);
 ```
@@ -101,6 +113,7 @@ Remove all signal mappings. Use with caution - invalidates all SignalIds.
 ---
 
 ### FunctionNamespace
+
 Maps device names and function names to integer IDs for command emission.
 
 ```cpp
@@ -122,6 +135,7 @@ Similar resolve/lookup methods as SignalNamespace.
 ---
 
 ### Engine
+
 Executes the simulation graph each tick using five-stage pipeline.
 
 ```cpp
@@ -134,6 +148,7 @@ fluxgraph::Engine engine;
 
 **void load(CompiledProgram program)**
 Load compiled graph into engine for execution.
+
 ```cpp
 GraphCompiler compiler;
 auto program = compiler.compile(spec, namespace, fn_namespace);
@@ -142,11 +157,13 @@ engine.load(std::move(program));
 
 **void tick(double dt, SignalStore& store)**
 Execute one simulation step with time delta dt.
+
 ```cpp
 engine.tick(0.1, store);  // 100ms time step
 ```
 
 **Five-stage execution:**
+
 1. Pre-tick snapshot (read all signals)
 2. Model tick (physics updates)
 3. Edge execution (transform chains)
@@ -155,6 +172,7 @@ engine.tick(0.1, store);  // 100ms time step
 
 **std::vector<Command> drain_commands()**
 Retrieve and clear command queue.
+
 ```cpp
 auto commands = engine.drain_commands();
 for (const auto& cmd : commands) {
@@ -164,6 +182,7 @@ for (const auto& cmd : commands) {
 
 **void reset()**
 Reset all internal state (models, transforms, rules) to initial conditions.
+
 ```cpp
 engine.reset();
 store.clear();
@@ -175,6 +194,7 @@ store.clear();
 ## Graph Construction
 
 ### GraphSpec
+
 Plain Old Data (POD) structure defining the entire simulation graph.
 
 ```cpp
@@ -184,6 +204,7 @@ fluxgraph::GraphSpec spec;
 ```
 
 #### EdgeSpec
+
 Defines signal transformation edges.
 
 ```cpp
@@ -196,8 +217,9 @@ spec.edges.push_back(edge);
 ```
 
 **Available transform types:**
-- `linear` - Scale and offset: y = scale*x + offset
-- `first_order_lag` - Low-pass filter: tau * dy/dt + y = x
+
+- `linear` - Scale and offset: y = scale\*x + offset
+- `first_order_lag` - Low-pass filter: tau \* dy/dt + y = x
 - `delay` - Time delay: y(t) = x(t - delay_sec)
 - `noise` - Add Gaussian noise: y = x + N(0, amplitude)
 - `saturation` - Clamp to bounds: y = clamp(x, min, max)
@@ -206,6 +228,7 @@ spec.edges.push_back(edge);
 - `moving_average` - Sliding window average
 
 #### ModelSpec
+
 Defines physics models.
 
 ```cpp
@@ -222,9 +245,11 @@ spec.models.push_back(model);
 ```
 
 **Available model types:**
+
 - `thermal_mass` - Heat transfer simulation
 
 #### RuleSpec
+
 Defines condition -> command mappings (future feature).
 
 ```cpp
@@ -240,6 +265,7 @@ spec.rules.push_back(rule);
 ---
 
 ### GraphCompiler
+
 Compiles GraphSpec into executable form with validation.
 
 ```cpp
@@ -254,6 +280,7 @@ fluxgraph::GraphCompiler compiler;
 Compile graph specification into executable program.
 
 **Compilation steps:**
+
 1. Parse transforms, models, rules from spec
 2. Resolve all signal paths to IDs via namespace
 3. Topological sort to determine execution order
@@ -262,6 +289,7 @@ Compile graph specification into executable program.
 6. Package into CompiledProgram
 
 **Throws:**
+
 - std::runtime_error on unknown transform/model types
 - std::runtime_error on cyclic dependencies
 - std::runtime_error on invalid parameters
@@ -280,6 +308,7 @@ try {
 ## Transforms
 
 ### ITransform Interface
+
 All transforms implement this interface.
 
 ```cpp
@@ -299,6 +328,7 @@ public:
 **clone()** - Create deep copy (for multi-instancing)
 
 ### Custom Transforms
+
 Implement ITransform to create custom transforms.
 
 ```cpp
@@ -310,11 +340,11 @@ public:
         m_state = 0.9 * m_state + 0.1 * input;
         return m_state;
     }
-    
+
     void reset() override {
         m_state = 0.0;
     }
-    
+
     std::unique_ptr<ITransform> clone() const override {
         return std::make_unique<MyTransform>(*this);
     }
@@ -328,6 +358,7 @@ Register with factory (see EMBEDDING.md for details).
 ## Models
 
 ### IModel Interface
+
 All physics models implement this interface.
 
 ```cpp
@@ -349,22 +380,26 @@ public:
 **describe()** - Return human-readable description
 
 ### ThermalMassModel
+
 Lumped thermal mass with heat transfer.
 
 Physics equation:
+
 ```
 C * dT/dt = P - h * (T - T_ambient)
 ```
 
 Parameters:
+
 - C: thermal_mass (J/degC) - Heat capacity
 - h: heat_transfer_coeff (W/degC) - Convection coefficient
 - P: power_signal (W) - Heat input
 - T_ambient: ambient_signal (degC) - Ambient temperature
 
-**Stability limit:** dt < 2*C/h
+**Stability limit:** dt < 2\*C/h
 
 Example usage:
+
 ```cpp
 ModelSpec model;
 model.type = "thermal_mass";
@@ -379,6 +414,7 @@ model.params["initial_temp"] = 25.0;
 ---
 
 ## Command
+
 Commands emitted by rules for execution by external systems.
 
 ```cpp
@@ -392,6 +428,7 @@ cmd.add_arg(std::string{"OK"}); // string
 ```
 
 **Access arguments:**
+
 ```cpp
 if (std::holds_alternative<double>(cmd.args[0])) {
     double value = std::get<double>(cmd.args[0]);
@@ -403,17 +440,20 @@ if (std::holds_alternative<double>(cmd.args[0])) {
 ## Thread Safety
 
 **Single-writer model:**
+
 - SignalStore: One writer, multiple readers safe
 - Engine: tick() must be called from single thread
 - Namespace: intern() not thread-safe, resolve() safe after setup
 
 **Best practice:**
 Setup phase (single-threaded):
+
 1. Build namespace (intern all signal paths)
 2. Compile graph
 3. Load engine
 
 Execution phase (can be threaded):
+
 - Engine tick (single thread)
 - Multiple readers can call store.read() concurrently
 
@@ -422,6 +462,7 @@ Execution phase (can be threaded):
 ## Error Handling
 
 **Invalid SignalId:**
+
 ```cpp
 auto id = ns.resolve("nonexistent");
 if (id == fluxgraph::INVALID_SIGNAL_ID) {
@@ -430,6 +471,7 @@ if (id == fluxgraph::INVALID_SIGNAL_ID) {
 ```
 
 **Compilation errors:**
+
 ```cpp
 try {
     auto program = compiler.compile(spec, ns, fn);
@@ -439,12 +481,14 @@ try {
 ```
 
 **Unit mismatches:**
+
 ```cpp
 store.declare_unit(temp_id, "degC");
 store.write(temp_id, 77.0, "degF");  // Error logged, write rejected
 ```
 
 **Invalid tick:**
+
 ```cpp
 engine.tick(dt, store);  // Throws if no program loaded
 ```
@@ -454,11 +498,13 @@ engine.tick(dt, store);  // Throws if no program loaded
 ## Performance Tips
 
 1. **Reserve signal IDs upfront:**
+
 ```cpp
 store.reserve(1000);  // If you know signal count
 ```
 
 2. **Reuse SignalIds:**
+
 ```cpp
 // Cache IDs, avoid repeated resolve()
 auto temp_id = ns.intern("chamber.temp");
@@ -466,15 +512,18 @@ auto temp_id = ns.intern("chamber.temp");
 ```
 
 3. **Minimize graph complexity:**
+
 - Fewer edges = faster execution
 - Long transform chains = more overhead
 
 4. **Choose appropriate dt:**
+
 - Too small: wasted computation
 - Too large: instability
 - Use model.compute_stability_limit() as guide
 
 5. **Profile before optimizing:**
+
 - Run benchmarks (see tests/benchmarks/)
 - Most time typically in models, not transforms
 
@@ -490,13 +539,13 @@ auto temp_id = ns.intern("chamber.temp");
 
 int main() {
     using namespace fluxgraph;
-    
+
     // Setup
     SignalNamespace ns;
     FunctionNamespace fn;
     SignalStore store;
     Engine engine;
-    
+
     // Build graph
     GraphSpec spec;
     EdgeSpec edge;
@@ -506,22 +555,22 @@ int main() {
     edge.transform.params["scale"] = 2.0;
     edge.transform.params["offset"] = 1.0;
     spec.edges.push_back(edge);
-    
+
     // Compile and load
     GraphCompiler compiler;
     auto program = compiler.compile(spec, ns, fn);
     engine.load(std::move(program));
-    
+
     // Execute
     auto input_id = ns.resolve("input");
     auto output_id = ns.resolve("output");
-    
+
     store.write(input_id, 10.0, "");
     engine.tick(0.1, store);
-    
+
     double result = store.read_value(output_id);
     // result = 2*10 + 1 = 21
-    
+
     return 0;
 }
 ```

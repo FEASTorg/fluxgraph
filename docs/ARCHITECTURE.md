@@ -1,6 +1,7 @@
 # FluxGraph Architecture
 
 ## Overview
+
 FluxGraph is a deterministic signal processing library designed for real-time simulation. This document explains the key architectural decisions, execution model, and design principles.
 
 ## Design Goals
@@ -22,6 +23,7 @@ All data flows through signals identified by integer handles (SignalId):
 ```
 
 **Benefits:**
+
 - Fast lookups (array indexing, not map searches)
 - Simple synchronization (snapshot-based)
 - Clear data ownership (SignalStore is single source of truth)
@@ -47,6 +49,7 @@ All data flows through signals identified by integer handles (SignalId):
 ```
 
 **Layer responsibilities:**
+
 - **Application:** Drives ticks, manages time
 - **Engine:** Executes five-stage pipeline, manages execution state
 - **Graph:** Implements data flow logic (transforms, physics)
@@ -59,6 +62,7 @@ All data flows through signals identified by integer handles (SignalId):
 Each `engine.tick(dt, store)` executes five sequential stages:
 
 ### Stage 1: Pre-Tick Snapshot
+
 ```cpp
 snapshot = store.snapshot();
 ```
@@ -82,6 +86,7 @@ With snapshot:
 ```
 
 ### Stage 2: Model Tick
+
 ```cpp
 for (auto& model : models) {
     model->tick(dt, store);
@@ -95,6 +100,7 @@ for (auto& model : models) {
 Models write directly to SignalStore with physics_driven=true flag. These signals are owned by models, not computed by transforms.
 
 ### Stage 3: Edge Execution
+
 ```cpp
 for (auto& edge : sorted_edges) {
     double input = snapshot.read(edge.source_id);
@@ -106,6 +112,7 @@ for (auto& edge : sorted_edges) {
 **Purpose:** Execute transform chains in topological order
 
 **Topological sort ensures:**
+
 - Dependencies execute before dependents
 - No signal read before it's written
 - Example: If C depends on B depends on A, order is A->B->C
@@ -113,6 +120,7 @@ for (auto& edge : sorted_edges) {
 **Why after models?** Transforms process model outputs (e.g., filtering sensor data).
 
 ### Stage 4: Rule Evaluation
+
 ```cpp
 for (auto& rule : rules) {
     if (rule.evaluate(store)) {
@@ -128,7 +136,8 @@ for (auto& rule : rules) {
 Example: Emergency stop based on filtered temperature, not raw sensor.
 
 ### Stage 5: Post-Tick Write
-*(Implicit - all writes already committed to store)*
+
+_(Implicit - all writes already committed to store)_
 
 **Purpose:** Store now contains new state for next tick
 
@@ -188,11 +197,13 @@ A -> B -> C -> A  (cycle)
 **Detection:** If topological sort produces fewer nodes than graph contains, cycle exists.
 
 **Why prohibit cycles?**
+
 1. No well-defined execution order
 2. Bootstrap problem (who computes first value?)
 3. Algebraic loops require iterative solvers (out of scope)
 
 **User-facing error:**
+
 ```
 Error: Cycle detected in signal dependencies
 Signals involved: device.sensor1 -> device.filter -> device.sensor1
@@ -205,9 +216,11 @@ Signals involved: device.sensor1 -> device.filter -> device.sensor1
 ## Numerical Stability
 
 ### Problem
+
 Physics models use numerical integration. If time step too large, integration diverges.
 
 **Example:** Thermal mass with forward Euler integration:
+
 ```
 T_{n+1} = T_n + dt * (P - h*(T_n - T_amb)) / C
 
@@ -217,6 +230,7 @@ Stability condition: dt < 2*C/h
 If violated, temperature oscillates wildly.
 
 ### Solution
+
 Models implement `compute_stability_limit()`:
 
 ```cpp
@@ -226,6 +240,7 @@ double ThermalMassModel::compute_stability_limit() const {
 ```
 
 GraphCompiler validates during compilation:
+
 ```cpp
 if (dt > model.compute_stability_limit()) {
     throw std::runtime_error("Time step too large for model stability");
@@ -233,6 +248,7 @@ if (dt > model.compute_stability_limit()) {
 ```
 
 **User guidance:** If compilation fails, either:
+
 1. Reduce dt (better accuracy anyway)
 2. Use implicit integration (future enhancement)
 
@@ -245,10 +261,12 @@ if (dt > model.compute_stability_limit()) {
 **Choice:** GraphSpec is Plain Old Data (vectors of structs)
 
 **Alternatives considered:**
+
 - Builder pattern (e.g., `graph.addEdge(...)`)
 - Fluent API (e.g., `graph.edge("A", "B").withTransform(...)`)
 
 **Rationale:**
+
 - POD is serializable (JSON, YAML, Protobuf)
 - Clear separation: spec=data, compiler=logic
 - Easier to generate programmatically
@@ -263,6 +281,7 @@ if (dt > model.compute_stability_limit()) {
 **Alternative:** Thread-safe store with locking
 
 **Rationale:**
+
 - Real-time systems avoid unpredictable lock contention
 - Single tick thread is simpler mental model
 - Readers can still access safely (read-only)
@@ -277,6 +296,7 @@ if (dt > model.compute_stability_limit()) {
 **Alternative:** Use std::string paths everywhere
 
 **Rationale:**
+
 - O(1) array lookup vs O(log n) map lookup
 - Cache-friendly (contiguous IDs -> contiguous storage)
 - Validation at compile time (namespace creation)
@@ -289,11 +309,13 @@ if (dt > model.compute_stability_limit()) {
 **Wait, we DO use virtual functions!** ITransform is interface with virtual methods.
 
 **Decision DID consider:**
+
 - Function pointers (C-style)
 - std::function (type erasure)
 - Virtual functions (C++ inheritance)
 
 **Chose virtual functions because:**
+
 - Clean interface (ITransform)
 - Easy to extend (inherit and implement)
 - Compiler can devirtualize in many cases
@@ -306,11 +328,13 @@ if (dt > model.compute_stability_limit()) {
 **Choice:** Copy all signal values before processing
 
 **Alternatives:**
+
 - Double-buffering (two SignalStores, swap)
 - Dependency tracking (only snapshot what's needed)
 - Immediate propagation (write-through)
 
 **Rationale:**
+
 - Simplest to reason about (no race conditions)
 - Deterministic (execution order doesn't affect output)
 - Easy to debug (snapshot is frozen state)
@@ -333,11 +357,13 @@ private:
 ```
 
 **Access pattern:**
+
 ```
 SignalId=5 -> m_signals[5]   (O(1) array index)
 ```
 
 **Cache implications:**
+
 - Sequential iteration is cache-friendly
 - Random access still fast (array, not map)
 
@@ -378,8 +404,9 @@ class MyTransform : public ITransform {
 ```
 
 Register in factory:
+
 ```cpp
-transform_factory.register_type("my_transform", 
+transform_factory.register_type("my_transform",
     [](const ParamMap& p) { return std::make_unique<MyTransform>(p); });
 ```
 
@@ -402,13 +429,14 @@ Register similar to transforms.
 
 ### Custom Rules
 
-*(Future feature)* Implement IRule interface (not yet designed).
+_(Future feature)_ Implement IRule interface (not yet designed).
 
 ---
 
 ## Testing Strategy
 
 ### Unit Tests
+
 - Test each component in isolation
 - Mock dependencies (e.g., FakeSignalStore)
 - Focus: Correctness of individual transforms/models
@@ -416,6 +444,7 @@ Register similar to transforms.
 **Location:** tests/unit/
 
 ### Analytical Tests
+
 - Validate numerical accuracy against analytical solutions
 - Example: FirstOrderLag vs exp(-t/tau)
 - Focus: Scientific correctness
@@ -423,6 +452,7 @@ Register similar to transforms.
 **Location:** tests/analytical/
 
 ### Integration Tests
+
 - Test full engine execution
 - Multi-model interactions
 - Determinism validation
@@ -431,6 +461,7 @@ Register similar to transforms.
 **Location:** tests/integration/
 
 ### Benchmarks
+
 - Measure performance (throughput, latency)
 - Detect regressions
 - Focus: Real-time viability
@@ -446,20 +477,23 @@ Register similar to transforms.
 **Target:** 1000-signal graph in <10ms per tick
 
 ### Breakdown (Rough estimates for Release build)
-| Operation | Time | Notes |
-|-----------|------|-------|
-| Snapshot copy | 10 us | 1000 signals * 10ns |
-| Model tick | 1-5 ms | Depends on model complexity |
-| Edge execution | 50-500 us | 1000 edges * 50ns-500ns |
-| Rule evaluation | 10-100 us | Simple conditionals |
-| **Total** | **1-6 ms** | Well under 10ms budget |
+
+| Operation       | Time       | Notes                       |
+| --------------- | ---------- | --------------------------- |
+| Snapshot copy   | 10 us      | 1000 signals \* 10ns        |
+| Model tick      | 1-5 ms     | Depends on model complexity |
+| Edge execution  | 50-500 us  | 1000 edges \* 50ns-500ns    |
+| Rule evaluation | 10-100 us  | Simple conditionals         |
+| **Total**       | **1-6 ms** | Well under 10ms budget      |
 
 **Bottlenecks:**
+
 1. Model physics (exp, sqrt, etc.)
 2. Transform math (less expensive)
 3. Memory access (cache misses)
 
 **Not bottlenecks:**
+
 - Virtual function calls (~2ns overhead)
 - Namespace lookups (done at compile time)
 - Command queue operations (rare)
@@ -469,6 +503,7 @@ Register similar to transforms.
 ## Future Enhancements
 
 ### Parallel Edge Execution
+
 Independent edges could execute concurrently:
 
 ```
@@ -481,12 +516,14 @@ Level 2: [F]        (depends on D, E)
 **Challenge:** Thread pool overhead, synchronization
 
 ### Implicit Integration
+
 Replace forward Euler with backward Euler or RK4:
 
 **Benefit:** Larger stable time steps
 **Challenge:** Iterative solvers (Newton-Raphson)
 
 ### YAML/JSON Parsing
+
 Load GraphSpec from file:
 
 ```yaml
@@ -503,6 +540,7 @@ edges:
 **Challenge:** Adds yaml-cpp or nlohmann-json dependency
 
 ### GPU Acceleration
+
 Offload transform chains to GPU:
 
 **Benefit:** 10-100x speedup for massively parallel graphs
@@ -513,18 +551,22 @@ Offload transform chains to GPU:
 ## Comparison to Other Frameworks
 
 ### vs. Simulink
+
 - **Simulink:** Visual block diagrams, MATLAB integration, expensive
 - **FluxGraph:** Code-first, C++17, free, embeddable
 
 ### vs. OpenModelica
+
 - **OpenModelica:** Equation-based modeling, DAE solvers, heavy
 - **FluxGraph:** Signal-flow, explicit integration, lightweight
 
 ### vs. ROS
+
 - **ROS:** Distributed pub/sub, process-based, high latency
 - **FluxGraph:** In-process, deterministic, low latency
 
 ### vs. Custom C Code
+
 - **Custom:** Fully flexible, hard to maintain, error-prone
 - **FluxGraph:** Structured, testable, modular
 
@@ -553,6 +595,7 @@ fluxgraph/
 ```
 
 **Header-only vs. library:**
+
 - Most code in headers for template flexibility
 - Heavy logic (compiler, models) in .cpp for compile time
 
@@ -570,6 +613,7 @@ target_link_libraries(your_app PRIVATE fluxgraph)
 **Zero external dependencies** (except GoogleTest for tests).
 
 **Platform support:**
+
 - Windows (MSVC 2019+)
 - Linux (GCC 9+, Clang 10+)
 - macOS (Xcode 12+)

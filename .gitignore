@@ -253,11 +253,7 @@ artifacts/
 
 # Build directories
 build/
-build-core/
-build-json/
-build-yaml/
-build-both/
-build-server/
+build-*/
 out/
 cmake-build-*/
 
@@ -266,6 +262,12 @@ cmake-build-*/
 .vs/
 *.code-workspace
 .idea/
+
+# Generated protobuf files (Python)
+*_pb2.py
+*_pb2_grpc.py
+*_pb2.pyi
+*_pb2_grpc.pyi
 
 # CMake generated files
 CMakeCache.txt

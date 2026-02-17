@@ -1,0 +1,34 @@
+# fluxgraphConfig.cmake.in
+# CMake configuration for FluxGraph library
+# This file is generated during installation
+
+@PACKAGE_INIT@
+
+# Record which optional loaders were enabled at build time
+set(FLUXGRAPH_JSON_ENABLED @FLUXGRAPH_JSON_ENABLED@)
+set(FLUXGRAPH_YAML_ENABLED @FLUXGRAPH_YAML_ENABLED@)
+
+# Optional loader dependencies
+if(FLUXGRAPH_JSON_ENABLED)
+    # JSON loader uses nlohmann_json (header-only)
+    # Consumers don't need to find it themselves (PRIVATE linkage)
+endif()
+
+if(FLUXGRAPH_YAML_ENABLED)
+    # YAML loader uses yaml-cpp
+    # Consumers don't need to find it themselves (PRIVATE linkage)
+endif()
+
+# Include the targets file
+include("${CMAKE_CURRENT_LIST_DIR}/fluxgraphTargets.cmake")
+
+# Check required components
+check_required_components(fluxgraph)
+
+# Usage example:
+#
+#   find_package(fluxgraph REQUIRED)
+#   target_link_libraries(myapp PRIVATE fluxgraph::fluxgraph)
+#
+# The imported target will have JSON/YAML loaders available if
+# FLUXGRAPH_JSON_ENABLED=ON or FLUXGRAPH_YAML_ENABLED=ON

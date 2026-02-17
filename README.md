@@ -36,6 +36,35 @@ cd build
 ctest --output-on-failure
 ```
 
+### Build Options
+
+FluxGraph core has zero dependencies. Optional graph loaders can be enabled:
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `FLUXGRAPH_JSON_ENABLED` | OFF | Enable JSON graph loader (requires nlohmann/json) |
+| `FLUXGRAPH_YAML_ENABLED` | OFF | Enable YAML graph loader (requires yaml-cpp) |
+
+**Example builds:**
+
+```bash
+# Core only (153 tests, zero dependencies)
+cmake -B build-core -S .
+
+# With JSON loader (162 tests)
+cmake -B build-json -S . -DFLUXGRAPH_JSON_ENABLED=ON
+
+# With YAML loader (162 tests)
+cmake -B build-yaml -S . -DFLUXGRAPH_YAML_ENABLED=ON
+
+# With both loaders (171 tests)
+cmake -B build-both -S . \
+  -DFLUXGRAPH_JSON_ENABLED=ON \
+  -DFLUXGRAPH_YAML_ENABLED=ON
+```
+
+Dependencies are fetched automatically via CMake FetchContent and linked privately (not exposed to consumers).
+
 ### Using FluxGraph
 
 See [`examples/`](examples/) for complete usage patterns. Here's a minimal example:
@@ -84,6 +113,8 @@ int main() {
 **More examples:**
 - [`01_basic_transform`](examples/01_basic_transform/) - Simple signal transformation
 - [`02_thermal_mass`](examples/02_thermal_mass/) - Physics simulation with models
+- [`03_json_graph`](examples/03_json_graph/) - Load graph from JSON file
+- [`04_yaml_graph`](examples/04_yaml_graph/) - Load graph from YAML file
 
 ## Project Structure
 
@@ -101,8 +132,9 @@ fluxgraph/
 
 ## Development Status
 
-**Phase 23: Core Library - Week 5 Complete**
+**v1.0.0 - Core Library Complete**
 
+Core library:
 - [x] Core types (`SignalId`, `DeviceId`, `Variant`)
 - [x] `SignalStore` with unit metadata and physics-driven flags
 - [x] `SignalNamespace` for path interning
@@ -127,14 +159,18 @@ fluxgraph/
   3. Update models
   4. Commit outputs
   5. Evaluate rules
-- [x] **147 tests passing** (128 unit tests + 19 analytical tests)
-- [x] **Analytical validation suite** - Validates numerical accuracy vs closed-form solutions:
-  - FirstOrderLag: 1e-3 tolerance vs exp(-t/tau)
-  - ThermalMass: 0.1 degC vs heat equation
-  - Delay: 1e-6 exact time-shift
-  - Linear, Saturation, Deadband, RateLimiter, MovingAverage: exact validation
-- [x] **Usage examples** - Manual graph composition and physics simulation
-- [ ] YAML config parser (optional, requires yaml-cpp)
+- [x] **153 tests passing** (134 unit tests + 19 analytical tests)
+- [x] **Analytical validation suite** - Numerical accuracy vs closed-form solutions
+
+Optional loaders:
+- [x] **JSON loader** - Load graphs from JSON files (optional, requires nlohmann/json)
+- [x] **YAML loader** - Load graphs from YAML files (optional, requires yaml-cpp)
+- [x] **171 total tests** with all loaders enabled
+
+Documentation:
+- [x] API reference (see [docs/](docs/))
+- [x] JSON/YAML schema documentation
+- [x] 4 working examples
 
 ## License
 
@@ -151,4 +187,4 @@ This project is part of the FEAST ecosystem. See [CONTRIBUTING.md](CONTRIBUTING.
 
 ## Version
 
-0.1.0 - Initial development
+1.0.0 - First stable release

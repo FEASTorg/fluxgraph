@@ -305,6 +305,109 @@ try {
 
 ---
 
+## Graph Loaders
+
+Optional loaders for creating `GraphSpec` from JSON or YAML files. These require `-DFLUXGRAPH_JSON_ENABLED=ON` or `-DFLUXGRAPH_YAML_ENABLED=ON` at CMake configure time.
+
+### JSON Loader
+
+Load graphs from JSON files or strings.
+
+```cpp
+#include "fluxgraph/loaders/json_loader.hpp"
+```
+
+**GraphSpec load_json_file(const std::string& filepath)**
+Load graph from JSON file.
+
+```cpp
+auto spec = fluxgraph::loaders::load_json_file("graph.json");
+
+fluxgraph::GraphCompiler compiler;
+auto program = compiler.compile(spec, signal_ns, func_ns);
+engine.load(std::move(program));
+```
+
+**GraphSpec load_json_string(const std::string& json_content)**
+Parse graph from JSON string.
+
+```cpp
+std::string json = R"({
+  "edges": [
+    {
+      "source": "input.x",
+      "target": "output.y",
+      "transform": {
+        "type": "linear",
+        "params": {
+          "scale": 2.0,
+          "offset": 0.0
+        }
+      }
+    }
+  ]
+})";
+
+auto spec = fluxgraph::loaders::load_json_string(json);
+```
+
+**Errors:**
+- `std::runtime_error` - JSON parse errors, missing required fields, invalid values
+- Error messages include JSON pointer paths (e.g., `/edges/2/transform/type`)
+
+**See also:**
+- [JSON_SCHEMA.md](JSON_SCHEMA.md) - Complete schema reference
+- [examples/03_json_graph/](../examples/03_json_graph/) - Working example
+
+### YAML Loader
+
+Load graphs from YAML files or strings.
+
+```cpp
+#include "fluxgraph/loaders/yaml_loader.hpp"
+```
+
+**GraphSpec load_yaml_file(const std::string& filepath)**
+Load graph from YAML file.
+
+```cpp
+auto spec = fluxgraph::loaders::load_yaml_file("graph.yaml");
+
+fluxgraph::GraphCompiler compiler;
+auto program = compiler.compile(spec, signal_ns, func_ns);
+engine.load(std::move(program));
+```
+
+**GraphSpec load_yaml_string(const std::string& yaml_content)**
+Parse graph from YAML string.
+
+```cpp
+std::string yaml = R"(
+edges:
+  - source: input.x
+    target: output.y
+    transform:
+      type: linear
+      params:
+        scale: 2.0
+        offset: 0.0
+)";
+
+auto spec = fluxgraph::loaders::load_yaml_string(yaml);
+```
+
+**Errors:**
+- `std::runtime_error` - YAML parse errors, missing required fields, invalid values
+- Error messages include node paths (e.g., `edges[2].transform.type`)
+
+**See also:**
+- [YAML_SCHEMA.md](YAML_SCHEMA.md) - Complete schema reference
+- [examples/04_yaml_graph/](../examples/04_yaml_graph/) - Working example
+
+**Note:** Loaders are completely optional. You can always construct `GraphSpec` programmatically without any file parsing dependencies.
+
+---
+
 ## Transforms
 
 ### ITransform Interface

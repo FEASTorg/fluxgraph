@@ -161,6 +161,150 @@ your_app: $(SOURCES)
 
 ---
 
+## Optional Loaders (JSON and YAML)
+
+FluxGraph core has zero dependencies. Optional graph loaders can be enabled at CMake configure time.
+
+### Configuration 1: Core Only (No Loaders)
+
+Zero external dependencies, 153 tests.
+
+```cmake
+cmake_minimum_required(VERSION 3.20)
+project(your_project)
+
+set(CMAKE_CXX_STANDARD 17)
+
+add_subdirectory(external/fluxgraph)
+
+add_executable(your_app src/main.cpp)
+target_link_libraries(your_app PRIVATE fluxgraph)
+```
+
+Build graphs programmatically using `GraphSpec`:
+
+```cpp
+fluxgraph::GraphSpec spec;
+fluxgraph::EdgeSpec edge;
+edge.source_path = "input.x";
+edge.target_path = "output.y";
+edge.transform.type = "linear";
+edge.transform.params["scale"] = 2.0;
+spec.edges.push_back(edge);
+```
+
+### Configuration 2: With JSON Loader
+
+Adds nlohmann/json (header-only), 162 tests.
+
+```cmake
+cmake_minimum_required(VERSION 3.20)
+project(your_project)
+
+set(CMAKE_CXX_STANDARD 17)
+
+# Enable JSON loader
+set(FLUXGRAPH_JSON_ENABLED ON CACHE BOOL "Enable JSON loader")
+
+add_subdirectory(external/fluxgraph)
+
+add_executable(your_app src/main.cpp)
+target_link_libraries(your_app PRIVATE fluxgraph)
+```
+
+Load graphs from JSON files:
+
+```cpp
+#include "fluxgraph/loaders/json_loader.hpp"
+
+auto spec = fluxgraph::loaders::load_json_file("graph.json");
+
+fluxgraph::GraphCompiler compiler;
+auto program = compiler.compile(spec, signal_ns, func_ns);
+engine.load(std::move(program));
+```
+
+### Configuration 3: With YAML Loader
+
+Adds yaml-cpp, 162 tests.
+
+```cmake
+cmake_minimum_required(VERSION 3.20)
+project(your_project)
+
+set(CMAKE_CXX_STANDARD 17)
+
+# Enable YAML loader
+set(FLUXGRAPH_YAML_ENABLED ON CACHE BOOL "Enable YAML loader")
+
+add_subdirectory(external/fluxgraph)
+
+add_executable(your_app src/main.cpp)
+target_link_libraries(your_app PRIVATE fluxgraph)
+```
+
+Load graphs from YAML files:
+
+```cpp
+#include "fluxgraph/loaders/yaml_loader.hpp"
+
+auto spec = fluxgraph::loaders::load_yaml_file("graph.yaml");
+
+fluxgraph::GraphCompiler compiler;
+auto program = compiler.compile(spec, signal_ns, func_ns);
+engine.load(std::move(program));
+```
+
+### Configuration 4: Both Loaders
+
+Supports both JSON and YAML, 171 tests.
+
+```cmake
+cmake_minimum_required(VERSION 3.20)
+project(your_project)
+
+set(CMAKE_CXX_STANDARD 17)
+
+# Enable both loaders
+set(FLUXGRAPH_JSON_ENABLED ON CACHE BOOL "Enable JSON loader")
+set(FLUXGRAPH_YAML_ENABLED ON CACHE BOOL "Enable YAML loader")
+
+add_subdirectory(external/fluxgraph)
+
+add_executable(your_app src/main.cpp)
+target_link_libraries(your_app PRIVATE fluxgraph)
+```
+
+Use either loader as needed:
+
+```cpp
+#include "fluxgraph/loaders/json_loader.hpp"
+#include "fluxgraph/loaders/yaml_loader.hpp"
+
+// Load JSON
+auto spec1 = fluxgraph::loaders::load_json_file("graph.json");
+
+// Or load YAML
+auto spec2 = fluxgraph::loaders::load_yaml_file("graph.yaml");
+```
+
+### Dependency Details
+
+| Option | Dependency | Linkage | Size Impact |
+|--------|-----------|---------|-------------|
+| `FLUXGRAPH_JSON_ENABLED` | nlohmann/json v3.11.3 | Header-only, PRIVATE | ~5KB compiled |
+| `FLUXGRAPH_YAML_ENABLED` | yaml-cpp master | Static lib, PRIVATE | ~150KB compiled |
+
+**Important:** All dependencies use `PRIVATE` linkage. Your application does not need to find or link these libraries directly.
+
+**See Also:**
+- [JSON_SCHEMA.md](JSON_SCHEMA.md) - JSON graph format reference
+- [YAML_SCHEMA.md](YAML_SCHEMA.md) - YAML graph format reference
+- [examples/03_json_graph/](../examples/03_json_graph/) - JSON example
+- [examples/04_yaml_graph/](../examples/04_yaml_graph/) - YAML example
+
+---
+
 ## Minimal Example
 
 **main.cpp:**

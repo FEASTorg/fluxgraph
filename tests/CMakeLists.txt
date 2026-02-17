@@ -39,6 +39,12 @@ target_link_libraries(fluxgraph_tests
 include(GoogleTest)
 gtest_discover_tests(fluxgraph_tests)
 
+# Integration tests
+add_subdirectory(integration)
+
+# Benchmarks (optional, separate executables)
+add_subdirectory(benchmarks)
+
 # Add test command
 add_custom_target(check
     COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure

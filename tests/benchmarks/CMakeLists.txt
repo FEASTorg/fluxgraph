@@ -1,0 +1,9 @@
+# Benchmark executables
+add_executable(benchmark_signal_store signal_store_bench.cpp)
+target_link_libraries(benchmark_signal_store PRIVATE fluxgraph)
+
+add_executable(benchmark_namespace namespace_bench.cpp)
+target_link_libraries(benchmark_namespace PRIVATE fluxgraph)
+
+add_executable(benchmark_tick tick_bench.cpp)
+target_link_libraries(benchmark_tick PRIVATE fluxgraph)

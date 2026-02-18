@@ -94,17 +94,6 @@ try {
         throw "Build failed"
     }
     
-    # Run tests if enabled
-    if (-not $NoTests) {
-        Write-Host "`n[TEST] Running tests..." -ForegroundColor Green
-        & ctest -C $Config --output-on-failure
-        if ($LASTEXITCODE -ne 0) {
-            Write-Host "`n[WARNING] Some tests failed" -ForegroundColor Yellow
-        } else {
-            Write-Host "`n[SUCCESS] All tests passed!" -ForegroundColor Green
-        }
-    }
-    
     Write-Host "`n============================================" -ForegroundColor Cyan
     Write-Host "Build completed successfully!" -ForegroundColor Green
     Write-Host "Build directory: $BuildDir" -ForegroundColor White

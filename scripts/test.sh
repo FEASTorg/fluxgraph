@@ -117,7 +117,7 @@ if [ "$INTEGRATION" = true ]; then
     PROTO_PYTHON_DIR="$REPO_ROOT/build-server/python"
     if [ ! -f "$PROTO_PYTHON_DIR/fluxgraph_pb2.py" ]; then
         echo "  Generating Python protobuf bindings..."
-        "$REPO_ROOT/scripts/generate-proto-python.sh"
+        "$REPO_ROOT/scripts/generate_proto_python.sh"
     fi
     
     # Find server executable

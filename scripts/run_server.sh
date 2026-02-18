@@ -2,7 +2,7 @@
 # FluxGraph Server Runner (Linux/macOS)
 #
 # Usage:
-#   ./scripts/run-server.sh [options]
+#   ./scripts/run_server.sh [options]
 #
 # Options:
 #   --config <type>         Build config: Release (default), Debug, or RelWithDebInfo

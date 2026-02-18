@@ -20,7 +20,7 @@ repo_root = Path(__file__).parent.parent
 proto_path = repo_root / "build-server" / "python"
 if not proto_path.exists():
     print(f"ERROR: Generated protobuf code not found at: {proto_path}")
-    print("Run: ./scripts/generate-proto-python.ps1 (or .sh)")
+    print("Run: ./scripts/generate_proto_python.ps1 (or .sh)")
     sys.exit(1)
 sys.path.insert(0, str(proto_path))
 

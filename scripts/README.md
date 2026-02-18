@@ -6,8 +6,8 @@ This directory contains build, test, and deployment scripts for FluxGraph.
 
 - **build** - Build the project with various configurations
 - **test** - Run unit and integration tests
-- **run-server** - Start the gRPC server
-- **generate-proto-python** - Generate Python bindings for testing
+- **run_server** - Start the gRPC server
+- **generate_proto_python** - Generate Python bindings for testing
 
 All scripts have Windows (`.ps1`) and Linux/macOS (`.sh`) variants.
 
@@ -136,7 +136,7 @@ Options:
 ### Windows
 
 ```powershell
-.\scripts\run-server.ps1 [options]
+.\scripts\run_server.ps1 [options]
 
 Options:
   -Config <type>          Release (default), Debug, or RelWithDebInfo
@@ -149,19 +149,19 @@ Options:
 
 ```powershell
 # Start server on default port
-.\scripts\run-server.ps1
+.\scripts\run_server.ps1
 
 # Start with preloaded config
-.\scripts\run-server.ps1 -ConfigFile examples\04_yaml_graph\graph.yaml
+.\scripts\run_server.ps1 -ConfigFile examples\04_yaml_graph\graph.yaml
 
 # Custom port and timestep
-.\scripts\run-server.ps1 -Port 50052 -TimeStep 0.05
+.\scripts\run_server.ps1 -Port 50052 -TimeStep 0.05
 ```
 
 ### Linux/macOS
 
 ```bash
-./scripts/run-server.sh [options]
+./scripts/run_server.sh [options]
 
 Options:
   --config <type>         Release (default), Debug, or RelWithDebInfo
@@ -174,13 +174,13 @@ Options:
 
 ```bash
 # Start server on default port
-./scripts/run-server.sh
+./scripts/run_server.sh
 
 # Start with preloaded config
-./scripts/run-server.sh --config-file examples/04_yaml_graph/graph.yaml
+./scripts/run_server.sh --config-file examples/04_yaml_graph/graph.yaml
 
 # Custom settings
-./scripts/run-server.sh --port 50052 --dt 0.05
+./scripts/run_server.sh --port 50052 --dt 0.05
 ```
 
 ---
@@ -192,33 +192,33 @@ Generate Python bindings for gRPC testing and client development.
 ### Windows
 
 ```powershell
-.\scripts\generate-proto-python.ps1 [-OutputDir <path>]
+.\scripts\generate_proto_python.ps1 [-OutputDir <path>]
 ```
 
 **Example:**
 
 ```powershell
 # Generate to tests/ directory (default)
-.\scripts\generate-proto-python.ps1
+.\scripts\generate_proto_python.ps1
 
 # Generate to custom directory
-.\scripts\generate-proto-python.ps1 -OutputDir client\python
+.\scripts\generate_proto_python.ps1 -OutputDir client\python
 ```
 
 ### Linux/macOS
 
 ```bash
-./scripts/generate-proto-python.sh [output-dir]
+./scripts/generate_proto_python.sh [output-dir]
 ```
 
 **Example:**
 
 ```bash
 # Generate to tests/ directory (default)
-./scripts/generate-proto-python.sh
+./scripts/generate_proto_python.sh
 
 # Generate to custom directory
-./scripts/generate-proto-python.sh client/python
+./scripts/generate_proto_python.sh client/python
 ```
 
 ---
@@ -256,7 +256,7 @@ Generate Python bindings for gRPC testing and client development.
 ./scripts/build.sh --config Release --server --json --yaml --no-tests
 
 # 2. Test server
-./scripts/run-server.sh --config-file examples/04_yaml_graph/graph.yaml
+./scripts/run_server.sh --config-file examples/04_yaml_graph/graph.yaml
 
 # 3. Install (from build directory)
 cd build-release-server

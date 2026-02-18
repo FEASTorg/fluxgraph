@@ -86,7 +86,7 @@ try {
         $ProtoFiles = Get-ChildItem -Path $ProtoPythonDir -Filter "*_pb2*.py" -ErrorAction SilentlyContinue
         if (-not $ProtoFiles) {
             Write-Host "  Generating Python protobuf bindings..." -ForegroundColor Gray
-            $GenScript = Join-Path $RepoRoot "scripts\generate-proto-python.ps1"
+            $GenScript = Join-Path $RepoRoot "scripts\generate_proto_python.ps1"
             & $GenScript
         }
         

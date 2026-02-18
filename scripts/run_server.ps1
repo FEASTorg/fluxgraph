@@ -1,7 +1,7 @@
 # FluxGraph Server Runner (Windows)
 #
 # Usage:
-#   .\scripts\run-server.ps1 [-Config <Release|Debug|RelWithDebInfo>] [-Port <port>] [-ConfigFile <path>] [-TimeStep <seconds>]
+#   .\scripts\run_server.ps1 [-Config <Release|Debug|RelWithDebInfo>] [-Port <port>] [-ConfigFile <path>] [-TimeStep <seconds>]
 
 param(
     [ValidateSet("Release", "Debug", "RelWithDebInfo")]

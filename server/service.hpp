@@ -24,8 +24,8 @@ struct ProviderSession {
   std::string provider_id;
   std::vector<std::string> device_ids;
   std::chrono::steady_clock::time_point last_update;
-  std::optional<uint64_t>
-      last_tick_generation; // Last generation this provider submitted updates for
+  std::optional<uint64_t> last_tick_generation; // Last generation this provider
+                                                // submitted updates for
 };
 
 /// FluxGraph gRPC service implementation
@@ -46,10 +46,10 @@ public:
                           const fluxgraph::rpc::ConfigRequest *request,
                           fluxgraph::rpc::ConfigResponse *response) override;
 
-  grpc::Status
-  RegisterProvider(grpc::ServerContext *context,
-                   const fluxgraph::rpc::ProviderRegistration *request,
-                   fluxgraph::rpc::ProviderRegistrationResponse *response) override;
+  grpc::Status RegisterProvider(
+      grpc::ServerContext *context,
+      const fluxgraph::rpc::ProviderRegistration *request,
+      fluxgraph::rpc::ProviderRegistrationResponse *response) override;
 
   grpc::Status
   UnregisterProvider(grpc::ServerContext *context,
@@ -84,10 +84,11 @@ private:
 
   // Thread safety
   std::mutex state_mutex_;
-  std::condition_variable tick_cv_;  // Notified when tick completes
-  uint64_t tick_generation_ = 0;     // Increments after each tick
+  std::condition_variable tick_cv_; // Notified when tick completes
+  uint64_t tick_generation_ = 0;    // Increments after each tick
 
-  // Last completed tick snapshot (command queue is drained exactly once per tick)
+  // Last completed tick snapshot (command queue is drained exactly once per
+  // tick)
   uint64_t last_completed_generation_ = 0;
   double last_completed_sim_time_ = 0.0;
   std::vector<fluxgraph::Command> last_completed_commands_;
@@ -118,9 +119,9 @@ private:
                                    std::chrono::steady_clock::time_point now);
 
   // Filter commands for a specific provider session
-  std::vector<fluxgraph::Command>
-  filter_commands_for_session_locked(const std::string &session_id,
-                                     const std::vector<fluxgraph::Command> &all_commands);
+  std::vector<fluxgraph::Command> filter_commands_for_session_locked(
+      const std::string &session_id,
+      const std::vector<fluxgraph::Command> &all_commands);
 
   // Populate TickResponse from last completed tick snapshot
   void populate_tick_response_for_session_locked(

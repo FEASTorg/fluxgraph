@@ -27,10 +27,10 @@ FluxGraphServiceImpl::~FluxGraphServiceImpl() {
 // LoadConfig RPC
 // ============================================================================
 
-grpc::Status FluxGraphServiceImpl::LoadConfig(
-    grpc::ServerContext * /*context*/,
-    const fluxgraph::rpc::ConfigRequest *request,
-    fluxgraph::rpc::ConfigResponse *response) {
+grpc::Status
+FluxGraphServiceImpl::LoadConfig(grpc::ServerContext * /*context*/,
+                                 const fluxgraph::rpc::ConfigRequest *request,
+                                 fluxgraph::rpc::ConfigResponse *response) {
 
   std::lock_guard lock(state_mutex_);
 
@@ -100,8 +100,9 @@ grpc::Status FluxGraphServiceImpl::LoadConfig(
     response->set_success(true);
     response->set_config_changed(true);
 
-    std::cout << "[FluxGraph] Config loaded: " << spec.models.size() << " models, "
-              << spec.edges.size() << " edges, " << spec.rules.size() << " rules\n";
+    std::cout << "[FluxGraph] Config loaded: " << spec.models.size()
+              << " models, " << spec.edges.size() << " edges, "
+              << spec.rules.size() << " rules\n";
 
     return grpc::Status::OK;
 
@@ -144,7 +145,8 @@ grpc::Status FluxGraphServiceImpl::RegisterProvider(
   const auto now = std::chrono::steady_clock::now();
   prune_stale_sessions_locked("", now);
 
-  // Enforce unique provider identity and device ownership among active sessions.
+  // Enforce unique provider identity and device ownership among active
+  // sessions.
   for (const auto &[existing_session_id, existing_session] : sessions_) {
     if (existing_session.provider_id == request->provider_id()) {
       response->set_success(false);
@@ -155,12 +157,13 @@ grpc::Status FluxGraphServiceImpl::RegisterProvider(
     }
 
     for (const auto &device_id : requested_devices) {
-      const auto found = std::find(existing_session.device_ids.begin(),
-                                   existing_session.device_ids.end(), device_id);
+      const auto found =
+          std::find(existing_session.device_ids.begin(),
+                    existing_session.device_ids.end(), device_id);
       if (found != existing_session.device_ids.end()) {
         response->set_success(false);
-        response->set_error_message("device_id already owned by another provider: " +
-                                    device_id);
+        response->set_error_message(
+            "device_id already owned by another provider: " + device_id);
         return grpc::Status(grpc::StatusCode::ALREADY_EXISTS,
                             "device_id ownership conflict");
       }
@@ -175,7 +178,8 @@ grpc::Status FluxGraphServiceImpl::RegisterProvider(
   session.provider_id = request->provider_id();
   session.device_ids = std::move(requested_devices);
   session.last_update = now;
-  session.last_tick_generation = std::nullopt; // Must submit updates for generation 0
+  session.last_tick_generation =
+      std::nullopt; // Must submit updates for generation 0
 
   sessions_[session_id] = std::move(session);
 
@@ -296,9 +300,9 @@ grpc::Status FluxGraphServiceImpl::UpdateSignals(
         (current_tick % 100 == 0 && current_tick != last_logged_tick) ||
         (current_tick < 10)) {
       std::cout << "[FluxGraph] Tick " << current_tick << " (t=" << std::fixed
-                << std::setprecision(1) << sim_time_ << "s, generation="
-                << tick_generation_ << ", commands="
-                << response->commands_size() << ")\n";
+                << std::setprecision(1) << sim_time_
+                << "s, generation=" << tick_generation_
+                << ", commands=" << response->commands_size() << ")\n";
       last_logged_tick = current_tick;
     }
 
@@ -309,10 +313,10 @@ grpc::Status FluxGraphServiceImpl::UpdateSignals(
     // Early provider: wait until current generation completes.
     const std::string provider_id = session_it->second.provider_id;
     const auto wait_start = std::chrono::steady_clock::now();
-    bool ticked = tick_cv_.wait_for(lock, std::chrono::milliseconds(2000),
-                                    [this, current_generation]() {
-                                      return tick_generation_ > current_generation;
-                                    });
+    bool ticked = tick_cv_.wait_for(
+        lock, std::chrono::milliseconds(2000), [this, current_generation]() {
+          return tick_generation_ > current_generation;
+        });
 
     const auto wait_duration =
         std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -320,7 +324,8 @@ grpc::Status FluxGraphServiceImpl::UpdateSignals(
             .count();
 
     if (ticked) {
-      populate_tick_response_for_session_locked(request->session_id(), response);
+      populate_tick_response_for_session_locked(request->session_id(),
+                                                response);
     } else {
       std::cerr << "[FluxGraph] WARNING: " << provider_id
                 << " timed out waiting for tick (generation="
@@ -338,10 +343,10 @@ grpc::Status FluxGraphServiceImpl::UpdateSignals(
 // ReadSignals RPC
 // ============================================================================
 
-grpc::Status FluxGraphServiceImpl::ReadSignals(
-    grpc::ServerContext * /*context*/,
-    const fluxgraph::rpc::SignalRequest *request,
-    fluxgraph::rpc::SignalResponse *response) {
+grpc::Status
+FluxGraphServiceImpl::ReadSignals(grpc::ServerContext * /*context*/,
+                                  const fluxgraph::rpc::SignalRequest *request,
+                                  fluxgraph::rpc::SignalResponse *response) {
 
   std::lock_guard lock(state_mutex_);
 
@@ -372,10 +377,10 @@ grpc::Status FluxGraphServiceImpl::ReadSignals(
 // Reset RPC
 // ============================================================================
 
-grpc::Status FluxGraphServiceImpl::Reset(
-    grpc::ServerContext * /*context*/,
-    const fluxgraph::rpc::ResetRequest * /*request*/,
-    fluxgraph::rpc::ResetResponse *response) {
+grpc::Status
+FluxGraphServiceImpl::Reset(grpc::ServerContext * /*context*/,
+                            const fluxgraph::rpc::ResetRequest * /*request*/,
+                            fluxgraph::rpc::ResetResponse *response) {
 
   std::lock_guard lock(state_mutex_);
 
@@ -420,10 +425,10 @@ grpc::Status FluxGraphServiceImpl::Reset(
 // Check RPC (Health Check)
 // ============================================================================
 
-grpc::Status FluxGraphServiceImpl::Check(
-    grpc::ServerContext * /*context*/,
-    const fluxgraph::rpc::HealthCheckRequest *request,
-    fluxgraph::rpc::HealthCheckResponse *response) {
+grpc::Status
+FluxGraphServiceImpl::Check(grpc::ServerContext * /*context*/,
+                            const fluxgraph::rpc::HealthCheckRequest *request,
+                            fluxgraph::rpc::HealthCheckResponse *response) {
 
   if (request->service().empty() || request->service() == "fluxgraph") {
     response->set_status(fluxgraph::rpc::HealthCheckResponse::SERVING);
@@ -441,9 +446,9 @@ grpc::Status FluxGraphServiceImpl::Check(
 std::string
 FluxGraphServiceImpl::generate_session_id(const std::string &provider_id) {
   auto now = std::chrono::system_clock::now();
-  auto timestamp =
-      std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch())
-          .count();
+  auto timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(
+                       now.time_since_epoch())
+                       .count();
 
   std::random_device rd;
   std::mt19937 gen(rd());
@@ -484,8 +489,8 @@ void FluxGraphServiceImpl::prune_stale_sessions_locked(
       continue;
     }
 
-    const auto age =
-        std::chrono::duration_cast<std::chrono::milliseconds>(now - it->second.last_update);
+    const auto age = std::chrono::duration_cast<std::chrono::milliseconds>(
+        now - it->second.last_update);
     if (age > session_timeout_) {
       std::cerr << "[FluxGraph] Evicting stale provider session: provider_id="
                 << it->second.provider_id << ", session_id=" << it->first

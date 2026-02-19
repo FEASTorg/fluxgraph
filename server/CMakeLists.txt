@@ -18,6 +18,14 @@ set(PROTO_HDRS "${GENERATED_PROTOBUF_PATH}/fluxgraph.pb.h")
 set(GRPC_SRCS "${GENERATED_PROTOBUF_PATH}/fluxgraph.grpc.pb.cc")
 set(GRPC_HDRS "${GENERATED_PROTOBUF_PATH}/fluxgraph.grpc.pb.h")
 
+if(MSVC)
+    # Suppress warnings from generated protobuf translation units only.
+    set_source_files_properties(
+        ${PROTO_SRCS} ${GRPC_SRCS}
+        PROPERTIES COMPILE_OPTIONS "/wd4100;/wd4267"
+    )
+endif()
+
 add_custom_command(
     OUTPUT ${PROTO_SRCS} ${PROTO_HDRS} ${GRPC_SRCS} ${GRPC_HDRS}
     COMMAND protobuf::protoc
@@ -38,8 +46,9 @@ add_executable(fluxgraph-server
     ${GRPC_SRCS}
 )
 
-# Include generated protobuf headers
-target_include_directories(fluxgraph-server PRIVATE
+# Include generated protobuf headers as SYSTEM so warnings in generated headers
+# are not treated as project-source warnings.
+target_include_directories(fluxgraph-server SYSTEM PRIVATE
     ${GENERATED_PROTOBUF_PATH}
 )
 

@@ -25,6 +25,10 @@ service FluxGraph {
   // Register a provider for command routing
   // Returns session_id that must be used in UpdateSignals
   rpc RegisterProvider(ProviderRegistration) returns (ProviderRegistrationResponse);
+
+  // Explicitly unregister a provider session
+  // Allows immediate barrier update on clean shutdown/restart
+  rpc UnregisterProvider(UnregisterRequest) returns (UnregisterResponse);
   
   // Update signals from provider and get tick notification
   // Server may tick physics if all registered providers have updated
@@ -87,6 +91,16 @@ message ProviderRegistrationResponse {
   // Session token - must be included in UpdateSignals
   // Unique per provider instance (handles reconnects)
   string session_id = 3;
+}
+
+message UnregisterRequest {
+  // Session ID from RegisterProvider
+  string session_id = 1;
+}
+
+message UnregisterResponse {
+  bool success = 1;
+  string error_message = 2;
 }
 
 // ============================================================================

@@ -113,7 +113,7 @@ RuleSpec parse_rule(const json& j, const std::string& base_path, size_t index) {
     spec.id = j["id"].get<std::string>();
     spec.condition = j["condition"].get<std::string>();
     
-    // Parse actions array (Phase 22 compatible)
+    // Parse actions array
     if (j.contains("actions") && j["actions"].is_array()) {
         for (size_t i = 0; i < j["actions"].size(); ++i) {
             auto& action_json = j["actions"][i];

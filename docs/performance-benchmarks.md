@@ -1,4 +1,4 @@
-# FluxGraph Performance Benchmarks
+# Performance Benchmarks
 
 ## Overview
 
@@ -291,9 +291,9 @@ Total:        ~107 KB
 
 ## Real-World Performance
 
-### Anolis Phase 22 Integration
+### Anolis Integration
 
-**Scenario:** Replace Phase 22 embedded simulation with FluxGraph
+**Scenario:** Replace embedded simulation with FluxGraph
 
 **Configuration:**
 

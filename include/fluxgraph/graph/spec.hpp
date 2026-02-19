@@ -34,11 +34,11 @@ struct ActionSpec {
     std::map<std::string, Variant> args;
 };
 
-/// POD specification for a rule (Phase 22 compatible)
+/// POD specification for a rule
 struct RuleSpec {
     std::string id;        // Required: unique rule identifier
     std::string condition; // e.g., "chamber_air/temperature > 100.0"
-    std::vector<ActionSpec> actions;  // Phase 22: actions array
+    std::vector<ActionSpec> actions;  // actions array
     std::string on_error;  // e.g., "log_and_continue"
 };
 

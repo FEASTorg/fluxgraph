@@ -1,4 +1,4 @@
-# FluxGraph Architecture
+# Architecture
 
 ## Overview
 
@@ -272,8 +272,6 @@ if (dt > model.compute_stability_limit()) {
 - Easier to generate programmatically
 - Can validate before compilation
 
-**Trade-off:** Less ergonomic for manual construction, but Phase 23 targets machine-generated graphs (from YAML or gRPC).
-
 ### Why Single-Writer SignalStore?
 
 **Choice:** No mutexes, single-writer model
@@ -410,7 +408,7 @@ transform_factory.register_type("my_transform",
     [](const ParamMap& p) { return std::make_unique<MyTransform>(p); });
 ```
 
-See [EMBEDDING.md](EMBEDDING.md) for details.
+See [EMBEDDING.md](embedding.md) for details.
 
 ### Custom Models
 
@@ -632,4 +630,4 @@ FluxGraph achieves high-performance deterministic simulation through:
 
 **Result:** Sub-10ms ticks for 1000-signal graphs with zero dependencies.
 
-**Next:** See [TRANSFORMS.md](TRANSFORMS.md) for transform details, [EMBEDDING.md](EMBEDDING.md) for integration guide.
+**Next:** See [TRANSFORMS.md](transforms.md) for transform details, [EMBEDDING.md](embedding.md) for integration guide.

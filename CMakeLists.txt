@@ -59,6 +59,12 @@ if(FLUXGRAPH_YAML_ENABLED)
     set(YAML_CPP_BUILD_CONTRIB OFF CACHE BOOL "" FORCE)
     set(YAML_CPP_INSTALL OFF CACHE BOOL "" FORCE)
     FetchContent_MakeAvailable(yaml-cpp)
+
+    if(MSVC AND TARGET yaml-cpp)
+        # Third-party yaml-cpp emits C4267 on MSVC; keep strict warnings for
+        # FluxGraph code and suppress only on the external dependency target.
+        target_compile_options(yaml-cpp PRIVATE /wd4267)
+    endif()
 endif()
 
 # Create static library
@@ -104,9 +110,9 @@ if(FLUXGRAPH_BUILD_SERVER)
     add_subdirectory(server)
 endif()
 
-# TODO(Phase 23, Week 5): Fix install rules for optional dependencies
+# TODO: Fix install rules for optional dependencies
 # Installation currently disabled due to CMake limitation with PRIVATE dependencies in install(EXPORT)
-# Will be fixed in Week 5 Task 5.1 with proper cmake/fluxgraphConfig.cmake.in
+# Will be fixed with proper cmake/fluxgraphConfig.cmake.in
 #
 # install(TARGETS fluxgraph
 #     EXPORT fluxgraphTargets

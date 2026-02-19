@@ -9,7 +9,7 @@ namespace fluxgraph {
 /// Exponential approach to input with time constant tau_s
 class FirstOrderLagTransform : public ITransform {
 public:
-    /// @param tau_s Time constant in seconds (Phase 22 compatibility)
+    /// @param tau_s Time constant in seconds
     explicit FirstOrderLagTransform(double tau_s)
         : tau_s_(tau_s)
         , output_(0.0)

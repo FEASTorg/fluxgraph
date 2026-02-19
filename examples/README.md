@@ -16,17 +16,20 @@ cmake --build build --config Debug
 **Location:** `01_basic_transform/`
 
 Demonstrates the fundamental FluxGraph API pattern:
+
 - Manual `GraphSpec` construction (no YAML)
 - Simple signal edge with `LinearTransform` (y = 2x + 1)
 - Input/output "ports" as `SignalId` handles
 - Basic simulation loop: `write()` -> `tick()` -> `read_value()`
 
 **Run:**
+
 ```bash
 ./build/examples/01_basic_transform/Debug/example_basic_transform.exe
 ```
 
 **Expected Output:**
+
 ```
 Simple Transform: y = 2*x + 1
 ================================
@@ -38,6 +41,7 @@ Input: 4V -> Output: 9V
 ```
 
 **Key API Concepts:**
+
 - `GraphSpec` - Protocol-agnostic POD graph definition
 - `GraphCompiler::compile()` - Validates and optimizes graph
 - `Engine::load()` - Sets up execution state
@@ -49,17 +53,20 @@ Input: 4V -> Output: 9V
 **Location:** `02_thermal_mass/`
 
 Shows realistic physics simulation with:
+
 - `ThermalMassModel` - First-order thermal system
 - Multiple input ports (heater power, ambient temperature)
 - Stateful simulation with noise transform
 - Heating and cooling phases
 
 **Run:**
+
 ```bash
 ./build/examples/02_thermal_mass/Debug/example_thermal_mass.exe
 ```
 
 **Expected Output:**
+
 ```
 Thermal Mass Simulation
 =======================
@@ -71,13 +78,15 @@ t= 5.50s  Heater=  0.00W  Temp= 27.38 degC  Noisy= 27.31 degC
 ...
 ```
 
-**Physics:** 
+**Physics:**
+
 - Thermal mass: C = 1000 J/K
-- Heat transfer: h = 10 W/K  
+- Heat transfer: h = 10 W/K
 - Time constant: tau = C/h = 100 seconds
 - Heating: 500W -> steady-state delta_T = 50 degC above ambient
 
 **Key API Concepts:**
+
 - `ModelSpec` - Physics model configuration
 - Model input/output signals (power_in, temperature_out)
 - Transform chains (physics -> noise filter)
@@ -85,31 +94,36 @@ t= 5.50s  Heater=  0.00W  Temp= 27.38 degC  Noisy= 27.31 degC
 
 ## Example 3: JSON Graph Loader
 
-**Location:** `03_json_graph/` *(requires -DFLUXGRAPH_JSON_ENABLED=ON)*
+**Location:** `03_json_graph/` _(requires -DFLUXGRAPH_JSON_ENABLED=ON)_
 
 Demonstrates loading graphs from JSON files:
+
 - External graph definition in `graph.json`
 - `load_json_file()` API for file loading
 - Same execution model as manual construction
 - Thermal chamber simulation with transforms
 
 **Build with JSON support:**
+
 ```bash
 cmake -B build-json -DFLUXGRAPH_JSON_ENABLED=ON
 cmake --build build-json --config Debug
 ```
 
 **Run:**
+
 ```bash
 ./build-json/examples/03_json_graph/Debug/example_json_graph.exe
 ```
 
 **Graph structure (graph.json):**
+
 - 1 thermal mass model (chamber)
 - 3 signal edges with transforms (saturation, lag, noise)
 - heater -> chamber -> sensor -> display pipeline
 
 **Key API Concepts:**
+
 - `load_json_file()` - Parse JSON graph definition
 - `load_json_string()` - Parse from string
 - Optional dependency (core library still zero-dep)
@@ -117,31 +131,35 @@ cmake --build build-json --config Debug
 
 ## Example 4: YAML Graph Loader
 
-**Location:** `04_yaml_graph/` *(requires -DFLUXGRAPH_YAML_ENABLED=ON)*
+**Location:** `04_yaml_graph/` _(requires -DFLUXGRAPH_YAML_ENABLED=ON)_
 
 Same thermal simulation as Example 3, but using YAML format:
+
 - Human-friendly syntax with comments
 - YAML anchors/aliases for reusability
-- Phase 22 compatibility
 - `load_yaml_file()` API
 
 **Build with YAML support:**
+
 ```bash
 cmake -B build-yaml -DFLUXGRAPH_YAML_ENABLED=ON
 cmake --build build-yaml --config Debug
 ```
 
 **Run:**
+
 ```bash
 ./build-yaml/examples/04_yaml_graph/Debug/example_yaml_graph.exe
 ```
 
 **Graph structure (graph.yaml):**
+
 - Same logical structure as Example 3
 - YAML syntax instead of JSON
 - Supports comments and multi-line strings
 
 **Key API Concepts:**
+
 - `load_yaml_file()` - Parse YAML graph definition
 - `load_yaml_string()` - Parse from string
 - Optional dependency (core library still zero-dep)
@@ -150,39 +168,47 @@ cmake --build build-yaml --config Debug
 ## When to Use Each Approach
 
 ### Manual GraphSpec (Examples 1 & 2)
+
 **Use when:**
+
 - Embedding FluxGraph in existing code
 - Generating graphs programmatically
 - No external config file needed
 - Dynamic graph construction at runtime
 
 **Benefits:**
+
 - Zero external dependencies (core library only)
 - Type-safe at compile time
 - Full programmatic control
 - No parsing overhead
 
 ### JSON Configuration (Example 3)
+
 **Use when:**
+
 - Modern tooling and validation (JSON Schema)
 - Exchanging with web APIs or JavaScript
 - Strict schema validation needed
 - Machine-generated configs
 
 **Benefits:**
+
 - Ubiquitous format (every language supports it)
 - Fast parsing with nlohmann/json
 - JSON Schema validation available
 - Compact syntax
 
 ### YAML Configuration (Example 4)
+
 **Use when:**
+
 - Complex graphs with many edges/models
 - Non-programmers need to edit configs
 - Shared configs across multiple tools
-- Phase 22 compatibility required
 
 **Benefits:**
+
 - Human-readable/editable
 - Declarative syntax with comments
 - Anchors/aliases for reuse
@@ -228,20 +254,24 @@ double result = store.read_value(output_sig);
 ## Troubleshooting
 
 **"Unknown model type" error:**
+
 - Check ModelSpec `type` field matches implemented model ("thermal_mass")
 - Ensure all required params are present
 
 **Signals read as 0.0:**
+
 - Verify signal was written before reading
 - Check SignalNamespace path spelling
 - Confirm `tick()` was called to propagate changes
 
 **Unexpected NaN/Inf values:**
+
 - Check model stability limits (dt too large)
 - Verify thermal_mass and heat_transfer_coeff > 0
 - Ensure ambient temperature is initialized
 
 **Compile errors:**
+
 - Use `target_path` not `dest_path` in EdgeSpec
 - Use `temp_signal` not `temperature_signal` for ThermalMassModel params
 - Include all required headers (engine.hpp, compiler.hpp, etc.)

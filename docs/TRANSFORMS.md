@@ -1,4 +1,4 @@
-# FluxGraph Transforms Reference
+# Transforms Reference
 
 ## Overview
 
@@ -56,8 +56,6 @@ edge.transform.params["clamp_min"] = 0.0;
 edge.transform.params["clamp_max"] = 100.0;
 ```
 
-**Phase 22 Compatibility:** Equivalent to LinearTransform from Phase 22.
-
 ---
 
 ## 2. First-Order Lag
@@ -112,8 +110,6 @@ edge.transform.params["tau_s"] = 2.0;  // 2-second time constant
 **Analytical Validation:**
 Step response matches exp(-t/tau) to within 0.001 error (see analytical tests).
 
-**Phase 22 Compatibility:** Equivalent to FirstOrderLagTransform from Phase 22.
-
 ---
 
 ## 3. Delay Transform
@@ -160,8 +156,6 @@ edge.transform.params["delay_sec"] = 0.5;  // 500ms delay
 
 **Analytical Validation:**
 Time shift exact to 1e-6 error for step, ramp, and sine inputs (see analytical tests).
-
-**Phase 22 Compatibility:** Equivalent to DelayTransform from Phase 22.
 
 ---
 
@@ -214,8 +208,6 @@ edge.transform.params["seed"] = 42;        // Reproducible noise
 - Std dev = amplitude
 - 68% of samples within +/- amplitude
 - 95% within +/- 2\*amplitude
-
-**Phase 22 Compatibility:** Equivalent to NoiseTransform from Phase 22.
 
 ---
 
@@ -362,8 +354,6 @@ t = |x_final - y_initial| / max_rate
 **Analytical Validation:**
 Slope constraint |dy/dt| <= max_rate verified (see analytical tests).
 
-**Phase 22 Compatibility:** Equivalent to RateLimiterTransform from Phase 22.
-
 ---
 
 ## 8. Moving Average
@@ -498,7 +488,7 @@ public:
 };
 ```
 
-See [EMBEDDING.md](EMBEDDING.md) for registration details.
+See [EMBEDDING.md](embedding.md) for registration details.
 
 ---
 
@@ -626,7 +616,6 @@ All transforms:
 
 - Deterministic
 - Validated analytically
-- Phase 22 compatible (where applicable)
 - Efficient (sub-microsecond per call in Release)
 
-**Next:** See [API.md](API.md) for usage details, [EMBEDDING.md](EMBEDDING.md) for integration.
+**Next:** See [API.md](api-reference.md) for usage details, [EMBEDDING.md](embedding.md) for integration.

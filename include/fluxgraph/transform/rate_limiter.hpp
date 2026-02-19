@@ -9,7 +9,7 @@ namespace fluxgraph {
 /// Rate limiter: limits dy/dt to max_rate_per_sec
 class RateLimiterTransform : public ITransform {
 public:
-    /// @param max_rate_per_sec Maximum rate of change per second (Phase 22 compatibility)
+    /// @param max_rate_per_sec Maximum rate of change per second
     explicit RateLimiterTransform(double max_rate_per_sec)
         : max_rate_(max_rate_per_sec)
         , last_output_(0.0)

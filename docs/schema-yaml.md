@@ -298,7 +298,7 @@ edges:
 
 ## Rules
 
-Rules trigger device actions when conditions are met (Phase 22 compatible).
+Rules trigger device actions when conditions are met.
 
 ### Rule Object
 
@@ -442,53 +442,6 @@ edges:
     transform: { type: linear, params: { scale: 2.0, offset: 0.0 } }
 ```
 
-## Migration from Phase 22
-
-If upgrading from Phase 22, note these breaking changes:
-
-### Edge Destination
-
-```yaml
-# Phase 22 (OLD)
-edges:
-  - source: a.x
-    dest_path: b.y          # OLD field name
-    transform: ...
-
-# Phase 23 (NEW)
-edges:
-  - source: a.x
-    target: b.y             # Renamed to 'target'
-    transform: ...
-```
-
-### Rule Actions
-
-```yaml
-# Phase 22 (OLD)
-rules:
-  - id: rule1
-    condition: "temp > 50"
-    device: heater          # Single action
-    function: set_power
-    args:
-      power: 100.0
-
-# Phase 23 (NEW)
-rules:
-  - id: rule1
-    condition: "temp > 50"
-    actions:                # Actions array
-      - device: heater
-        function: set_power
-        args:
-          power: 100.0
-      - device: logger      # Can have multiple
-        function: log
-        args:
-          message: "High temp"
-```
-
 ## Error Messages
 
 The YAML loader provides detailed error messages with node locations:
@@ -564,7 +517,7 @@ Choose based on your use case:
 
 ## See Also
 
-- [JSON_SCHEMA.md](JSON_SCHEMA.md) - JSON equivalent
-- [API.md](API.md) - C++ API reference
-- [TRANSFORMS.md](TRANSFORMS.md) - Detailed transform documentation
+- [JSON_SCHEMA.md](schema-json.md) - JSON equivalent
+- [API.md](api-reference.md) - C++ API reference
+- [TRANSFORMS.md](transforms.md) - Detailed transform documentation
 - [examples/04_yaml_graph/](../examples/04_yaml_graph/) - Working example

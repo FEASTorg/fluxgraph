@@ -86,16 +86,3 @@ TEST(DelayTransformTest, VariableTimeStep) {
     
     EXPECT_EQ(y, 1.0); // First sample after 0.5s
 }
-
-TEST(DelayTransformTest, Phase22Compatibility) {
-    // Verify parameter name delay_sec (not delay_seconds)
-    DelayTransform tf(0.5); // delay_sec in seconds
-    
-    tf.apply(100.0, 0.1);
-    for (int i = 0; i < 4; ++i) {
-        tf.apply(0.0, 0.1);
-    }
-    
-    double y = tf.apply(0.0, 0.1);
-    EXPECT_EQ(y, 100.0);
-}

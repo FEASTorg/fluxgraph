@@ -18,6 +18,12 @@ $ErrorActionPreference = "Stop"
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RepoRoot = Split-Path -Parent $ScriptDir
 
+# Server mode auto-enables JSON and YAML
+if ($Server) {
+    $JSON = $true
+    $YAML = $true
+}
+
 Write-Host "============================================" -ForegroundColor Cyan
 Write-Host "FluxGraph Build Script" -ForegroundColor Cyan
 Write-Host "============================================" -ForegroundColor Cyan
@@ -64,22 +70,23 @@ try {
     # Build options
     if (-not $NoTests) {
         $CMakeArgs += "-DFLUXGRAPH_BUILD_TESTS=ON"
-    } else {
+    }
+    else {
         $CMakeArgs += "-DFLUXGRAPH_BUILD_TESTS=OFF"
     }
     
     if ($Server) {
         $CMakeArgs += "-DFLUXGRAPH_BUILD_SERVER=ON"
     }
-    
+
     if ($JSON) {
         $CMakeArgs += "-DFLUXGRAPH_JSON_ENABLED=ON"
     }
-    
+
     if ($YAML) {
         $CMakeArgs += "-DFLUXGRAPH_YAML_ENABLED=ON"
     }
-    
+
     $CMakeArgs += ".."
     
     & cmake @CMakeArgs
@@ -99,9 +106,11 @@ try {
     Write-Host "Build directory: $BuildDir" -ForegroundColor White
     Write-Host "============================================" -ForegroundColor Cyan
     
-} catch {
+}
+catch {
     Write-Host "`n[ERROR] Build failed: $_" -ForegroundColor Red
     exit 1
-} finally {
+}
+finally {
     Pop-Location
 }

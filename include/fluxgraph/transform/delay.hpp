@@ -8,7 +8,7 @@ namespace fluxgraph {
 /// Time delay using ring buffer: y(t) = x(t - delay_sec)
 class DelayTransform : public ITransform {
 public:
-    /// @param delay_sec Delay time in seconds (Phase 22 compatibility)
+    /// @param delay_sec Delay time in seconds
     explicit DelayTransform(double delay_sec)
         : delay_sec_(delay_sec)
         , buffer_()

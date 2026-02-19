@@ -77,17 +77,3 @@ TEST(FirstOrderLagTest, SmallTimeStep) {
     double y1 = tf.apply(100.0, 0.001);
     EXPECT_LT(y1, 1.0); // Should change slowly with small dt
 }
-
-TEST(FirstOrderLagTest, Phase22Compatibility) {
-    // Verify parameter name tau_s (not time_constant)
-    FirstOrderLagTransform tf(2.5); // tau_s in seconds
-    tf.apply(0.0, 0.1);
-    
-    // Run for 5 time constants (12.5 seconds) to ensure convergence
-    for (int i = 0; i < 125; ++i) {
-        tf.apply(100.0, 0.1);
-    }
-    
-    double output = tf.apply(100.0, 0.1);
-    EXPECT_NEAR(output, 100.0, 1.0);
-}

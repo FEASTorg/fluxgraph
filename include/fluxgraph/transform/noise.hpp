@@ -9,7 +9,7 @@ namespace fluxgraph {
 /// Deterministic via explicit seed
 class NoiseTransform : public ITransform {
 public:
-    /// @param amplitude Noise amplitude (Phase 22 compatibility, not stddev)
+    /// @param amplitude Noise amplitude (not stddev)
     /// @param seed Random seed for deterministic behavior
     NoiseTransform(double amplitude, uint32_t seed)
         : amplitude_(amplitude)

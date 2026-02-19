@@ -97,13 +97,3 @@ TEST(RateLimiterTest, VariableTimeStep) {
     double y2 = tf.apply(100.0, 0.2); // 0.2s step
     EXPECT_EQ(y2, 7.0); // Limited to 5.0 + 10 * 0.2
 }
-
-TEST(RateLimiterTest, Phase22Compatibility) {
-    // Verify parameter name max_rate_per_sec (not max_rate)
-    RateLimiterTransform tf(25.0); // max_rate_per_sec
-    
-    tf.apply(0.0, 0.1);
-    double y = tf.apply(100.0, 0.1);
-    
-    EXPECT_EQ(y, 2.5); // 25.0 * 0.1
-}

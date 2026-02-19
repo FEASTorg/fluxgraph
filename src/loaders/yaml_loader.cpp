@@ -126,7 +126,7 @@ RuleSpec parse_rule(const YAML::Node& node, size_t index) {
     spec.id = node["id"].as<std::string>();
     spec.condition = node["condition"].as<std::string>();
     
-    // Parse actions array (Phase 22 compatible)
+    // Parse actions array
     if (node["actions"] && node["actions"].IsSequence()) {
         for (size_t i = 0; i < node["actions"].size(); ++i) {
             const YAML::Node& action_node = node["actions"][i];

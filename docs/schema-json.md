@@ -330,7 +330,7 @@ Sliding window average (FIR filter): `y = (1/N) * sum(x[n-i])` for i=0 to N-1
 
 ## Rules
 
-Rules trigger device actions when conditions are met (Phase 22 compatible).
+Rules trigger device actions when conditions are met.
 
 ### Rule Object
 
@@ -514,7 +514,7 @@ cmake --build build
 
 ## See Also
 
-- [YAML_SCHEMA.md](YAML_SCHEMA.md) - YAML equivalent (more human-friendly)
-- [API.md](API.md) - C++ API reference
-- [TRANSFORMS.md](TRANSFORMS.md) - Detailed transform documentation
+- [YAML_SCHEMA.md](schema-yaml.md) - YAML equivalent (more human-friendly)
+- [API.md](api-reference.md) - C++ API reference
+- [TRANSFORMS.md](transforms.md) - Detailed transform documentation
 - [examples/03_json_graph/](../examples/03_json_graph/) - Working example

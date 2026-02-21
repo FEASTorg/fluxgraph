@@ -68,7 +68,7 @@ jobs:
       - name: Run Python gRPC integration
         if: ${{ matrix.grpc_integration }}
         run: |
-          ./scripts/generate_proto_python.sh
+          bash ./scripts/generate_proto_python.sh
 
           SERVER_BIN="$(find build-server -type f -name fluxgraph-server | head -n 1)"
           if [ -z "$SERVER_BIN" ]; then

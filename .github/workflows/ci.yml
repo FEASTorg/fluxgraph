@@ -1,0 +1,87 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: fluxgraph-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  VCPKG_COMMIT: "66c0373dc7fca549e5803087b9487edfe3aca0a1"
+
+jobs:
+  build-test-matrix:
+    name: ${{ matrix.lane }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - lane: core-only
+            preset: ci-linux-release
+            grpc_integration: false
+          - lane: json
+            preset: ci-linux-release-json
+            grpc_integration: false
+          - lane: yaml
+            preset: ci-linux-release-yaml
+            grpc_integration: false
+          - lane: server-enabled
+            preset: ci-linux-release-server
+            grpc_integration: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build g++ python3 python3-pip
+
+      - name: Setup vcpkg
+        run: |
+          git clone https://github.com/microsoft/vcpkg "$HOME/vcpkg"
+          git -C "$HOME/vcpkg" checkout "$VCPKG_COMMIT"
+          "$HOME/vcpkg/bootstrap-vcpkg.sh"
+          echo "VCPKG_ROOT=$HOME/vcpkg" >> "$GITHUB_ENV"
+
+      - name: Configure
+        run: cmake --preset "${{ matrix.preset }}"
+
+      - name: Build
+        run: cmake --build --preset "${{ matrix.preset }}" --parallel
+
+      - name: Run C++ tests
+        run: ctest --preset "${{ matrix.preset }}"
+
+      - name: Install Python integration deps
+        if: ${{ matrix.grpc_integration }}
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install -r requirements.txt
+
+      - name: Run Python gRPC integration
+        if: ${{ matrix.grpc_integration }}
+        run: |
+          ./scripts/generate_proto_python.sh
+
+          SERVER_BIN="$(find build-server -type f -name fluxgraph-server | head -n 1)"
+          if [ -z "$SERVER_BIN" ]; then
+            echo "ERROR: fluxgraph-server binary not found under build-server" >&2
+            exit 1
+          fi
+
+          "$SERVER_BIN" --port 50051 > /tmp/fluxgraph-server.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
+          sleep 2
+
+          python3 tests/test_grpc_integration.py
+
+          kill "$SERVER_PID" 2>/dev/null || true
+          wait "$SERVER_PID" 2>/dev/null || true

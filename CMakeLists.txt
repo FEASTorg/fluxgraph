@@ -1,4 +1,29 @@
 cmake_minimum_required(VERSION 3.20)
+
+# Build options (set before project() so vcpkg manifest features can be mapped)
+option(FLUXGRAPH_BUILD_TESTS "Build unit tests" ON)
+option(FLUXGRAPH_BUILD_EXAMPLES "Build examples" ON)
+option(FLUXGRAPH_BUILD_SERVER "Build gRPC server" OFF)
+option(FLUXGRAPH_JSON_ENABLED "Enable JSON graph loading (requires nlohmann/json)" OFF)
+option(FLUXGRAPH_YAML_ENABLED "Enable YAML graph loading (requires yaml-cpp)" OFF)
+
+# Map CMake options -> vcpkg manifest features for deterministic dependency resolution.
+if(FLUXGRAPH_BUILD_TESTS)
+    list(APPEND VCPKG_MANIFEST_FEATURES "tests")
+endif()
+
+if(FLUXGRAPH_BUILD_SERVER)
+    list(APPEND VCPKG_MANIFEST_FEATURES "server")
+endif()
+
+if(FLUXGRAPH_JSON_ENABLED)
+    list(APPEND VCPKG_MANIFEST_FEATURES "json")
+endif()
+
+if(FLUXGRAPH_YAML_ENABLED)
+    list(APPEND VCPKG_MANIFEST_FEATURES "yaml")
+endif()
+
 project(fluxgraph VERSION 0.1.0 LANGUAGES CXX)
 
 # C++17 required
@@ -9,18 +34,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Export compile commands for IDE support
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# Build options
-option(FLUXGRAPH_BUILD_TESTS "Build unit tests" ON)
-option(FLUXGRAPH_BUILD_EXAMPLES "Build examples" ON)
-option(FLUXGRAPH_BUILD_SERVER "Build gRPC server" OFF)
-
-# Optional loader support
-option(FLUXGRAPH_JSON_ENABLED "Enable JSON graph loading (requires nlohmann/json)" OFF)
-option(FLUXGRAPH_YAML_ENABLED "Enable YAML graph loading (requires yaml-cpp)" OFF)
-
-# FetchContent for optional dependencies
-include(FetchContent)
-
 # Core library sources
 set(FLUXGRAPH_SOURCES
     src/core/signal_store.cpp
@@ -30,41 +43,15 @@ set(FLUXGRAPH_SOURCES
     src/engine.cpp
 )
 
-# Conditionally add JSON loader source
+# Conditionally add loader sources and resolve dependencies from vcpkg
 if(FLUXGRAPH_JSON_ENABLED)
     list(APPEND FLUXGRAPH_SOURCES src/loaders/json_loader.cpp)
-    
-    # Fetch nlohmann/json
-    FetchContent_Declare(
-        nlohmann_json
-        GIT_REPOSITORY https://github.com/nlohmann/json.git
-        GIT_TAG v3.11.3
-    )
-    FetchContent_MakeAvailable(nlohmann_json)
+    find_package(nlohmann_json CONFIG REQUIRED)
 endif()
 
-# Conditionally add YAML loader source
 if(FLUXGRAPH_YAML_ENABLED)
     list(APPEND FLUXGRAPH_SOURCES src/loaders/yaml_loader.cpp)
-    
-    # Fetch yaml-cpp (use master branch for CMake 3.20+ compatibility)
-    FetchContent_Declare(
-        yaml-cpp
-        GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
-        GIT_TAG master
-    )
-    # Set yaml-cpp options before making it available
-    set(YAML_CPP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-    set(YAML_CPP_BUILD_TOOLS OFF CACHE BOOL "" FORCE)
-    set(YAML_CPP_BUILD_CONTRIB OFF CACHE BOOL "" FORCE)
-    set(YAML_CPP_INSTALL OFF CACHE BOOL "" FORCE)
-    FetchContent_MakeAvailable(yaml-cpp)
-
-    if(MSVC AND TARGET yaml-cpp)
-        # Third-party yaml-cpp emits C4267 on MSVC; keep strict warnings for
-        # FluxGraph code and suppress only on the external dependency target.
-        target_compile_options(yaml-cpp PRIVATE /wd4267)
-    endif()
+    find_package(yaml-cpp CONFIG REQUIRED)
 endif()
 
 # Create static library
@@ -130,4 +117,3 @@ endif()
 #     NAMESPACE fluxgraph::
 #     DESTINATION lib/cmake/fluxgraph
 # )
-

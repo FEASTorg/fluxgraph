@@ -1,0 +1,154 @@
+{
+  "version": 2,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 20,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "FLUXGRAPH_BUILD_TESTS": "ON",
+        "FLUXGRAPH_BUILD_EXAMPLES": "OFF",
+        "FLUXGRAPH_BUILD_SERVER": "OFF",
+        "FLUXGRAPH_JSON_ENABLED": "OFF",
+        "FLUXGRAPH_YAML_ENABLED": "OFF"
+      }
+    },
+    {
+      "name": "dev-debug",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "FLUXGRAPH_BUILD_EXAMPLES": "ON"
+      }
+    },
+    {
+      "name": "dev-release",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "FLUXGRAPH_BUILD_EXAMPLES": "ON"
+      }
+    },
+    {
+      "name": "ci-linux-release",
+      "inherits": "base"
+    },
+    {
+      "name": "ci-windows-release",
+      "inherits": "base"
+    },
+    {
+      "name": "ci-linux-release-json",
+      "inherits": "ci-linux-release",
+      "cacheVariables": {
+        "FLUXGRAPH_JSON_ENABLED": "ON"
+      }
+    },
+    {
+      "name": "ci-linux-release-yaml",
+      "inherits": "ci-linux-release",
+      "cacheVariables": {
+        "FLUXGRAPH_YAML_ENABLED": "ON"
+      }
+    },
+    {
+      "name": "ci-linux-release-server",
+      "inherits": "ci-linux-release",
+      "binaryDir": "${sourceDir}/build-server",
+      "cacheVariables": {
+        "FLUXGRAPH_BUILD_SERVER": "ON",
+        "FLUXGRAPH_JSON_ENABLED": "ON",
+        "FLUXGRAPH_YAML_ENABLED": "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "dev-debug",
+      "configurePreset": "dev-debug"
+    },
+    {
+      "name": "dev-release",
+      "configurePreset": "dev-release"
+    },
+    {
+      "name": "ci-linux-release",
+      "configurePreset": "ci-linux-release"
+    },
+    {
+      "name": "ci-windows-release",
+      "configurePreset": "ci-windows-release"
+    },
+    {
+      "name": "ci-linux-release-json",
+      "configurePreset": "ci-linux-release-json"
+    },
+    {
+      "name": "ci-linux-release-yaml",
+      "configurePreset": "ci-linux-release-yaml"
+    },
+    {
+      "name": "ci-linux-release-server",
+      "configurePreset": "ci-linux-release-server"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "dev-debug",
+      "configurePreset": "dev-debug",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "dev-release",
+      "configurePreset": "dev-release",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "ci-linux-release",
+      "configurePreset": "ci-linux-release",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "ci-windows-release",
+      "configurePreset": "ci-windows-release",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "ci-linux-release-json",
+      "configurePreset": "ci-linux-release-json",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "ci-linux-release-yaml",
+      "configurePreset": "ci-linux-release-yaml",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "ci-linux-release-server",
+      "configurePreset": "ci-linux-release-server",
+      "output": {
+        "outputOnFailure": true
+      }
+    }
+  ]
+}

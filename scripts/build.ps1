@@ -1,16 +1,12 @@
-# FluxGraph Build Script (Windows)
+# FluxGraph build wrapper (preset-first)
 #
 # Usage:
-#   .\scripts\build.ps1 [-Clean] [-Config <Release|Debug|RelWithDebInfo>] [-Server] [-NoTests] [-JSON] [-YAML]
+#   .\scripts\build.ps1 [-Preset <name>] [-CleanFirst] [-Jobs <N>]
 
 param(
-    [switch]$Clean,
-    [ValidateSet("Release", "Debug", "RelWithDebInfo")]
-    [string]$Config = "Release",
-    [switch]$Server,
-    [switch]$NoTests,
-    [switch]$JSON,
-    [switch]$YAML
+    [string]$Preset = "dev-release",
+    [switch]$CleanFirst,
+    [int]$Jobs = 0
 )
 
 $ErrorActionPreference = "Stop"
@@ -18,98 +14,32 @@ $ErrorActionPreference = "Stop"
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RepoRoot = Split-Path -Parent $ScriptDir
 
-# Server mode auto-enables JSON and YAML
-if ($Server) {
-    $JSON = $true
-    $YAML = $true
+if (-not $env:VCPKG_ROOT) {
+    Write-Error "VCPKG_ROOT is not set. Presets expect vcpkg toolchain at `$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
 }
 
-Write-Host "============================================" -ForegroundColor Cyan
-Write-Host "FluxGraph Build Script" -ForegroundColor Cyan
-Write-Host "============================================" -ForegroundColor Cyan
-Write-Host "Config:      $Config" -ForegroundColor White
-Write-Host "Server:      $Server" -ForegroundColor White
-Write-Host "Tests:       $(-not $NoTests)" -ForegroundColor White
-Write-Host "JSON:        $JSON" -ForegroundColor White
-Write-Host "YAML:        $YAML" -ForegroundColor White
-Write-Host "Clean:       $Clean" -ForegroundColor White
-Write-Host "============================================" -ForegroundColor Cyan
-
-# Build directory naming
-$BuildDirSuffix = $Config.ToLower()
-if ($Server) { $BuildDirSuffix += "-server" }
-$BuildDir = Join-Path $RepoRoot "build-$BuildDirSuffix"
-
-# Clean if requested
-if ($Clean -and (Test-Path $BuildDir)) {
-    Write-Host "`n[CLEAN] Removing $BuildDir..." -ForegroundColor Yellow
-    Remove-Item -Recurse -Force $BuildDir
-}
-
-# Create build directory
-New-Item -ItemType Directory -Force -Path $BuildDir | Out-Null
-Push-Location $BuildDir
-
+Push-Location $RepoRoot
 try {
-    # CMake configuration
-    Write-Host "`n[CMAKE] Configuring..." -ForegroundColor Green
-    
-    $CMakeArgs = @(
-        "-G", "Visual Studio 17 2022",
-        "-A", "x64",
-        "-DCMAKE_BUILD_TYPE=$Config"
-    )
-    
-    # vcpkg toolchain
-    if ($env:VCPKG_ROOT) {
-        $ToolchainFile = Join-Path $env:VCPKG_ROOT "scripts\buildsystems\vcpkg.cmake"
-        $CMakeArgs += "-DCMAKE_TOOLCHAIN_FILE=$ToolchainFile"
-        Write-Host "  Using vcpkg: $env:VCPKG_ROOT" -ForegroundColor Gray
-    }
-    
-    # Build options
-    if (-not $NoTests) {
-        $CMakeArgs += "-DFLUXGRAPH_BUILD_TESTS=ON"
-    }
-    else {
-        $CMakeArgs += "-DFLUXGRAPH_BUILD_TESTS=OFF"
-    }
-    
-    if ($Server) {
-        $CMakeArgs += "-DFLUXGRAPH_BUILD_SERVER=ON"
-    }
-
-    if ($JSON) {
-        $CMakeArgs += "-DFLUXGRAPH_JSON_ENABLED=ON"
-    }
-
-    if ($YAML) {
-        $CMakeArgs += "-DFLUXGRAPH_YAML_ENABLED=ON"
-    }
-
-    $CMakeArgs += ".."
-    
-    & cmake @CMakeArgs
+    Write-Host "[CONFIGURE] cmake --preset $Preset" -ForegroundColor Cyan
+    & cmake --preset $Preset
     if ($LASTEXITCODE -ne 0) {
-        throw "CMake configuration failed"
+        throw "Configure failed"
     }
-    
-    # Build
-    Write-Host "`n[BUILD] Compiling ($Config)..." -ForegroundColor Green
-    & cmake --build . --config $Config -j
+
+    $BuildArgs = @("--preset", $Preset)
+    if ($CleanFirst) {
+        $BuildArgs += "--clean-first"
+    }
+    if ($Jobs -gt 0) {
+        $BuildArgs += "--parallel"
+        $BuildArgs += "$Jobs"
+    }
+
+    Write-Host "[BUILD] cmake --build --preset $Preset" -ForegroundColor Cyan
+    & cmake --build @BuildArgs
     if ($LASTEXITCODE -ne 0) {
         throw "Build failed"
     }
-    
-    Write-Host "`n============================================" -ForegroundColor Cyan
-    Write-Host "Build completed successfully!" -ForegroundColor Green
-    Write-Host "Build directory: $BuildDir" -ForegroundColor White
-    Write-Host "============================================" -ForegroundColor Cyan
-    
-}
-catch {
-    Write-Host "`n[ERROR] Build failed: $_" -ForegroundColor Red
-    exit 1
 }
 finally {
     Pop-Location

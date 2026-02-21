@@ -23,47 +23,33 @@ FluxGraph is a standalone C++ library that provides signal storage, graph compil
 ### Building
 
 ```bash
-# Clone and configure
+# Clone
 git clone https://github.com/FEASTorg/fluxgraph.git
 cd fluxgraph
-cmake -B build -S .
 
-# Build
-cmake --build build
+# Prerequisite
+export VCPKG_ROOT=/path/to/vcpkg
+
+# Configure + build (preset-first)
+cmake --preset dev-release
+cmake --build --preset dev-release
 
 # Run tests
-cd build
-ctest --output-on-failure
+ctest --preset dev-release
 ```
 
 ### Build Options
 
-FluxGraph core has zero dependencies. Optional graph loaders can be enabled:
+Optional graph loaders can be enabled:
 
 | Option                   | Default | Description                                       |
 | ------------------------ | ------- | ------------------------------------------------- |
-| `FLUXGRAPH_JSON_ENABLED` | OFF     | Enable JSON graph loader (requires nlohmann/json) |
+| `FLUXGRAPH_JSON_ENABLED` | OFF     | Enable JSON graph loader (requires nlohmann-json) |
 | `FLUXGRAPH_YAML_ENABLED` | OFF     | Enable YAML graph loader (requires yaml-cpp)      |
 
-**Example builds:**
+Dependency/build/CI governance: [docs/dependencies.md](docs/dependencies.md).
 
-```bash
-# Core only (153 tests, zero dependencies)
-cmake -B build-core -S .
-
-# With JSON loader (162 tests)
-cmake -B build-json -S . -DFLUXGRAPH_JSON_ENABLED=ON
-
-# With YAML loader (162 tests)
-cmake -B build-yaml -S . -DFLUXGRAPH_YAML_ENABLED=ON
-
-# With both loaders (171 tests)
-cmake -B build-both -S . \
-  -DFLUXGRAPH_JSON_ENABLED=ON \
-  -DFLUXGRAPH_YAML_ENABLED=ON
-```
-
-Dependencies are fetched automatically via CMake FetchContent and linked privately (not exposed to consumers).
+Dependencies are resolved via vcpkg manifests and `find_package(...)` (no FetchContent drift in CI).
 
 ### Using FluxGraph
 

@@ -1,11 +1,5 @@
-# Fetch GoogleTest
-include(FetchContent)
-FetchContent_Declare(
-    googletest
-    GIT_REPOSITORY https://github.com/google/googletest.git
-    GIT_TAG v1.14.0
-)
-FetchContent_MakeAvailable(googletest)
+# Tests use vcpkg-provided GoogleTest (manifest feature: tests)
+find_package(GTest CONFIG REQUIRED)
 
 # Test executable
 add_executable(fluxgraph_tests
@@ -31,8 +25,8 @@ add_executable(fluxgraph_tests
 
 target_link_libraries(fluxgraph_tests
     PRIVATE fluxgraph
-    PRIVATE gtest_main
-    PRIVATE gmock
+    PRIVATE GTest::gtest_main
+    PRIVATE GTest::gmock
 )
 
 # Discover tests
@@ -44,7 +38,7 @@ if(FLUXGRAPH_JSON_ENABLED)
     add_executable(json_loader_test unit/json_loader_test.cpp)
     target_link_libraries(json_loader_test
         PRIVATE fluxgraph
-        PRIVATE gtest_main
+        PRIVATE GTest::gtest_main
     )
     gtest_discover_tests(json_loader_test)
 endif()
@@ -53,7 +47,7 @@ if(FLUXGRAPH_YAML_ENABLED)
     add_executable(yaml_loader_test unit/yaml_loader_test.cpp)
     target_link_libraries(yaml_loader_test
         PRIVATE fluxgraph
-        PRIVATE gtest_main
+        PRIVATE GTest::gtest_main
     )
     gtest_discover_tests(yaml_loader_test)
 endif()

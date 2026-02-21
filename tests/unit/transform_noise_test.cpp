@@ -105,7 +105,7 @@ TEST(NoiseTransformTest, ZeroAmplitude) {
   EXPECT_EQ(output, input); // Zero amplitude = no noise
 }
 
-TEST(NoiseTransformTest, Phase22Compatibility) {
+TEST(NoiseTransformTest, AmplitudeParameterSemantics) {
   // Verify parameter name amplitude (not stddev)
   NoiseTransform tf(5.0, 999); // amplitude in same units as signal
 

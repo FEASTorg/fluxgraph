@@ -1,5 +1,6 @@
 #include "fluxgraph/model/thermal_mass.hpp"
 #include <sstream>
+#include <limits>
 
 namespace fluxgraph {
 
@@ -40,7 +41,7 @@ double ThermalMassModel::compute_stability_limit() const {
   // For this model: k = h/C
   // Therefore: dt < 2*C/h
   if (heat_transfer_coeff_ <= 0.0) {
-    return INFINITY; // No cooling = unconditionally stable
+    return std::numeric_limits<double>::infinity(); // No cooling = unconditionally stable
   }
   return 2.0 * thermal_mass_ / heat_transfer_coeff_;
 }

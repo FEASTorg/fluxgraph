@@ -2,6 +2,7 @@
 
 #include "fluxgraph/transform/interface.hpp"
 #include <algorithm>
+#include <limits>
 
 namespace fluxgraph {
 
@@ -9,8 +10,8 @@ namespace fluxgraph {
 /// Optional clamping to [clamp_min, clamp_max]
 class LinearTransform : public ITransform {
 public:
-  LinearTransform(double scale, double offset, double clamp_min = -INFINITY,
-                  double clamp_max = INFINITY)
+  LinearTransform(double scale, double offset, double clamp_min = -std::numeric_limits<double>::infinity(),
+                  double clamp_max = std::numeric_limits<double>::infinity())
       : scale_(scale), offset_(offset), clamp_min_(clamp_min),
         clamp_max_(clamp_max) {}
 

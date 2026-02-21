@@ -13,6 +13,7 @@
 #include <set>
 #include <sstream>
 #include <stdexcept>
+#include <limits>
 
 namespace fluxgraph {
 
@@ -72,8 +73,8 @@ ITransform *GraphCompiler::parse_transform(const TransformSpec &spec) {
   if (type == "linear") {
     double scale = std::get<double>(spec.params.at("scale"));
     double offset = std::get<double>(spec.params.at("offset"));
-    double clamp_min = -INFINITY;
-    double clamp_max = INFINITY;
+    double clamp_min = -std::numeric_limits<double>::infinity();
+    double clamp_max = std::numeric_limits<double>::infinity();
 
     if (spec.params.count("clamp_min")) {
       clamp_min = std::get<double>(spec.params.at("clamp_min"));

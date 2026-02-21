@@ -1,5 +1,6 @@
 #include "fluxgraph/transform/linear.hpp"
 #include <cmath>
+#include <limits>
 #include <gtest/gtest.h>
 
 using namespace fluxgraph;
@@ -23,13 +24,13 @@ TEST(LinearTransformTest, ScaleAndOffset) {
 }
 
 TEST(LinearTransformTest, ClampMax) {
-  LinearTransform tf(2.0, 0.0, -INFINITY, 10.0);
+  LinearTransform tf(2.0, 0.0, -std::numeric_limits<double>::infinity(), 10.0);
   EXPECT_EQ(tf.apply(3.0, 0.1), 6.0);   // Within bounds
   EXPECT_EQ(tf.apply(10.0, 0.1), 10.0); // Clamped to max
 }
 
 TEST(LinearTransformTest, ClampMin) {
-  LinearTransform tf(2.0, 0.0, 0.0, INFINITY);
+  LinearTransform tf(2.0, 0.0, 0.0, std::numeric_limits<double>::infinity());
   EXPECT_EQ(tf.apply(5.0, 0.1), 10.0); // Within bounds
   EXPECT_EQ(tf.apply(-5.0, 0.1), 0.0); // Clamped to min
 }

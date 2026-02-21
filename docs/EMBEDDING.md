@@ -96,7 +96,7 @@ include(FetchContent)
 FetchContent_Declare(
     fluxgraph
     GIT_REPOSITORY https://github.com/your-org/fluxgraph.git
-    GIT_TAG        v1.0.0  # Or main for latest
+    GIT_TAG        v0.1.1  # Or main for latest
 )
 FetchContent_MakeAvailable(fluxgraph)
 

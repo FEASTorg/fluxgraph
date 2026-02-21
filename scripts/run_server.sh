@@ -5,18 +5,20 @@
 #   ./scripts/run_server.sh [options]
 #
 # Options:
-#   --config <type>         Build config: Release (default), Debug, or RelWithDebInfo
-#   --port <port>           Server port (default: 50051)
-#   --config-file <path>    Preload config file (YAML or JSON)
-#   --dt <seconds>          Timestep in seconds (default: 0.1)
-#   -h, --help              Show this help
+#   --preset <name>       Build preset (default: ci-linux-release-server)
+#   --build-dir <path>    Build directory override (default: build/<preset>, except ci-linux-release-server -> build-server)
+#   --port <port>         Server port (default: 50051)
+#   --config-file <path>  Preload config file (YAML or JSON)
+#   --dt <seconds>        Timestep in seconds (default: 0.1)
+#   -h, --help            Show this help
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 
-CONFIG="Release"
+PRESET="ci-linux-release-server"
+BUILD_DIR=""
 PORT=50051
 CONFIG_FILE=""
 TIMESTEP=0.1
@@ -27,19 +29,51 @@ usage() {
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
-    --config)
-        CONFIG="$2"
+    --preset)
+        [[ $# -lt 2 ]] && {
+            echo "[ERROR] --preset requires a value"
+            exit 2
+        }
+        PRESET="$2"
         shift 2
         ;;
+    --preset=*)
+        PRESET="${1#*=}"
+        shift
+        ;;
+    --build-dir)
+        [[ $# -lt 2 ]] && {
+            echo "[ERROR] --build-dir requires a value"
+            exit 2
+        }
+        BUILD_DIR="$2"
+        shift 2
+        ;;
+    --build-dir=*)
+        BUILD_DIR="${1#*=}"
+        shift
+        ;;
     --port)
+        [[ $# -lt 2 ]] && {
+            echo "[ERROR] --port requires a value"
+            exit 2
+        }
         PORT="$2"
         shift 2
         ;;
     --config-file)
+        [[ $# -lt 2 ]] && {
+            echo "[ERROR] --config-file requires a value"
+            exit 2
+        }
         CONFIG_FILE="$2"
         shift 2
         ;;
     --dt)
+        [[ $# -lt 2 ]] && {
+            echo "[ERROR] --dt requires a value"
+            exit 2
+        }
         TIMESTEP="$2"
         shift 2
         ;;
@@ -48,58 +82,65 @@ while [[ $# -gt 0 ]]; do
         exit 0
         ;;
     *)
-        echo "Unknown option: $1"
+        echo "[ERROR] Unknown option: $1"
         usage
         exit 1
         ;;
     esac
 done
 
+if [[ -z "$BUILD_DIR" ]]; then
+    if [[ "$PRESET" == "ci-linux-release-server" ]]; then
+        BUILD_DIR="$REPO_ROOT/build-server"
+    else
+        BUILD_DIR="$REPO_ROOT/build/$PRESET"
+    fi
+fi
+
 echo "============================================"
 echo "FluxGraph gRPC Server"
 echo "============================================"
 
-# Find server executable (check multiple possible build directories)
 SERVER_EXE=""
 POSSIBLE_PATHS=(
-    "$REPO_ROOT/build-${CONFIG,,}-server/server/fluxgraph-server"
-    "$REPO_ROOT/build-server/server/Release/fluxgraph-server"
-    "$REPO_ROOT/build/server/fluxgraph-server"
+    "$BUILD_DIR/server/fluxgraph-server"
+    "$BUILD_DIR/server/Release/fluxgraph-server"
+    "$BUILD_DIR/server/Debug/fluxgraph-server"
 )
 
 for path in "${POSSIBLE_PATHS[@]}"; do
-    if [ -f "$path" ]; then
+    if [[ -x "$path" ]]; then
         SERVER_EXE="$path"
         break
     fi
 done
 
-if [ -z "$SERVER_EXE" ]; then
+if [[ -z "$SERVER_EXE" ]]; then
     echo "[ERROR] Server executable not found. Tried:"
     for path in "${POSSIBLE_PATHS[@]}"; do
         echo "  - $path"
     done
     echo ""
-    echo "Build the server first: ./scripts/build.sh --server --config $CONFIG"
+    echo "Build first: ./scripts/build.sh --preset $PRESET"
     exit 1
 fi
 
-# Build arguments
 ARGS=("--port" "$PORT" "--dt" "$TIMESTEP")
 
-if [ -n "$CONFIG_FILE" ]; then
-    if [ ! -f "$CONFIG_FILE" ]; then
+if [[ -n "$CONFIG_FILE" ]]; then
+    if [[ ! -f "$CONFIG_FILE" ]]; then
         echo "[ERROR] Config file not found: $CONFIG_FILE"
         exit 1
     fi
     ARGS+=("--config" "$CONFIG_FILE")
 fi
 
+echo "Preset:      $PRESET"
+echo "Build dir:   $BUILD_DIR"
 echo "Port:        $PORT"
 echo "Timestep:    $TIMESTEP sec"
 [ -n "$CONFIG_FILE" ] && echo "Config:      $CONFIG_FILE"
 echo "============================================"
 echo ""
 
-# Run server
 "$SERVER_EXE" "${ARGS[@]}"

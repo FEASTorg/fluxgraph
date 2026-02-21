@@ -119,7 +119,7 @@ fluxgraph/
 
 ## Development Status
 
-**v1.0.0 - Core Library Complete**
+**v0.1.1 - Core Library Complete**
 
 Core library:
 
@@ -177,4 +177,4 @@ This project is part of the FEAST ecosystem. See [CONTRIBUTING.md](CONTRIBUTING.
 
 ## Version
 
-1.0.0 - First stable release
+0.1.1 - Current pre-release

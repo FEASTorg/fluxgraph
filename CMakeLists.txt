@@ -24,7 +24,7 @@ if(FLUXGRAPH_YAML_ENABLED)
     list(APPEND VCPKG_MANIFEST_FEATURES "yaml")
 endif()
 
-project(fluxgraph VERSION 0.1.0 LANGUAGES CXX)
+project(fluxgraph VERSION 0.1.1 LANGUAGES CXX)
 
 # C++17 required
 set(CMAKE_CXX_STANDARD 17)

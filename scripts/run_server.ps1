@@ -1,11 +1,11 @@
 # FluxGraph Server Runner (Windows)
 #
 # Usage:
-#   .\scripts\run_server.ps1 [-Config <Release|Debug|RelWithDebInfo>] [-Port <port>] [-ConfigFile <path>] [-TimeStep <seconds>]
+#   .\scripts\run_server.ps1 [-Preset <name>] [-BuildDir <path>] [-Port <port>] [-ConfigFile <path>] [-TimeStep <seconds>]
 
 param(
-    [ValidateSet("Release", "Debug", "RelWithDebInfo")]
-    [string]$Config = "Release",
+    [string]$Preset = "ci-linux-release-server",
+    [string]$BuildDir = "",
     [int]$Port = 50051,
     [string]$ConfigFile = "",
     [double]$TimeStep = 0.1
@@ -16,22 +16,29 @@ $ErrorActionPreference = "Stop"
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $RepoRoot = Split-Path -Parent $ScriptDir
 
+if (-not $BuildDir) {
+    if ($Preset -eq "ci-linux-release-server") {
+        $BuildDir = Join-Path $RepoRoot "build-server"
+    }
+    else {
+        $BuildDir = Join-Path $RepoRoot "build\$Preset"
+    }
+}
+
 Write-Host "============================================" -ForegroundColor Cyan
 Write-Host "FluxGraph gRPC Server" -ForegroundColor Cyan
 Write-Host "============================================" -ForegroundColor Cyan
 
-# Find server executable (check multiple possible build directories)
 $ServerExe = $null
 $PossiblePaths = @(
-    "build-$($Config.ToLower())-server\server\$Config\fluxgraph-server.exe",
-    "build-server\server\$Config\fluxgraph-server.exe",
-    "build\server\$Config\fluxgraph-server.exe"
+    (Join-Path $BuildDir "server\fluxgraph-server.exe"),
+    (Join-Path $BuildDir "server\Release\fluxgraph-server.exe"),
+    (Join-Path $BuildDir "server\Debug\fluxgraph-server.exe")
 )
 
 foreach ($path in $PossiblePaths) {
-    $fullPath = Join-Path $RepoRoot $path
-    if (Test-Path $fullPath) {
-        $ServerExe = $fullPath
+    if (Test-Path $path) {
+        $ServerExe = $path
         break
     }
 }
@@ -41,11 +48,10 @@ if (-not $ServerExe) {
     foreach ($path in $PossiblePaths) {
         Write-Host "  - $path" -ForegroundColor Gray
     }
-    Write-Host "`nBuild the server first: .\scripts\build.ps1 -Server -Config $Config" -ForegroundColor Yellow
+    Write-Host "`nBuild first: .\scripts\build.ps1 -Preset $Preset" -ForegroundColor Yellow
     exit 1
 }
 
-# Build arguments
 $Args = @("--port", $Port, "--dt", $TimeStep)
 
 if ($ConfigFile) {
@@ -57,6 +63,8 @@ if ($ConfigFile) {
     $Args += $ConfigFile
 }
 
+Write-Host "Preset:      $Preset" -ForegroundColor White
+Write-Host "Build dir:   $BuildDir" -ForegroundColor White
 Write-Host "Port:        $Port" -ForegroundColor White
 Write-Host "Timestep:    $TimeStep sec" -ForegroundColor White
 if ($ConfigFile) {
@@ -65,5 +73,4 @@ if ($ConfigFile) {
 Write-Host "============================================" -ForegroundColor Cyan
 Write-Host ""
 
-# Run server
 & $ServerExe @Args

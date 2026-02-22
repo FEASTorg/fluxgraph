@@ -31,7 +31,10 @@ target_link_libraries(fluxgraph_tests
 
 # Discover tests
 include(GoogleTest)
-gtest_discover_tests(fluxgraph_tests)
+gtest_discover_tests(fluxgraph_tests
+    DISCOVERY_MODE PRE_TEST
+    DISCOVERY_TIMEOUT 60
+)
 
 # Optional loader tests (separate executables for conditional compilation)
 if(FLUXGRAPH_JSON_ENABLED)
@@ -40,7 +43,10 @@ if(FLUXGRAPH_JSON_ENABLED)
         PRIVATE fluxgraph
         PRIVATE GTest::gtest_main
     )
-    gtest_discover_tests(json_loader_test)
+    gtest_discover_tests(json_loader_test
+        DISCOVERY_MODE PRE_TEST
+        DISCOVERY_TIMEOUT 60
+    )
 endif()
 
 if(FLUXGRAPH_YAML_ENABLED)
@@ -49,7 +55,10 @@ if(FLUXGRAPH_YAML_ENABLED)
         PRIVATE fluxgraph
         PRIVATE GTest::gtest_main
     )
-    gtest_discover_tests(yaml_loader_test)
+    gtest_discover_tests(yaml_loader_test
+        DISCOVERY_MODE PRE_TEST
+        DISCOVERY_TIMEOUT 60
+    )
 endif()
 
 # Integration tests

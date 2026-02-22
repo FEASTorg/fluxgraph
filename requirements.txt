@@ -1,5 +1,6 @@
-# FluxGraph gRPC Client Dependencies
-grpcio>=1.50.0
-grpcio-tools>=1.50.0
-protobuf>=3.21.0
-pyyaml>=6.0
+# FluxGraph Python integration dependencies (range policy).
+# CI installs from requirements-lock.txt for deterministic runs.
+grpcio>=1.78.0,<2.0.0
+grpcio-tools>=1.78.0,<2.0.0
+protobuf>=6.33.0,<7.0.0
+pyyaml>=6.0.0,<7.0.0

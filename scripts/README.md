@@ -11,8 +11,8 @@ Set `VCPKG_ROOT` so presets can resolve the toolchain:
 
 ## Build
 
-- Linux/macOS: `./scripts/build.sh --preset dev-release`
-- Windows: `.\scripts\build.ps1 -Preset dev-release`
+- Linux/macOS: `bash ./scripts/build.sh --preset dev-release`
+- Windows: `.\scripts\build.ps1 -Preset dev-windows-release`
 
 Options:
 
@@ -22,8 +22,8 @@ Options:
 
 ## Test
 
-- Linux/macOS: `./scripts/test.sh --preset dev-release`
-- Windows: `.\scripts\test.ps1 -Preset dev-release`
+- Linux/macOS: `bash ./scripts/test.sh --preset dev-release`
+- Windows: `.\scripts\test.ps1 -Preset dev-windows-release`
 
 Options:
 
@@ -34,6 +34,8 @@ Options:
 
 - `dev-debug`
 - `dev-release`
+- `dev-windows-debug`
+- `dev-windows-release`
 - `ci-linux-release`
 - `ci-linux-release-json`
 - `ci-linux-release-yaml`
@@ -44,6 +46,6 @@ Options:
 
 1. Configure/build with `ci-linux-release-server`.
 2. Generate Python protobuf bindings:
-   - `./scripts/generate_proto_python.sh`
+   - `bash ./scripts/generate_proto_python.sh`
 3. Start server binary from `build-server`.
 4. Run: `python3 tests/test_grpc_integration.py`

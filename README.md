@@ -38,6 +38,14 @@ cmake --build --preset dev-release
 ctest --preset dev-release
 ```
 
+```powershell
+# Windows (MSVC presets)
+$env:VCPKG_ROOT = "D:\\Tools\\vcpkg"
+cmake --preset dev-windows-release
+cmake --build --preset dev-windows-release --config Release
+ctest --preset dev-windows-release
+```
+
 ### Build Options
 
 Optional graph loaders can be enabled:

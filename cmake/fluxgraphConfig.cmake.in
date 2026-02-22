@@ -8,15 +8,15 @@
 set(FLUXGRAPH_JSON_ENABLED @FLUXGRAPH_JSON_ENABLED@)
 set(FLUXGRAPH_YAML_ENABLED @FLUXGRAPH_YAML_ENABLED@)
 
+include(CMakeFindDependencyMacro)
+
 # Optional loader dependencies
 if(FLUXGRAPH_JSON_ENABLED)
-    # JSON loader uses nlohmann_json (header-only)
-    # Consumers don't need to find it themselves (PRIVATE linkage)
+    find_dependency(nlohmann_json CONFIG REQUIRED)
 endif()
 
 if(FLUXGRAPH_YAML_ENABLED)
-    # YAML loader uses yaml-cpp
-    # Consumers don't need to find it themselves (PRIVATE linkage)
+    find_dependency(yaml-cpp CONFIG REQUIRED)
 endif()
 
 # Include the targets file

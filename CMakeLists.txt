@@ -26,6 +26,9 @@ endif()
 
 project(fluxgraph VERSION 0.1.1 LANGUAGES CXX)
 
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+
 # C++17 required
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -72,12 +75,12 @@ endif()
 
 # Link optional dependencies
 if(FLUXGRAPH_JSON_ENABLED)
-    target_link_libraries(fluxgraph PRIVATE nlohmann_json::nlohmann_json)
+    target_link_libraries(fluxgraph PUBLIC nlohmann_json::nlohmann_json)
     target_compile_definitions(fluxgraph PUBLIC FLUXGRAPH_JSON_ENABLED)
 endif()
 
 if(FLUXGRAPH_YAML_ENABLED)
-    target_link_libraries(fluxgraph PRIVATE yaml-cpp::yaml-cpp)
+    target_link_libraries(fluxgraph PUBLIC yaml-cpp::yaml-cpp)
     target_compile_definitions(fluxgraph PUBLIC FLUXGRAPH_YAML_ENABLED)
 endif()
 
@@ -97,23 +100,38 @@ if(FLUXGRAPH_BUILD_SERVER)
     add_subdirectory(server)
 endif()
 
-# TODO: Fix install rules for optional dependencies
-# Installation currently disabled due to CMake limitation with PRIVATE dependencies in install(EXPORT)
-# Will be fixed with proper cmake/fluxgraphConfig.cmake.in
-#
-# install(TARGETS fluxgraph
-#     EXPORT fluxgraphTargets
-#     ARCHIVE DESTINATION lib
-#     LIBRARY DESTINATION lib
-#     RUNTIME DESTINATION bin
-# )
-#
-# install(DIRECTORY include/fluxgraph
-#     DESTINATION include
-# )
-#
-# install(EXPORT fluxgraphTargets
-#     FILE fluxgraphTargets.cmake
-#     NAMESPACE fluxgraph::
-#     DESTINATION lib/cmake/fluxgraph
-# )
+# Install/export package configuration
+install(TARGETS fluxgraph
+    EXPORT fluxgraphTargets
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+install(DIRECTORY include/fluxgraph
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+install(EXPORT fluxgraphTargets
+    FILE fluxgraphTargets.cmake
+    NAMESPACE fluxgraph::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/fluxgraph
+)
+
+configure_package_config_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/fluxgraphConfig.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/fluxgraphConfig.cmake
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/fluxgraph
+)
+
+write_basic_package_version_file(
+    ${CMAKE_CURRENT_BINARY_DIR}/fluxgraphConfigVersion.cmake
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY SameMajorVersion
+)
+
+install(FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/fluxgraphConfig.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/fluxgraphConfigVersion.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/fluxgraph
+)

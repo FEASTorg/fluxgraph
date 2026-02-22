@@ -14,8 +14,8 @@ env:
   VCPKG_COMMIT: "66c0373dc7fca549e5803087b9487edfe3aca0a1"
 
 jobs:
-  build-test-matrix:
-    name: ${{ matrix.lane }}
+  linux-matrix:
+    name: Linux ${{ matrix.lane }}
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
@@ -41,14 +41,27 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y ninja-build g++ python3 python3-pip
+          sudo apt-get install -y ninja-build g++
+
+      - name: Validate Python lockfile
+        if: ${{ matrix.grpc_integration }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          LOCKFILE="requirements-lock.txt"
+          test -f "$LOCKFILE"
+          if od -An -tx1 "$LOCKFILE" | tr -s ' ' '\n' | grep -qx '00'; then
+            echo "ERROR: $LOCKFILE contains NUL bytes (binary corruption)" >&2
+            exit 1
+          fi
+          iconv -f UTF-8 -t UTF-8 "$LOCKFILE" > /dev/null 2>&1
+          echo "OK: $LOCKFILE is valid UTF-8 and contains no NUL bytes"
 
       - name: Setup vcpkg
-        run: |
-          git clone https://github.com/microsoft/vcpkg "$HOME/vcpkg"
-          git -C "$HOME/vcpkg" checkout "$VCPKG_COMMIT"
-          "$HOME/vcpkg/bootstrap-vcpkg.sh"
-          echo "VCPKG_ROOT=$HOME/vcpkg" >> "$GITHUB_ENV"
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgGitCommitId: ${{ env.VCPKG_COMMIT }}
+          doNotCache: false
 
       - name: Configure
         run: cmake --preset "${{ matrix.preset }}"
@@ -61,9 +74,17 @@ jobs:
 
       - name: Install Python integration deps
         if: ${{ matrix.grpc_integration }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: requirements-lock.txt
+
+      - name: Install Python integration packages
+        if: ${{ matrix.grpc_integration }}
         run: |
-          python3 -m pip install --upgrade pip
-          python3 -m pip install -r requirements.txt
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-lock.txt
 
       - name: Run Python gRPC integration
         if: ${{ matrix.grpc_integration }}
@@ -85,3 +106,26 @@ jobs:
 
           kill "$SERVER_PID" 2>/dev/null || true
           wait "$SERVER_PID" 2>/dev/null || true
+
+  windows-core:
+    name: Windows core-only
+    runs-on: windows-2022
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgGitCommitId: ${{ env.VCPKG_COMMIT }}
+          doNotCache: false
+
+      - name: Configure
+        run: cmake --preset ci-windows-release
+
+      - name: Build
+        run: cmake --build --preset ci-windows-release --parallel
+
+      - name: Run C++ tests
+        run: ctest --preset ci-windows-release

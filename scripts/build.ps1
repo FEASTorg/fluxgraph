@@ -2,9 +2,13 @@
 #
 # Usage:
 #   .\scripts\build.ps1 [-Preset <name>] [-CleanFirst] [-Jobs <N>]
+#
+# Default preset:
+#   - Windows: dev-windows-release
+#   - Linux/macOS: dev-release
 
 param(
-    [string]$Preset = "dev-release",
+    [string]$Preset = "",
     [switch]$CleanFirst,
     [int]$Jobs = 0
 )
@@ -16,6 +20,18 @@ $RepoRoot = Split-Path -Parent $ScriptDir
 
 if (-not $env:VCPKG_ROOT) {
     Write-Error "VCPKG_ROOT is not set. Presets expect vcpkg toolchain at `$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
+}
+
+if (-not $Preset) {
+    if ($env:OS -eq "Windows_NT") {
+        $Preset = "dev-windows-release"
+    }
+    else {
+        $Preset = "dev-release"
+    }
+}
+if (($env:OS -eq "Windows_NT") -and $Preset -in @("dev-release", "dev-debug")) {
+    throw "Preset '$Preset' uses Ninja and may select MinGW on Windows. Use 'dev-windows-release', 'dev-windows-debug', or 'ci-windows-release'."
 }
 
 Push-Location $RepoRoot

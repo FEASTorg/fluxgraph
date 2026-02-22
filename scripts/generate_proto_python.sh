@@ -2,7 +2,7 @@
 # Generate Python Protobuf Bindings (Linux/macOS)
 #
 # Usage:
-#   ./scripts/generate-proto-python.sh [output-dir]
+#   ./scripts/generate_proto_python.sh [output-dir]
 
 set -euo pipefail
 

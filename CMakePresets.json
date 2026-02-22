@@ -22,6 +22,16 @@
       }
     },
     {
+      "name": "base-windows-msvc",
+      "hidden": true,
+      "inherits": "base",
+      "generator": "Visual Studio 17 2022",
+      "architecture": "x64",
+      "cacheVariables": {
+        "VCPKG_TARGET_TRIPLET": "x64-windows"
+      }
+    },
+    {
       "name": "dev-debug",
       "inherits": "base",
       "cacheVariables": {
@@ -38,12 +48,34 @@
       }
     },
     {
+      "name": "dev-windows-debug",
+      "inherits": "base-windows-msvc",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "FLUXGRAPH_BUILD_EXAMPLES": "ON"
+      }
+    },
+    {
+      "name": "dev-windows-release",
+      "inherits": "base-windows-msvc",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "FLUXGRAPH_BUILD_EXAMPLES": "ON"
+      }
+    },
+    {
       "name": "ci-linux-release",
-      "inherits": "base"
+      "inherits": "base",
+      "cacheVariables": {
+        "VCPKG_TARGET_TRIPLET": "x64-linux"
+      }
     },
     {
       "name": "ci-windows-release",
-      "inherits": "base"
+      "inherits": "base-windows-msvc",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
     },
     {
       "name": "ci-linux-release-json",
@@ -80,12 +112,23 @@
       "configurePreset": "dev-release"
     },
     {
+      "name": "dev-windows-debug",
+      "configurePreset": "dev-windows-debug",
+      "configuration": "Debug"
+    },
+    {
+      "name": "dev-windows-release",
+      "configurePreset": "dev-windows-release",
+      "configuration": "Release"
+    },
+    {
       "name": "ci-linux-release",
       "configurePreset": "ci-linux-release"
     },
     {
       "name": "ci-windows-release",
-      "configurePreset": "ci-windows-release"
+      "configurePreset": "ci-windows-release",
+      "configuration": "Release"
     },
     {
       "name": "ci-linux-release-json",
@@ -116,6 +159,22 @@
       }
     },
     {
+      "name": "dev-windows-debug",
+      "configurePreset": "dev-windows-debug",
+      "configuration": "Debug",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "dev-windows-release",
+      "configurePreset": "dev-windows-release",
+      "configuration": "Release",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
       "name": "ci-linux-release",
       "configurePreset": "ci-linux-release",
       "output": {
@@ -125,6 +184,7 @@
     {
       "name": "ci-windows-release",
       "configurePreset": "ci-windows-release",
+      "configuration": "Release",
       "output": {
         "outputOnFailure": true
       }

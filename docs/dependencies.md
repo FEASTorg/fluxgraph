@@ -14,6 +14,12 @@ This document defines FluxGraph policy for dependency management, preset usage, 
 - Optional loader behavior is controlled by `FLUXGRAPH_JSON_ENABLED` and `FLUXGRAPH_YAML_ENABLED`.
 - Dependency transport changes must not regress OFF/ON loader build combinations.
 
+## Python Dependency Policy
+
+1. CI installs Python integration dependencies from `requirements-lock.txt`.
+2. `requirements.txt` remains a maintainer-facing range file; lockfile is execution source.
+3. Lockfile and range updates must be reviewed together in the same PR.
+
 ## Versioning Policy
 
 - FluxGraph follows independent SemVer (`MAJOR.MINOR.PATCH`).
@@ -21,8 +27,8 @@ This document defines FluxGraph policy for dependency management, preset usage, 
 
 ## CI Lane Tiers
 
-- **Required**: core build/test lane.
-- **Advisory/matrix**: JSON, YAML, server-enabled lanes.
+- **Required**: Linux core build/test lane, Windows core build/test lane.
+- **Advisory/matrix**: Linux JSON, YAML, and server-enabled lanes.
 - **Optional heavy lanes**: extended sanitizer/stress/integration runs.
 
 ## Preset Baseline and Exception Policy
@@ -37,6 +43,7 @@ Rules:
 1. CI should call presets directly.
 2. CI-only deviations must be explicit and documented.
 3. Repo-specific extension presets are allowed for feature matrices.
+4. Every preset must have an active owner/use-case (CI lane, script default, or documented workflow); remove unreferenced presets.
 
 ## Dual-Run Policy
 

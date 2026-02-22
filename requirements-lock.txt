@@ -1,4 +1,4 @@
-grpcio==1.78.1
+﻿grpcio==1.78.1
 grpcio-tools==1.78.1
 protobuf==6.33.5
 PyYAML==6.0.3

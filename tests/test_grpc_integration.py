@@ -34,7 +34,7 @@ def test_health_check(stub):
     request = pb.HealthCheckRequest(service="fluxgraph")
     response = stub.Check(request)
     assert response.status == pb.HealthCheckResponse.SERVING, "Server not serving"
-    print("✓ Server is healthy (SERVING)")
+    print("[PASS] Server is healthy (SERVING)")
 
 
 def test_load_config(stub, config_path):
@@ -51,13 +51,13 @@ def test_load_config(stub, config_path):
     response = stub.LoadConfig(request)
     assert response.success, f"Config load failed: {response.error_message}"
     assert response.config_changed, "Config should have changed"
-    print("✓ Config loaded successfully")
+    print("[PASS] Config loaded successfully")
 
     # Test idempotency (same hash should not reload)
     response2 = stub.LoadConfig(request)
     assert response2.success, "Second load should succeed"
     assert not response2.config_changed, "Config should not have changed (same hash)"
-    print("✓ Config idempotency verified (hash check works)")
+    print("[PASS] Config idempotency verified (hash check works)")
 
 
 def test_load_config_with_hash(stub, config_path, config_hash):
@@ -73,7 +73,7 @@ def test_load_config_with_hash(stub, config_path, config_hash):
 
     response = stub.LoadConfig(request)
     assert response.success, f"Config load failed: {response.error_message}"
-    print("✓ Config loaded successfully")
+    print("[PASS] Config loaded successfully")
 
 
 def test_register_provider(stub, provider_id, device_ids):
@@ -86,7 +86,7 @@ def test_register_provider(stub, provider_id, device_ids):
     assert response.success, f"Registration failed: {response.error_message}"
     assert response.session_id, "Session ID should not be empty"
 
-    print(f"✓ Provider registered (session: {response.session_id})")
+    print(f"[PASS] Provider registered (session: {response.session_id})")
     return response.session_id
 
 
@@ -110,7 +110,7 @@ def test_single_provider_tick(stub, session_id):
     assert response.sim_time_sec >= 0.0, "Sim time should be valid"
 
     print(
-        f"✓ Tick occurred (t={response.sim_time_sec:.3f}s, commands={len(response.commands)})"
+        f"[PASS] Tick occurred (t={response.sim_time_sec:.3f}s, commands={len(response.commands)})"
     )
 
 
@@ -131,7 +131,7 @@ def test_multi_provider_coordination(stub):
 
     # Tick should NOT occur yet (waiting for provider B)
     assert not response1.tick_occurred, "Tick should not occur (waiting for provider B)"
-    print("✓ Provider A updated, tick pending (waiting for B)")
+    print("[PASS] Provider A updated, tick pending (waiting for B)")
 
     # Provider B updates
     request2 = pb.SignalUpdates(
@@ -142,12 +142,12 @@ def test_multi_provider_coordination(stub):
 
     # NOW the tick should occur
     assert response2.tick_occurred, "Tick should occur after all providers updated"
-    print(f"✓ Provider B updated, tick occurred (t={response2.sim_time_sec:.3f}s)")
+    print(f"[PASS] Provider B updated, tick occurred (t={response2.sim_time_sec:.3f}s)")
 
     # Next update from provider A should again block
     response3 = stub.UpdateSignals(request1)
     assert not response3.tick_occurred, "Next tick should wait for B again"
-    print("✓ Multi-provider coordination verified")
+    print("[PASS] Multi-provider coordination verified")
 
 
 def test_read_signals(stub):
@@ -158,7 +158,7 @@ def test_read_signals(stub):
 
     response = stub.ReadSignals(request)
 
-    print(f"✓ Read {len(response.signals)} signals:")
+    print(f"[PASS] Read {len(response.signals)} signals:")
     for sig in response.signals:
         print(
             f"  - {sig.path} = {sig.value:.3f} {sig.unit} (physics_driven={sig.physics_driven})"
@@ -173,7 +173,7 @@ def test_reset(stub):
     response = stub.Reset(request)
 
     assert response.success, f"Reset failed: {response.error_message}"
-    print("✓ Reset successful")
+    print("[PASS] Reset successful")
 
 
 def main():
@@ -195,7 +195,7 @@ def main():
     try:
         # Wait for server to be ready
         grpc.channel_ready_future(channel).result(timeout=5)
-        print("✓ Connected to server\n")
+        print("[PASS] Connected to server\n")
 
         # Run tests
         test_health_check(stub)
@@ -213,7 +213,7 @@ def main():
         test_multi_provider_coordination(stub)
 
         print("\n" + "=" * 60)
-        print("ALL TESTS PASSED ✓")
+        print("ALL TESTS PASSED [PASS]")
         print("=" * 60)
 
     except grpc.RpcError as e:

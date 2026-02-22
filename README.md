@@ -1,6 +1,8 @@
 # FluxGraph
 
-**A protocol-agnostic physics simulation library for embedded systems**
+[![CI](https://github.com/FEASTorg/fluxgraph/actions/workflows/ci.yml/badge.svg)](https://github.com/FEASTorg/fluxgraph/actions/workflows/ci.yml)
+
+**A protocol-agnostic physics simulation library for embedded systems.**
 
 FluxGraph is a standalone C++ library that provides signal storage, graph compilation, transforms, models, and deterministic tick execution. Extracted from the FEAST Anolis provider architecture, FluxGraph enables embeddable physics simulation in any C++ host application.
 
@@ -106,14 +108,14 @@ int main() {
 
 **More examples:**
 
-- [`01_basic_transform`](examples/01_basic_transform/) - Simple signal transformation
-- [`02_thermal_mass`](examples/02_thermal_mass/) - Physics simulation with models
-- [`03_json_graph`](examples/03_json_graph/) - Load graph from JSON file
-- [`04_yaml_graph`](examples/04_yaml_graph/) - Load graph from YAML file
+- [`01_basic_transform`](./examples/01_basic_transform/) - Simple signal transformation
+- [`02_thermal_mass`](./examples/02_thermal_mass/) - Physics simulation with models
+- [`03_json_graph`](./examples/03_json_graph/) - Load graph from JSON file
+- [`04_yaml_graph`](./examples/04_yaml_graph/) - Load graph from YAML file
 
 ## Project Structure
 
-```
+```txt
 fluxgraph/
 +-- include/fluxgraph/     # Public API headers
 |   +-- core/              # Core types, signal storage, namespaces
@@ -127,7 +129,7 @@ fluxgraph/
 
 ## Development Status
 
-**v0.1.1 - Core Library Complete**
+**v0.1.1 - Core Library Complete:**
 
 Core library:
 

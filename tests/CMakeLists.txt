@@ -61,10 +61,26 @@ if(FLUXGRAPH_YAML_ENABLED)
     )
 endif()
 
-# Integration tests
-add_subdirectory(integration)
+# -----------------------------------------------------------------------------
+# Python Integration Tests (pytest)
+# -----------------------------------------------------------------------------
 
-# Benchmarks (optional, separate executables)
+find_package(Python3 COMPONENTS Interpreter REQUIRED)
+
+# Register pytest as a CTest test
+# This allows 'ctest' to run both C++ unit tests and Python integration tests
+add_test(
+    NAME integration.pytest
+    COMMAND ${Python3_EXECUTABLE} -m pytest
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
+# Pass build artifacts to pytest via environment variables
+set_tests_properties(integration.pytest PROPERTIES
+    ENVIRONMENT "FLUXGRAPH_SERVER_EXE=$<TARGET_FILE:fluxgraph-server>;FLUXGRAPH_PROTO_PYTHON_DIR=${CMAKE_BINARY_DIR}/python"
+)
+
+# Benchmark tests
 add_subdirectory(benchmarks)
 
 # Add test command

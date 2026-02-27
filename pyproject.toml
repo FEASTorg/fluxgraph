@@ -1,0 +1,29 @@
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "--strict-markers -ra -vv --tb=short"
+testpaths = ["tests"]
+markers = [
+    "integration: integration tests requiring a running server",
+    "slow: tests that take longer than 1s",
+    "stress: stress/performance tests",
+]
+filterwarnings = [
+    "ignore::DeprecationWarning:grpc.*",  # gRPC python often has deprecation warnings
+    "ignore::DeprecationWarning:google.protobuf.*",
+]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
+[tool.isort]
+profile = "black"
+line_length = 120
+
+[tool.black]
+line-length = 120
+target-version = ['py37']
+
+[tool.mypy]
+python_version = "3.9"
+strict = true
+ignore_missing_imports = true

@@ -63,15 +63,6 @@ jobs:
           vcpkgGitCommitId: ${{ env.VCPKG_COMMIT }}
           doNotCache: false
 
-      - name: Configure
-        run: cmake --preset "${{ matrix.preset }}"
-
-      - name: Build
-        run: cmake --build --preset "${{ matrix.preset }}" --parallel
-
-      - name: Run C++ tests
-        run: ctest --preset "${{ matrix.preset }}"
-
       - name: Install Python integration deps
         if: ${{ matrix.grpc_integration }}
         uses: actions/setup-python@v5
@@ -86,26 +77,19 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements-lock.txt
 
-      - name: Run Python gRPC integration
+      - name: Configure
+        run: cmake --preset "${{ matrix.preset }}"
+
+      - name: Build
+        run: cmake --build --preset "${{ matrix.preset }}" --parallel
+
+      - name: Generate Python Protobuf Bindings
         if: ${{ matrix.grpc_integration }}
         run: |
-          bash ./scripts/generate_proto_python.sh
+          bash ./scripts/generate_proto_python.sh build-server/python
 
-          SERVER_BIN="$(find build-server -type f -name fluxgraph-server | head -n 1)"
-          if [ -z "$SERVER_BIN" ]; then
-            echo "ERROR: fluxgraph-server binary not found under build-server" >&2
-            exit 1
-          fi
-
-          "$SERVER_BIN" --port 50051 > /tmp/fluxgraph-server.log 2>&1 &
-          SERVER_PID=$!
-          trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
-          sleep 2
-
-          python3 tests/test_grpc_integration.py
-
-          kill "$SERVER_PID" 2>/dev/null || true
-          wait "$SERVER_PID" 2>/dev/null || true
+      - name: Run tests
+        run: ctest --preset "${{ matrix.preset }}"
 
   windows-core:
     name: Windows core-only

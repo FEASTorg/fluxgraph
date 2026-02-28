@@ -29,7 +29,7 @@
       "toolset": "v143",
       "architecture": "x64",
       "cacheVariables": {
-        "VCPKG_OVERLAY_TRIPLETS": "${sourceDir}/cmake/triplets",
+        "VCPKG_OVERLAY_TRIPLETS": "${sourceDir}/triplets",
         "VCPKG_TARGET_TRIPLET": "x64-windows-v143",
         "VCPKG_HOST_TRIPLET": "x64-windows-v143"
       }

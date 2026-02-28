@@ -4,7 +4,7 @@ import sys
 import time
 import socket
 from pathlib import Path
-from typing import List
+from typing import List, Tuple
 
 import grpc
 import pytest
@@ -130,6 +130,27 @@ def _ensure_proto_bindings(root: Path) -> Path:
     return python_proto_dir
 
 
+def _allocate_free_port() -> int:
+    """Allocate a free ephemeral localhost TCP port."""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind(("127.0.0.1", 0))
+        return int(s.getsockname()[1])
+
+
+def _collect_process_output(process: subprocess.Popen) -> Tuple[str, str]:
+    """Terminate process if needed and return captured stdout/stderr."""
+    if process.poll() is None:
+        process.terminate()
+        try:
+            stdout, stderr = process.communicate(timeout=2)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            stdout, stderr = process.communicate(timeout=2)
+    else:
+        stdout, stderr = process.communicate()
+    return stdout or "", stderr or ""
+
+
 # -----------------------------------------------------------------------------
 # Fixtures
 # -----------------------------------------------------------------------------
@@ -150,9 +171,7 @@ def server_exe():
 @pytest.fixture
 def free_port():
     """Get a free ephemeral port."""
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.bind(("127.0.0.1", 0))
-        return s.getsockname()[1]
+    return _allocate_free_port()
 
 
 class ServerProcess:
@@ -193,55 +212,75 @@ def fluxgraph_server(server_exe: Path, free_port: int, proto_bindings):
     import fluxgraph_pb2_grpc as pb_grpc
     import fluxgraph_pb2 as pb
 
-    cmd = [str(server_exe), "--port", str(free_port)]
+    max_start_attempts = 3
+    startup_timeout_sec = 10.0
+    startup_failure = "unknown startup failure"
 
-    # Start process
-    proc = subprocess.Popen(
-        cmd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-        cwd=str(
-            _repo_root()
-        ),  # Run from repo root so relative config paths work if needed
-    )
+    for attempt in range(1, max_start_attempts + 1):
+        port = free_port if attempt == 1 else _allocate_free_port()
+        cmd = [str(server_exe), "--port", str(port)]
 
-    server = ServerProcess(proc, free_port)
+        # Start process
+        proc = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            cwd=str(
+                _repo_root()
+            ),  # Run from repo root so relative config paths work if needed
+        )
+        server = ServerProcess(proc, port)
 
-    # Wait for readiness (using gRPC health check)
-    address = f"127.0.0.1:{free_port}"
-    channel = grpc.insecure_channel(address)
-    stub = pb_grpc.FluxGraphStub(channel)
+        # Wait for readiness (using gRPC health check)
+        channel = grpc.insecure_channel(server.address)
+        stub = pb_grpc.FluxGraphStub(channel)
 
-    start_time = time.time()
-    ready = False
-    last_err = None
+        start_time = time.time()
+        ready = False
+        last_err = None
 
-    while time.time() - start_time < 5.0:
-        if proc.poll() is not None:
-            pytest.fail(
-                f"Server process died immediately with code {proc.returncode}. Stderr: {proc.stderr.read()}"
+        while time.time() - start_time < startup_timeout_sec:
+            if proc.poll() is not None:
+                stdout, stderr = _collect_process_output(proc)
+                startup_failure = (
+                    f"Server exited during startup on attempt {attempt}/{max_start_attempts} "
+                    f"(port={port}, code={proc.returncode}).\n"
+                    f"stdout:\n{stdout}\n"
+                    f"stderr:\n{stderr}"
+                )
+                break
+
+            try:
+                req = pb.HealthCheckRequest(service="fluxgraph")
+                resp = stub.Check(req, timeout=0.5)
+                if resp.status == pb.HealthCheckResponse.SERVING:
+                    ready = True
+                    break
+            except grpc.RpcError as e:
+                last_err = e
+                time.sleep(0.1)
+
+        channel.close()
+
+        if ready:
+            yield server
+            server.stop()
+            return
+
+        if proc.poll() is None:
+            stdout, stderr = _collect_process_output(proc)
+            startup_failure = (
+                f"Server at {server.address} failed readiness on attempt {attempt}/{max_start_attempts} "
+                f"within {startup_timeout_sec:.1f}s. Last RPC error: {last_err}\n"
+                f"stdout:\n{stdout}\n"
+                f"stderr:\n{stderr}"
             )
 
-        try:
-            req = pb.HealthCheckRequest(service="fluxgraph")
-            resp = stub.Check(req)
-            if resp.status == pb.HealthCheckResponse.SERVING:
-                ready = True
-                break
-        except grpc.RpcError as e:
-            last_err = e
-            time.sleep(0.1)
+        if attempt < max_start_attempts:
+            print(f"WARNING: {startup_failure}\nRetrying startup...")
 
-    if not ready:
-        proc.kill()
-        pytest.fail(
-            f"Server at {address} failed to become ready in 5s. Last error: {last_err}"
-        )
-
-    yield server
-
-    server.stop()
+    pytest.fail(startup_failure)
 
 
 @pytest.fixture

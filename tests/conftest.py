@@ -66,11 +66,12 @@ def _ensure_proto_bindings(root: Path) -> Path:
         # Default location
         python_proto_dir = root / "build-server" / "python"
 
-    # Minimal check: does the directory exist and contain _pb2.py files?
-    has_bindings = False
-    if python_proto_dir.exists():
-        if list(python_proto_dir.glob("*_pb2.py")):
-            has_bindings = True
+    required_files = ("fluxgraph_pb2.py", "fluxgraph_pb2_grpc.py")
+
+    def has_required_bindings(path: Path) -> bool:
+        return all((path / filename).is_file() for filename in required_files)
+
+    has_bindings = has_required_bindings(python_proto_dir)
 
     if not has_bindings:
         # Try to generate them using the scripts
@@ -80,23 +81,52 @@ def _ensure_proto_bindings(root: Path) -> Path:
         if script.exists():
             print(f"Generating proto bindings using {script}...")
             cmd = (
-                ["powershell", "-ExecutionPolicy", "Bypass", "-File", str(script)]
+                [
+                    "powershell",
+                    "-ExecutionPolicy",
+                    "Bypass",
+                    "-File",
+                    str(script),
+                    "-OutputDir",
+                    str(python_proto_dir),
+                ]
                 if sys.platform == "win32"
-                else ["bash", str(script)]
+                else ["bash", str(script), str(python_proto_dir)]
             )
             try:
-                subprocess.run(cmd, check=True, capture_output=True)
-                has_bindings = True
+                result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+                if result.stdout:
+                    print(result.stdout)
+                if result.stderr:
+                    print(result.stderr)
             except subprocess.CalledProcessError as e:
-                print(f"Failed to generate bindings: {e.stderr.decode()}")
+                stdout = e.stdout if isinstance(e.stdout, str) else ""
+                stderr = e.stderr if isinstance(e.stderr, str) else ""
+                pytest.fail(
+                    "Failed to generate protobuf bindings.\n"
+                    f"Command: {' '.join(cmd)}\n"
+                    f"stdout:\n{stdout}\n"
+                    f"stderr:\n{stderr}"
+                )
+
+        has_bindings = has_required_bindings(python_proto_dir)
 
     if not has_bindings:
+        missing = [
+            filename
+            for filename in required_files
+            if not (python_proto_dir / filename).is_file()
+        ]
         pytest.fail(
-            f"Python protobuf bindings not found at {python_proto_dir}. Run scripts/generate_proto_python.{('ps1' if sys.platform == 'win32' else 'sh')}"
+            "Python protobuf bindings missing after generation.\n"
+            f"Directory: {python_proto_dir}\n"
+            f"Missing files: {', '.join(missing)}"
         )
 
     # Add to sys.path so imports work
-    sys.path.insert(0, str(python_proto_dir))
+    proto_path = str(python_proto_dir)
+    if proto_path not in sys.path:
+        sys.path.insert(0, proto_path)
     return python_proto_dir
 
 
@@ -181,7 +211,7 @@ def fluxgraph_server(server_exe: Path, free_port: int, proto_bindings):
     # Wait for readiness (using gRPC health check)
     address = f"127.0.0.1:{free_port}"
     channel = grpc.insecure_channel(address)
-    stub = pb_grpc.HealthCheckStub(channel)
+    stub = pb_grpc.FluxGraphStub(channel)
 
     start_time = time.time()
     ready = False
@@ -224,7 +254,7 @@ def grpc_channel(fluxgraph_server):
 
 @pytest.fixture
 def grpc_stub(grpc_channel, proto_bindings):
-    """Provide a FluxGraphService stub."""
+    """Provide a FluxGraph stub."""
     import fluxgraph_pb2_grpc as pb_grpc
 
-    return pb_grpc.FluxGraphServiceStub(grpc_channel)
+    return pb_grpc.FluxGraphStub(grpc_channel)

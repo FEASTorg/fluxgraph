@@ -15,9 +15,13 @@ $ProtoFile = Join-Path $RepoRoot "proto\fluxgraph.proto"
 $ProtoDir = Join-Path $RepoRoot "proto"
 
 if (-not $OutputDir) {
-    $OutputDir = Join-Path $RepoRoot "build-server\python"
-    New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
+    if ($env:FLUXGRAPH_PROTO_PYTHON_DIR) {
+        $OutputDir = $env:FLUXGRAPH_PROTO_PYTHON_DIR
+    } else {
+        $OutputDir = Join-Path $RepoRoot "build-server\python"
+    }
 }
+New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
 
 Write-Host "============================================" -ForegroundColor Cyan
 Write-Host "Generate Python Protobuf Bindings" -ForegroundColor Cyan

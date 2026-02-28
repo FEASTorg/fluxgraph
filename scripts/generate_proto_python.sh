@@ -11,7 +11,8 @@ REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 PROTO_FILE="$REPO_ROOT/proto/fluxgraph.proto"
 PROTO_DIR="$REPO_ROOT/proto"
 
-OUTPUT_DIR="${1:-$REPO_ROOT/build-server/python}"
+DEFAULT_OUTPUT_DIR="${FLUXGRAPH_PROTO_PYTHON_DIR:-$REPO_ROOT/build-server/python}"
+OUTPUT_DIR="${1:-$DEFAULT_OUTPUT_DIR}"
 mkdir -p "$OUTPUT_DIR"
 
 echo "============================================"

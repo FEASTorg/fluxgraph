@@ -26,9 +26,12 @@
       "hidden": true,
       "inherits": "base",
       "generator": "Visual Studio 17 2022",
+      "toolset": "v143",
       "architecture": "x64",
       "cacheVariables": {
-        "VCPKG_TARGET_TRIPLET": "x64-windows"
+        "VCPKG_OVERLAY_TRIPLETS": "${sourceDir}/vcpkg/triplets",
+        "VCPKG_TARGET_TRIPLET": "x64-windows-v143",
+        "VCPKG_HOST_TRIPLET": "x64-windows-v143"
       }
     },
     {
@@ -100,6 +103,27 @@
         "FLUXGRAPH_JSON_ENABLED": "ON",
         "FLUXGRAPH_YAML_ENABLED": "ON"
       }
+    },
+    {
+      "name": "dev-windows-server",
+      "inherits": "base-windows-msvc",
+      "binaryDir": "${sourceDir}/build-windows-server",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "FLUXGRAPH_BUILD_SERVER": "ON",
+        "FLUXGRAPH_JSON_ENABLED": "ON",
+        "FLUXGRAPH_YAML_ENABLED": "ON"
+      }
+    },
+    {
+      "name": "ci-windows-release-server",
+      "inherits": "ci-windows-release",
+      "binaryDir": "${sourceDir}/build-windows-server-release",
+      "cacheVariables": {
+        "FLUXGRAPH_BUILD_SERVER": "ON",
+        "FLUXGRAPH_JSON_ENABLED": "ON",
+        "FLUXGRAPH_YAML_ENABLED": "ON"
+      }
     }
   ],
   "buildPresets": [
@@ -141,6 +165,16 @@
     {
       "name": "ci-linux-release-server",
       "configurePreset": "ci-linux-release-server"
+    },
+    {
+      "name": "dev-windows-server",
+      "configurePreset": "dev-windows-server",
+      "configuration": "Debug"
+    },
+    {
+      "name": "ci-windows-release-server",
+      "configurePreset": "ci-windows-release-server",
+      "configuration": "Release"
     }
   ],
   "testPresets": [
@@ -206,6 +240,22 @@
     {
       "name": "ci-linux-release-server",
       "configurePreset": "ci-linux-release-server",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "dev-windows-server",
+      "configurePreset": "dev-windows-server",
+      "configuration": "Debug",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "ci-windows-release-server",
+      "configurePreset": "ci-windows-release-server",
+      "configuration": "Release",
       "output": {
         "outputOnFailure": true
       }

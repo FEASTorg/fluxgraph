@@ -30,6 +30,26 @@ Options:
 - `--preset` / `-Preset`: CTest preset name.
 - `--verbose` / `-Verbose`: verbose test output.
 
+## Benchmarks
+
+- Linux/macOS: `bash ./scripts/bench.sh --preset dev-release`
+- Windows: `.\scripts\bench.ps1 -Preset dev-windows-release`
+
+Options:
+
+- `--preset` / `-Preset`: configure+build preset.
+- `--config` / `-Config`: multi-config build profile (for Visual Studio, usually `Release`).
+- `--output-dir` / `-OutputDir`: benchmark artifact directory.
+- `--include-optional` / `-IncludeOptional`: include JSON/YAML loader benchmarks.
+- `--no-build` / `-NoBuild`: run existing binaries without configure/build.
+- `--fail-on-status` / `-FailOnStatus`: return non-zero when benchmark reports `Status: FAIL`.
+
+Artifacts are written under `artifacts/benchmarks/<timestamp>_<preset>/` with:
+
+- `benchmark_results.json` (manifest + metadata + per-benchmark status)
+- `*.stdout.log` and `*.stderr.log`
+- configure/build logs when build is enabled
+
 ## Common Presets
 
 - `dev-debug`

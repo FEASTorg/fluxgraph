@@ -15,7 +15,11 @@ def _is_number(value: object) -> bool:
 
 def flatten_metrics_from_results(doc: Dict[str, object]) -> Dict[str, float]:
     metrics: Dict[str, float] = {}
-    for bench in doc.get("benchmarks", []):
+    benches_obj = doc.get("benchmarks")
+    if not isinstance(benches_obj, list):
+        return metrics
+
+    for bench in benches_obj:
         if not isinstance(bench, dict):
             continue
         target = bench.get("target")
@@ -64,9 +68,10 @@ def load_metrics(path: Path) -> Tuple[Dict[str, object], Dict[str, float]]:
         return data, flatten_metrics_from_results(data)
 
     # 2) baseline template format: {"metrics": {...}}
-    if isinstance(data.get("metrics"), dict):
+    metrics_obj = data.get("metrics")
+    if isinstance(metrics_obj, dict):
         out: Dict[str, float] = {}
-        for key, value in data["metrics"].items():
+        for key, value in metrics_obj.items():
             if isinstance(key, str) and _is_number(value):
                 out[key] = float(value)
         return data, out
@@ -313,13 +318,25 @@ def main() -> int:
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
 
-    errors = int(report["issue_counts"]["errors"])
-    warnings = int(report["issue_counts"]["warnings"])
+    issue_counts_obj = report.get("issue_counts")
+    if not isinstance(issue_counts_obj, dict):
+        raise ValueError("Evaluation report missing issue_counts object")
+
+    errors_raw = issue_counts_obj.get("errors", 0)
+    warnings_raw = issue_counts_obj.get("warnings", 0)
+    errors = int(errors_raw) if _is_number(errors_raw) else 0
+    warnings = int(warnings_raw) if _is_number(warnings_raw) else 0
     print(f"Policy profile: {args.profile}")
     print(f"Errors: {errors}")
     print(f"Warnings: {warnings}")
 
-    for issue in report["issues"]:
+    issues_obj = report.get("issues", [])
+    if not isinstance(issues_obj, list):
+        raise ValueError("Evaluation report missing issues list")
+
+    for issue in issues_obj:
+        if not isinstance(issue, dict):
+            continue
         sev = str(issue.get("severity", "warning")).upper()
         check = str(issue.get("check", "unknown"))
         msg = str(issue.get("message", ""))

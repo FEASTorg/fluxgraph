@@ -35,6 +35,14 @@ OPTIONAL_TARGETS = [
 ]
 
 
+def _coerce_text(value: object) -> str:
+    if isinstance(value, str):
+        return value
+    if isinstance(value, bytes):
+        return value.decode("utf-8", errors="replace")
+    return ""
+
+
 def run_cmd(cmd: List[str], cwd: Path) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         cmd,
@@ -336,8 +344,8 @@ def main() -> int:
         except subprocess.TimeoutExpired as exc:
             duration_sec = time.perf_counter() - start
             timed_out = True
-            stdout_text = exc.stdout or ""
-            stderr_text = exc.stderr or ""
+            stdout_text = _coerce_text(exc.stdout)
+            stderr_text = _coerce_text(exc.stderr)
             exit_code = 124
 
         out_path = output_dir / f"{target}.stdout.log"
@@ -384,11 +392,17 @@ def main() -> int:
     status_failures = [r for r in run_records if r.get("status") == "fail"]
     execution_failures = [r for r in run_records if r.get("exit_code", 0) != 0]
 
+    scenario_count = 0
+    for record in run_records:
+        scenarios_obj = record.get("scenarios")
+        if isinstance(scenarios_obj, list):
+            scenario_count += len(scenarios_obj)
+
     summary = {
         "total": len(run_records),
         "status_failures": len(status_failures),
         "execution_failures": len(execution_failures),
-        "scenario_count": sum(len(r.get("scenarios", [])) for r in run_records),
+        "scenario_count": scenario_count,
     }
 
     result = {
@@ -400,7 +414,11 @@ def main() -> int:
     result_file = output_dir / "benchmark_results.json"
     result_file.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
 
-    missing_required = [r["target"] for r in run_records if r.get("skipped") and r.get("target") in BENCHMARK_TARGETS]
+    missing_required: List[str] = []
+    for record in run_records:
+        target_obj = record.get("target")
+        if isinstance(target_obj, str) and bool(record.get("skipped")) and target_obj in BENCHMARK_TARGETS:
+            missing_required.append(target_obj)
 
     print(f"Benchmark artifacts written to: {output_dir}")
     print(f"Results manifest: {result_file}")

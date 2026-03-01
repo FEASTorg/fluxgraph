@@ -60,6 +60,7 @@ TEST(GraphCompilerTest, CompileSimpleGraph) {
 
   EXPECT_EQ(program.edges.size(), 1);
   EXPECT_NE(program.edges[0].transform, nullptr);
+  EXPECT_EQ(program.required_signal_capacity, signal_ns.size());
 }
 
 TEST(GraphCompilerTest, TopologicalSortPreservesOrder) {

@@ -79,6 +79,19 @@ TEST_F(SignalStoreTest, MultipleSignals) {
   EXPECT_EQ(store.read_value(3), 30.0);
 }
 
+TEST_F(SignalStoreTest, ReservePreallocatesSlotsWithoutChangingSize) {
+  store.reserve(64);
+  EXPECT_GE(store.capacity(), 64u);
+  EXPECT_EQ(store.size(), 0u);
+}
+
+TEST_F(SignalStoreTest, SparseSignalIdsTrackLogicalSize) {
+  store.write(100, 1.0, "V");
+  EXPECT_EQ(store.size(), 1u);
+  EXPECT_EQ(store.read_value(100), 1.0);
+  EXPECT_EQ(store.read_value(99), 0.0);
+}
+
 TEST_F(SignalStoreTest, OverwriteSignal) {
   store.write(1, 100.0, "degC");
   EXPECT_EQ(store.read_value(1), 100.0);

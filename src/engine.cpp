@@ -8,6 +8,7 @@ Engine::Engine() : loaded_(false) {}
 Engine::~Engine() = default;
 
 void Engine::load(CompiledProgram program) {
+  required_signal_capacity_ = program.required_signal_capacity;
   edges_ = std::move(program.edges);
   models_ = std::move(program.models);
   rules_ = std::move(program.rules);
@@ -20,6 +21,11 @@ void Engine::tick(double dt, SignalStore &store) {
   }
   if (dt <= 0.0) {
     throw std::runtime_error("Engine: dt must be positive");
+  }
+
+  if (required_signal_capacity_ > 0 &&
+      store.capacity() < required_signal_capacity_) {
+    store.reserve(required_signal_capacity_);
   }
 
   // Runtime stability contract: enforce model limits for supplied dt.

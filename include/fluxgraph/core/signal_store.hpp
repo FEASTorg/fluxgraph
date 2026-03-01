@@ -1,9 +1,10 @@
 #pragma once
 
 #include "fluxgraph/core/types.hpp"
-#include <map>
-#include <set>
+#include <cstddef>
+#include <cstdint>
 #include <string>
+#include <vector>
 
 namespace fluxgraph {
 
@@ -50,7 +51,7 @@ public:
   /// Pre-allocate storage for signals (optimization)
   void reserve(size_t max_signals);
 
-  /// Get current capacity
+  /// Get current preallocated slot count
   size_t capacity() const;
 
   /// Get number of signals currently stored
@@ -60,9 +61,15 @@ public:
   void clear();
 
 private:
-  std::map<SignalId, Signal> signals_;
-  std::set<SignalId> physics_driven_;
-  std::map<SignalId, std::string> declared_units_;
+  void ensure_index(SignalId id);
+  static const std::string &dimensionless_unit();
+
+  std::vector<Signal> signals_;
+  std::vector<uint8_t> has_signal_;
+  std::vector<uint8_t> physics_driven_;
+  std::vector<std::string> declared_units_;
+  std::vector<uint8_t> has_declared_unit_;
+  size_t signal_count_ = 0;
 };
 
 } // namespace fluxgraph

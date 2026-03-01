@@ -4,6 +4,7 @@
 #include "fluxgraph/graph/spec.hpp"
 #include "fluxgraph/model/interface.hpp"
 #include "fluxgraph/transform/interface.hpp"
+#include <cstddef>
 #include <functional>
 #include <memory>
 #include <vector>
@@ -35,6 +36,7 @@ struct CompiledProgram {
   std::vector<CompiledEdge> edges;
   std::vector<std::unique_ptr<IModel>> models;
   std::vector<CompiledRule> rules;
+  size_t required_signal_capacity = 0;
 };
 
 /// Compiles GraphSpec into executable CompiledProgram

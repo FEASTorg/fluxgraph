@@ -64,6 +64,35 @@ TEST(EngineTest, SimpleEdgeExecution) {
   EXPECT_EQ(output, 20.0); // 2 * 10
 }
 
+TEST(EngineTest, TickPreallocatesSignalStoreFromProgramMetadata) {
+  GraphSpec spec;
+
+  EdgeSpec edge;
+  edge.source_path = "input";
+  edge.target_path = "output";
+  edge.transform.type = "linear";
+  edge.transform.params["scale"] = 1.0;
+  edge.transform.params["offset"] = 0.0;
+  spec.edges.push_back(edge);
+
+  SignalNamespace signal_ns;
+  FunctionNamespace func_ns;
+  GraphCompiler compiler;
+  auto program = compiler.compile(spec, signal_ns, func_ns);
+
+  SignalStore store;
+  EXPECT_EQ(store.capacity(), 0u);
+
+  Engine engine;
+  engine.load(std::move(program));
+
+  SignalId input_id = signal_ns.resolve("input");
+  store.write(input_id, 1.0, "dimensionless");
+  engine.tick(0.1, store);
+
+  EXPECT_GE(store.capacity(), signal_ns.size());
+}
+
 TEST(EngineTest, DrainCommands) {
   Engine engine;
   CompiledProgram program;

@@ -2,6 +2,7 @@
 
 #include "fluxgraph/command.hpp"
 #include "fluxgraph/graph/compiler.hpp"
+#include <cstddef>
 #include <vector>
 
 namespace fluxgraph {
@@ -39,6 +40,7 @@ public:
 
 private:
   bool loaded_;
+  size_t required_signal_capacity_ = 0;
   std::vector<CompiledEdge> edges_;
   std::vector<std::unique_ptr<IModel>> models_;
   std::vector<CompiledRule> rules_;

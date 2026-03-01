@@ -220,6 +220,10 @@ CompiledProgram GraphCompiler::compile(const GraphSpec &spec,
     program.rules.push_back(std::move(rule));
   }
 
+  // Signal ids are interned densely from 0..N-1.
+  // Reserve this many slots in runtime storage to avoid tick-time growth.
+  program.required_signal_capacity = signal_ns.size();
+
   return program;
 }
 

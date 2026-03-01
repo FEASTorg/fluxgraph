@@ -30,9 +30,7 @@ def _find_server_executable(root: Path) -> Path:
         if path.exists() and path.is_file():
             return path.resolve()
         # Warn but fall back if env var points to nowhere
-        print(
-            f"WARNING: FLUXGRAPH_SERVER_EXE={env_path} does not exist. Falling back to search."
-        )
+        print(f"WARNING: FLUXGRAPH_SERVER_EXE={env_path} does not exist. Falling back to search.")
 
     # Search common build locations
     names = ["fluxgraph-server.exe", "fluxgraph-server"]
@@ -112,11 +110,7 @@ def _ensure_proto_bindings(root: Path) -> Path:
         has_bindings = has_required_bindings(python_proto_dir)
 
     if not has_bindings:
-        missing = [
-            filename
-            for filename in required_files
-            if not (python_proto_dir / filename).is_file()
-        ]
+        missing = [filename for filename in required_files if not (python_proto_dir / filename).is_file()]
         pytest.fail(
             "Python protobuf bindings missing after generation.\n"
             f"Directory: {python_proto_dir}\n"
@@ -202,9 +196,7 @@ class ServerProcess:
 
 
 @pytest.fixture
-def fluxgraph_server(
-    server_exe: Path, free_port: int, proto_bindings: Path
-) -> Iterator[ServerProcess]:
+def fluxgraph_server(server_exe: Path, free_port: int, proto_bindings: Path) -> Iterator[ServerProcess]:
     """
     Start a fluxgraph-server instance on a random port.
     Yields a ServerProcess object.
@@ -228,9 +220,7 @@ def fluxgraph_server(
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
-            cwd=str(
-                _repo_root()
-            ),  # Run from repo root so relative config paths work if needed
+            cwd=str(_repo_root()),  # Run from repo root so relative config paths work if needed
         )
         server = ServerProcess(proc, port)
 

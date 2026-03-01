@@ -1,7 +1,7 @@
 #include "fluxgraph/transform/linear.hpp"
 #include <cmath>
-#include <limits>
 #include <gtest/gtest.h>
+#include <limits>
 
 using namespace fluxgraph;
 

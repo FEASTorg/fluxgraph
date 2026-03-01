@@ -341,3 +341,77 @@ TEST(EngineTest, RuleEvaluationEmitsCommands) {
   EXPECT_EQ(func_ns.lookup_device(commands[0].device), "controller");
   EXPECT_EQ(func_ns.lookup_function(commands[0].function), "shutdown");
 }
+
+TEST(EngineTest, RuleCommandsAccumulateUntilDrain) {
+  GraphSpec spec;
+
+  RuleSpec rule;
+  rule.id = "emit_each_tick";
+  rule.condition = "sensor.value >= 0.0";
+
+  ActionSpec action;
+  action.device = "controller";
+  action.function = "noop";
+  action.args["mode"] = std::string("hold");
+  rule.actions.push_back(action);
+  spec.rules.push_back(rule);
+
+  SignalNamespace signal_ns;
+  FunctionNamespace func_ns;
+  SignalStore store;
+  GraphCompiler compiler;
+  auto program = compiler.compile(spec, signal_ns, func_ns);
+
+  Engine engine;
+  engine.load(std::move(program));
+
+  SignalId sensor_id = signal_ns.resolve("sensor.value");
+  store.write(sensor_id, 0.0, "dimensionless");
+
+  engine.tick(0.1, store);
+  engine.tick(0.1, store);
+
+  auto commands = engine.drain_commands();
+  ASSERT_EQ(commands.size(), 2u);
+  EXPECT_EQ(func_ns.lookup_function(commands[0].function), "noop");
+  EXPECT_EQ(func_ns.lookup_function(commands[1].function), "noop");
+}
+
+TEST(EngineTest, RuleCommandBacklogOverflowThrows) {
+  GraphSpec spec;
+
+  RuleSpec rule;
+  rule.id = "emit_each_tick";
+  rule.condition = "sensor.value >= 0.0";
+
+  ActionSpec action;
+  action.device = "controller";
+  action.function = "noop";
+  rule.actions.push_back(action);
+  spec.rules.push_back(rule);
+
+  SignalNamespace signal_ns;
+  FunctionNamespace func_ns;
+  SignalStore store;
+  GraphCompiler compiler;
+  auto program = compiler.compile(spec, signal_ns, func_ns);
+
+  Engine engine;
+  engine.load(std::move(program));
+
+  SignalId sensor_id = signal_ns.resolve("sensor.value");
+  store.write(sensor_id, 0.0, "dimensionless");
+
+  bool overflow_observed = false;
+  for (int i = 0; i < 1000; ++i) {
+    try {
+      engine.tick(0.1, store);
+    } catch (const std::runtime_error &e) {
+      overflow_observed = std::string(e.what()).find("command backlog") !=
+                          std::string::npos;
+      break;
+    }
+  }
+
+  EXPECT_TRUE(overflow_observed);
+}

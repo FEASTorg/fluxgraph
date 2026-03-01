@@ -29,11 +29,18 @@ public:
   void write(SignalId id, double value,
              const std::string &unit = "dimensionless");
 
+  /// Write value to target signal using unit metadata from source signal.
+  /// Falls back to "dimensionless" when source is invalid/unwritten.
+  void write_with_source_unit(SignalId target, double value, SignalId source);
+
   /// Read a signal (value + unit)
   Signal read(SignalId id) const;
 
   /// Read only the value (convenience method)
   double read_value(SignalId id) const;
+
+  /// Read only the unit (convenience method)
+  const std::string &read_unit(SignalId id) const;
 
   /// Check if a signal is driven by physics simulation
   bool is_physics_driven(SignalId id) const;

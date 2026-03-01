@@ -1,4 +1,5 @@
 #include "fluxgraph/engine.hpp"
+#include <limits>
 #include <stdexcept>
 
 namespace fluxgraph {
@@ -8,10 +9,22 @@ Engine::Engine() : loaded_(false) {}
 Engine::~Engine() = default;
 
 void Engine::load(CompiledProgram program) {
+  constexpr size_t kCommandBacklogTicks = 4;
+
   required_signal_capacity_ = program.required_signal_capacity;
+  required_command_capacity_ = program.required_command_capacity;
   edges_ = std::move(program.edges);
   models_ = std::move(program.models);
   rules_ = std::move(program.rules);
+  pending_commands_.clear();
+
+  size_t backlog_capacity = required_command_capacity_;
+  if (required_command_capacity_ > 0 &&
+      required_command_capacity_ <=
+          std::numeric_limits<size_t>::max() / kCommandBacklogTicks) {
+    backlog_capacity = required_command_capacity_ * kCommandBacklogTicks;
+  }
+  pending_commands_.reserve(backlog_capacity);
   loaded_ = true;
 }
 
@@ -56,8 +69,20 @@ void Engine::tick(double dt, SignalStore &store) {
 }
 
 std::vector<Command> Engine::drain_commands() {
-  std::vector<Command> drained = std::move(command_queue_);
-  command_queue_.clear();
+  std::vector<Command> drained;
+  drained.reserve(pending_commands_.size());
+
+  for (const auto &pending : pending_commands_) {
+    Command cmd;
+    cmd.device = pending.device;
+    cmd.function = pending.function;
+    if (pending.args != nullptr) {
+      cmd.args = *pending.args;
+    }
+    drained.push_back(std::move(cmd));
+  }
+
+  pending_commands_.clear();
   return drained;
 }
 
@@ -72,15 +97,15 @@ void Engine::reset() {
     edge.transform->reset();
   }
 
-  // Clear command queue
-  command_queue_.clear();
+  // Clear pending commands
+  pending_commands_.clear();
 }
 
 void Engine::process_edges(double dt, SignalStore &store) {
   for (auto &edge : edges_) {
-    const auto source = store.read(edge.source);
-    double output = edge.transform->apply(source.value, dt);
-    store.write(edge.target, output, source.unit);
+    const double source_value = store.read_value(edge.source);
+    double output = edge.transform->apply(source_value, dt);
+    store.write_with_source_unit(edge.target, output, edge.source);
   }
 }
 
@@ -101,11 +126,17 @@ void Engine::evaluate_rules(SignalStore &store) {
     if (rule.condition(store)) {
       // Emit commands for all actions
       for (size_t i = 0; i < rule.device_functions.size(); ++i) {
-        Command cmd;
+        if (pending_commands_.size() >= pending_commands_.capacity()) {
+          throw std::runtime_error(
+              "Engine: command backlog capacity exceeded; call "
+              "drain_commands() more frequently");
+        }
+
+        PendingCommand cmd;
         cmd.device = rule.device_functions[i].first;
         cmd.function = rule.device_functions[i].second;
-        cmd.args = rule.args_list[i];
-        command_queue_.push_back(std::move(cmd));
+        cmd.args = &rule.args_list[i];
+        pending_commands_.push_back(cmd);
       }
     }
   }

@@ -37,6 +37,7 @@ struct CompiledProgram {
   std::vector<std::unique_ptr<IModel>> models;
   std::vector<CompiledRule> rules;
   size_t required_signal_capacity = 0;
+  size_t required_command_capacity = 0;
 };
 
 /// Compiles GraphSpec into executable CompiledProgram

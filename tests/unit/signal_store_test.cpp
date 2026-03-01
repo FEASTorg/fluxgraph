@@ -24,12 +24,14 @@ TEST_F(SignalStoreTest, WriteAndReadSignal) {
   Signal sig = store.read(1);
   EXPECT_EQ(sig.value, 25.0);
   EXPECT_EQ(sig.unit, "degC");
+  EXPECT_EQ(store.read_unit(1), "degC");
 }
 
 TEST_F(SignalStoreTest, InvalidSignalReturnsDefault) {
   Signal sig = store.read(INVALID_SIGNAL);
   EXPECT_EQ(sig.value, 0.0);
   EXPECT_EQ(sig.unit, "dimensionless");
+  EXPECT_EQ(store.read_unit(INVALID_SIGNAL), "dimensionless");
 }
 
 TEST_F(SignalStoreTest, InvalidSignalWriteIsNoOp) {
@@ -90,6 +92,29 @@ TEST_F(SignalStoreTest, SparseSignalIdsTrackLogicalSize) {
   EXPECT_EQ(store.size(), 1u);
   EXPECT_EQ(store.read_value(100), 1.0);
   EXPECT_EQ(store.read_value(99), 0.0);
+  EXPECT_EQ(store.read_unit(99), "dimensionless");
+}
+
+TEST_F(SignalStoreTest, WriteWithSourceUnitPropagatesUnit) {
+  store.write(1, 12.0, "degC");
+  store.write_with_source_unit(2, 99.0, 1);
+
+  EXPECT_EQ(store.read_value(2), 99.0);
+  EXPECT_EQ(store.read_unit(2), "degC");
+}
+
+TEST_F(SignalStoreTest, WriteWithSourceUnitHandlesGrowthSafely) {
+  store.write(1, 12.0, "degC");
+  store.write_with_source_unit(1000, 55.0, 1);
+
+  EXPECT_EQ(store.read_value(1000), 55.0);
+  EXPECT_EQ(store.read_unit(1000), "degC");
+}
+
+TEST_F(SignalStoreTest, WriteWithSourceUnitFallsBackToDimensionless) {
+  store.write_with_source_unit(8, 3.14, 999);
+  EXPECT_EQ(store.read_value(8), 3.14);
+  EXPECT_EQ(store.read_unit(8), "dimensionless");
 }
 
 TEST_F(SignalStoreTest, OverwriteSignal) {

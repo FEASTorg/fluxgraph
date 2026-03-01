@@ -61,6 +61,7 @@ TEST(GraphCompilerTest, CompileSimpleGraph) {
   EXPECT_EQ(program.edges.size(), 1);
   EXPECT_NE(program.edges[0].transform, nullptr);
   EXPECT_EQ(program.required_signal_capacity, signal_ns.size());
+  EXPECT_EQ(program.required_command_capacity, 0u);
 }
 
 TEST(GraphCompilerTest, TopologicalSortPreservesOrder) {
@@ -163,6 +164,7 @@ TEST(GraphCompilerTest, RuleConditionEvaluation) {
 
   CompiledProgram program = compiler.compile(spec, signal_ns, func_ns);
   ASSERT_EQ(program.rules.size(), 1);
+  EXPECT_EQ(program.required_command_capacity, 1u);
 
   SignalId temp_id = signal_ns.resolve("sensor.temp");
   ASSERT_NE(temp_id, INVALID_SIGNAL);
@@ -173,6 +175,39 @@ TEST(GraphCompilerTest, RuleConditionEvaluation) {
 
   store.write(temp_id, 50.0, "degC");
   EXPECT_TRUE(program.rules[0].condition(store));
+}
+
+TEST(GraphCompilerTest, RequiredCommandCapacitySumsAllRuleActions) {
+  GraphSpec spec;
+
+  RuleSpec rule_a;
+  rule_a.id = "r1";
+  rule_a.condition = "sensor.a > 0.0";
+  ActionSpec action_a1;
+  action_a1.device = "controller";
+  action_a1.function = "f1";
+  rule_a.actions.push_back(action_a1);
+  ActionSpec action_a2;
+  action_a2.device = "controller";
+  action_a2.function = "f2";
+  rule_a.actions.push_back(action_a2);
+  spec.rules.push_back(rule_a);
+
+  RuleSpec rule_b;
+  rule_b.id = "r2";
+  rule_b.condition = "sensor.b > 0.0";
+  ActionSpec action_b1;
+  action_b1.device = "controller";
+  action_b1.function = "f3";
+  rule_b.actions.push_back(action_b1);
+  spec.rules.push_back(rule_b);
+
+  SignalNamespace signal_ns;
+  FunctionNamespace func_ns;
+  GraphCompiler compiler;
+
+  CompiledProgram program = compiler.compile(spec, signal_ns, func_ns);
+  EXPECT_EQ(program.required_command_capacity, 3u);
 }
 
 TEST(GraphCompilerTest, InvalidRuleConditionThrows) {

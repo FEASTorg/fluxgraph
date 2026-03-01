@@ -224,6 +224,11 @@ CompiledProgram GraphCompiler::compile(const GraphSpec &spec,
   // Reserve this many slots in runtime storage to avoid tick-time growth.
   program.required_signal_capacity = signal_ns.size();
 
+  // Worst-case command emission for a single tick occurs when every rule fires.
+  for (const auto &rule : program.rules) {
+    program.required_command_capacity += rule.device_functions.size();
+  }
+
   return program;
 }
 

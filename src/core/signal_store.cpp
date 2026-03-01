@@ -60,6 +60,38 @@ void SignalStore::write(SignalId id, double value, const std::string &unit) {
   }
 }
 
+void SignalStore::write_with_source_unit(SignalId target, double value,
+                                         SignalId source) {
+  if (target == INVALID_SIGNAL) {
+    return;
+  }
+
+  if (source == INVALID_SIGNAL) {
+    write(target, value, dimensionless_unit());
+    return;
+  }
+
+  const size_t source_index = static_cast<size_t>(source);
+  const bool source_written =
+      source_index < signals_.size() && has_signal_[source_index] != 0;
+
+  if (!source_written) {
+    write(target, value, dimensionless_unit());
+    return;
+  }
+
+  const size_t target_index = static_cast<size_t>(target);
+  if (target_index < signals_.size()) {
+    // No growth required; safe to pass reference directly.
+    write(target, value, signals_[source_index].unit);
+    return;
+  }
+
+  // Growth may invalidate source references; capture by value first.
+  std::string source_unit = signals_[source_index].unit;
+  write(target, value, source_unit);
+}
+
 Signal SignalStore::read(SignalId id) const {
   if (id == INVALID_SIGNAL) {
     return Signal(); // Return default signal
@@ -84,6 +116,19 @@ double SignalStore::read_value(SignalId id) const {
   }
 
   return signals_[index].value;
+}
+
+const std::string &SignalStore::read_unit(SignalId id) const {
+  if (id == INVALID_SIGNAL) {
+    return dimensionless_unit();
+  }
+
+  const size_t index = static_cast<size_t>(id);
+  if (index >= signals_.size() || !has_signal_[index]) {
+    return dimensionless_unit();
+  }
+
+  return signals_[index].unit;
 }
 
 bool SignalStore::is_physics_driven(SignalId id) const {

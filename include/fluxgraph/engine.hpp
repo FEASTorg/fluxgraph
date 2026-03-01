@@ -29,6 +29,8 @@ public:
   void tick(double dt, SignalStore &store);
 
   /// Drain queued commands (for external processing)
+  /// Runtime contract: drain frequently enough to avoid command backlog
+  /// overflow during tick().
   /// @return All commands generated since last drain
   std::vector<Command> drain_commands();
 
@@ -39,12 +41,19 @@ public:
   bool is_loaded() const { return loaded_; }
 
 private:
+  struct PendingCommand {
+    DeviceId device = INVALID_DEVICE;
+    FunctionId function = INVALID_FUNCTION;
+    const std::map<std::string, Variant> *args = nullptr;
+  };
+
   bool loaded_;
   size_t required_signal_capacity_ = 0;
+  size_t required_command_capacity_ = 0;
   std::vector<CompiledEdge> edges_;
   std::vector<std::unique_ptr<IModel>> models_;
   std::vector<CompiledRule> rules_;
-  std::vector<Command> command_queue_;
+  std::vector<PendingCommand> pending_commands_;
 
   // Five-stage tick implementation
   void process_edges(double dt, SignalStore &store);

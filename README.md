@@ -4,7 +4,7 @@
 
 **A protocol-agnostic physics simulation library for embedded systems.**
 
-FluxGraph is a standalone C++ library that provides signal storage, graph compilation, transforms, models, and deterministic tick execution. Extracted from the FEAST Anolis provider architecture, FluxGraph enables embeddable physics simulation in any C++ host application.
+FluxGraph is a standalone C++ library that provides signal storage, graph compilation, transforms, models, and deterministic tick execution. FluxGraph enables embeddable physics simulation in any C++ host application.
 
 ## Features
 
@@ -127,51 +127,6 @@ fluxgraph/
 +-- docs/                  # Documentation
 ```
 
-## Development Status
-
-**v0.1.1 - Core Library Complete:**
-
-Core library:
-
-- [x] Core types (`SignalId`, `DeviceId`, `Variant`)
-- [x] `SignalStore` with unit metadata and physics-driven flags
-- [x] `SignalNamespace` for path interning
-- [x] `Command` structure with typed arguments
-- [x] Transform interface (`ITransform`)
-- [x] 8 Transform implementations:
-  - `LinearTransform` - Scale and offset with clamping
-  - `FirstOrderLagTransform` - Exponential smoothing (tau_s)
-  - `DelayTransform` - Time delay with ring buffer (delay_sec)
-  - `NoiseTransform` - Gaussian noise (amplitude, deterministic seed)
-  - `SaturationTransform` - Min/max clamping
-  - `DeadbandTransform` - Threshold-based zeroing
-  - `RateLimiterTransform` - Rate of change limiting (max_rate_per_sec)
-  - `MovingAverageTransform` - Sliding window average
-- [x] Model interface (`IModel`) with stability limits
-- [x] `ThermalMassModel` - Heat equation physics (Forward Euler)
-- [x] `GraphSpec` - Protocol-agnostic POD structures
-- [x] `GraphCompiler` - Topological sort, cycle detection, stability validation
-- [x] `Engine` - Five-stage tick execution:
-  1. Snapshot inputs
-  2. Process edges (in topological order)
-  3. Update models
-  4. Commit outputs
-  5. Evaluate rules
-- [x] **153 tests passing** (134 unit tests + 19 analytical tests)
-- [x] **Analytical validation suite** - Numerical accuracy vs closed-form solutions
-
-Optional loaders:
-
-- [x] **JSON loader** - Load graphs from JSON files (optional, requires nlohmann/json)
-- [x] **YAML loader** - Load graphs from YAML files (optional, requires yaml-cpp)
-- [x] **171 total tests** with all loaders enabled
-
-Documentation:
-
-- [x] API reference (see [docs/](docs/))
-- [x] JSON/YAML schema documentation
-- [x] 4 working examples
-
 ## License
 
 AGPL v3 License - See [LICENSE](LICENSE) for details
@@ -182,8 +137,8 @@ This project is part of the FEAST ecosystem. See [CONTRIBUTING.md](CONTRIBUTING.
 
 ## Related Projects
 
+- [anolis-provider-sim](https://github.com/FEASTorg/anolis-provider-sim) - Simulation provider which uses FluxGraph for physics simulation
 - [anolis](https://github.com/FEASTorg/anolis) - FEAST automation runtime
-- [anolis-provider-sim](https://github.com/FEASTorg/anolis-provider-sim) - Simulation provider
 
 ## Version
 

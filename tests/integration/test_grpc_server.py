@@ -2,9 +2,10 @@
 
 import grpc
 import pytest
+from typing import Any, cast
 
 
-def _pb():
+def _pb() -> Any:
     import fluxgraph_pb2 as pb
 
     return pb
@@ -34,7 +35,7 @@ edges:
 """
 
 
-def _load_config(grpc_stub, pb, config_hash: str = "test_config_v1"):
+def _load_config(grpc_stub: Any, pb: Any, config_hash: str = "test_config_v1") -> Any:
     response = grpc_stub.LoadConfig(
         pb.ConfigRequest(
             config_content=_valid_yaml_config(),
@@ -46,7 +47,7 @@ def _load_config(grpc_stub, pb, config_hash: str = "test_config_v1"):
     return response
 
 
-def _register_provider(grpc_stub, pb, provider_id: str = "sim_test") -> str:
+def _register_provider(grpc_stub: Any, pb: Any, provider_id: str = "sim_test") -> str:
     response = grpc_stub.RegisterProvider(
         pb.ProviderRegistration(
             provider_id=provider_id,
@@ -55,12 +56,12 @@ def _register_provider(grpc_stub, pb, provider_id: str = "sim_test") -> str:
     )
     assert response.success
     assert response.session_id
-    return response.session_id
+    return cast(str, response.session_id)
 
 
 @pytest.mark.integration
 @pytest.mark.slow
-def test_server_health_check(grpc_stub):
+def test_server_health_check(grpc_stub: Any) -> None:
     """Verify server reports healthy status."""
     pb = _pb()
     response = grpc_stub.Check(pb.HealthCheckRequest(service="fluxgraph"))
@@ -68,7 +69,7 @@ def test_server_health_check(grpc_stub):
 
 
 @pytest.mark.integration
-def test_load_yaml_config(grpc_stub):
+def test_load_yaml_config(grpc_stub: Any) -> None:
     """Verify valid config loads and hash-based no-op works."""
     pb = _pb()
     first = _load_config(grpc_stub, pb, config_hash="cfg_hash_1")
@@ -79,7 +80,7 @@ def test_load_yaml_config(grpc_stub):
 
 
 @pytest.mark.integration
-def test_provider_registration(grpc_stub):
+def test_provider_registration(grpc_stub: Any) -> None:
     """Verify provider registration succeeds and rejects duplicate provider_id."""
     pb = _pb()
     _load_config(grpc_stub, pb)
@@ -97,7 +98,7 @@ def test_provider_registration(grpc_stub):
 
 
 @pytest.mark.integration
-def test_signal_lifecycle(grpc_stub):
+def test_signal_lifecycle(grpc_stub: Any) -> None:
     """Load config, register provider, update input signal, and read it back."""
     pb = _pb()
     _load_config(grpc_stub, pb)
@@ -126,7 +127,7 @@ def test_signal_lifecycle(grpc_stub):
 
 
 @pytest.mark.integration
-def test_invalid_config_handling(grpc_stub):
+def test_invalid_config_handling(grpc_stub: Any) -> None:
     """Verify malformed YAML is rejected with INVALID_ARGUMENT."""
     pb = _pb()
     bad_config = "models: ["
@@ -138,7 +139,7 @@ def test_invalid_config_handling(grpc_stub):
 
 
 @pytest.mark.integration
-def test_reset_functionality(grpc_stub):
+def test_reset_functionality(grpc_stub: Any) -> None:
     """Verify reset succeeds and clears written signal state."""
     pb = _pb()
     _load_config(grpc_stub, pb)

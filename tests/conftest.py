@@ -4,7 +4,7 @@ import sys
 import time
 import socket
 from pathlib import Path
-from typing import List, Tuple
+from typing import Any, Iterator, List, Tuple
 
 import grpc
 import pytest
@@ -137,7 +137,7 @@ def _allocate_free_port() -> int:
         return int(s.getsockname()[1])
 
 
-def _collect_process_output(process: subprocess.Popen) -> Tuple[str, str]:
+def _collect_process_output(process: subprocess.Popen[str]) -> Tuple[str, str]:
     """Terminate process if needed and return captured stdout/stderr."""
     if process.poll() is None:
         process.terminate()
@@ -157,19 +157,19 @@ def _collect_process_output(process: subprocess.Popen) -> Tuple[str, str]:
 
 
 @pytest.fixture(scope="session")
-def proto_bindings():
+def proto_bindings() -> Path:
     """Ensure protobuf bindings are available for the session."""
     return _ensure_proto_bindings(_repo_root())
 
 
 @pytest.fixture(scope="session")
-def server_exe():
+def server_exe() -> Path:
     """Resolve server executable path."""
     return _find_server_executable(_repo_root())
 
 
 @pytest.fixture
-def free_port():
+def free_port() -> int:
     """Get a free ephemeral port."""
     return _allocate_free_port()
 
@@ -177,14 +177,14 @@ def free_port():
 class ServerProcess:
     """Manages a running fluxgraph-server process."""
 
-    def __init__(self, process: subprocess.Popen, port: int):
+    def __init__(self, process: subprocess.Popen[str], port: int) -> None:
         self.process = process
         self.port = port
         self.address = f"127.0.0.1:{port}"
         self._stdout_lines: List[str] = []
         self._stderr_lines: List[str] = []
 
-    def stop(self):
+    def stop(self) -> None:
         """Terminate the server process."""
         if self.process.poll() is None:
             self.process.terminate()
@@ -202,7 +202,9 @@ class ServerProcess:
 
 
 @pytest.fixture
-def fluxgraph_server(server_exe: Path, free_port: int, proto_bindings):
+def fluxgraph_server(
+    server_exe: Path, free_port: int, proto_bindings: Path
+) -> Iterator[ServerProcess]:
     """
     Start a fluxgraph-server instance on a random port.
     Yields a ServerProcess object.
@@ -238,7 +240,7 @@ def fluxgraph_server(server_exe: Path, free_port: int, proto_bindings):
 
         start_time = time.time()
         ready = False
-        last_err = None
+        last_err: grpc.RpcError | None = None
 
         while time.time() - start_time < startup_timeout_sec:
             if proc.poll() is not None:
@@ -284,7 +286,7 @@ def fluxgraph_server(server_exe: Path, free_port: int, proto_bindings):
 
 
 @pytest.fixture
-def grpc_channel(fluxgraph_server):
+def grpc_channel(fluxgraph_server: ServerProcess) -> Iterator[grpc.Channel]:
     """Provide a ready-to-use gRPC channel to the running server."""
     channel = grpc.insecure_channel(fluxgraph_server.address)
     yield channel
@@ -292,7 +294,7 @@ def grpc_channel(fluxgraph_server):
 
 
 @pytest.fixture
-def grpc_stub(grpc_channel, proto_bindings):
+def grpc_stub(grpc_channel: grpc.Channel, proto_bindings: Path) -> Any:
     """Provide a FluxGraph stub."""
     import fluxgraph_pb2_grpc as pb_grpc
 

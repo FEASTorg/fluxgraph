@@ -24,6 +24,15 @@ line-length = 120
 target-version = ['py37']
 
 [tool.mypy]
-python_version = "3.9"
+python_version = "3.12"
+files = ["tests"]
 strict = true
 ignore_missing_imports = true
+warn_unused_configs = true
+show_error_codes = true
+exclude = "(^build/|^build-server/|^build-windows-server/|^build-windows-server-release/|^build-test/|^vcpkg_installed/)"
+
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+disallow_untyped_defs = false
+disallow_incomplete_defs = false

@@ -8,9 +8,9 @@ namespace fluxgraph {
 
 /// Main simulation engine with five-stage tick execution
 /// Execution model:
-/// 1. Snapshot: Cache all edge source values
-/// 2. Edges: Apply transforms to snapshots in topological order
-/// 3. Models: Update physics models
+/// 1. Input boundary freeze (external writes before tick begin)
+/// 2. Models: Update physics models
+/// 3. Edges: Apply transforms in topological order (immediate propagation)
 /// 4. Commit: Finalize signal values
 /// 5. Rules: Evaluate conditions and emit commands
 class Engine {
@@ -45,7 +45,6 @@ private:
   std::vector<Command> command_queue_;
 
   // Five-stage tick implementation
-  void snapshot_inputs(SignalStore &store);
   void process_edges(double dt, SignalStore &store);
   void update_models(double dt, SignalStore &store);
   void commit_outputs(SignalStore &store);

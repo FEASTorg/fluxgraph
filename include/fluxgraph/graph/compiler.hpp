@@ -15,10 +15,10 @@ struct CompiledEdge {
   SignalId source;
   SignalId target;
   std::unique_ptr<ITransform> transform;
-  double snapshot; // Cached source value at tick start
+  bool is_delay;
 
-  CompiledEdge(SignalId src, SignalId tgt, ITransform *tf)
-      : source(src), target(tgt), transform(tf), snapshot(0.0) {}
+  CompiledEdge(SignalId src, SignalId tgt, ITransform *tf, bool delay)
+      : source(src), target(tgt), transform(tf), is_delay(delay) {}
 };
 
 /// Compiled rule with condition evaluator
@@ -47,10 +47,13 @@ public:
   /// @param spec Graph specification (POD)
   /// @param signal_ns Signal namespace for interning paths
   /// @param func_ns Function namespace for device/function IDs
+  /// @param expected_dt Optional expected runtime timestep; if > 0, model
+  /// stability validation is applied during compile.
   /// @return Compiled program ready for execution
   /// @throws std::runtime_error on compilation errors
   CompiledProgram compile(const GraphSpec &spec, SignalNamespace &signal_ns,
-                          FunctionNamespace &func_ns);
+                          FunctionNamespace &func_ns,
+                          double expected_dt = -1.0);
 
   // Public for testing
   ITransform *parse_transform(const TransformSpec &spec);

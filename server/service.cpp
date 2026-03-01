@@ -5,6 +5,7 @@
 #include <iostream>
 #include <random>
 #include <sstream>
+#include <variant>
 
 #include "fluxgraph/loaders/json_loader.hpp"
 #include "fluxgraph/loaders/yaml_loader.hpp"
@@ -15,8 +16,8 @@ namespace fluxgraph::server {
 // Constructor / Destructor
 // ============================================================================
 
-FluxGraphServiceImpl::FluxGraphServiceImpl() {
-  std::cout << "[FluxGraph] Service initialized\n";
+FluxGraphServiceImpl::FluxGraphServiceImpl(double dt) : dt_(dt) {
+  std::cout << "[FluxGraph] Service initialized (dt=" << dt_ << "s)\n";
 }
 
 FluxGraphServiceImpl::~FluxGraphServiceImpl() {
@@ -79,19 +80,49 @@ FluxGraphServiceImpl::LoadConfig(grpc::ServerContext * /*context*/,
 
     // Compile graph
     GraphCompiler compiler;
-    auto program = compiler.compile(spec, signal_ns_, func_ns_);
+    auto program = compiler.compile(spec, signal_ns_, func_ns_, dt_);
 
     // Load into engine
     engine_.load(std::move(program));
 
-    // Reset simulation state
-    store_.clear();
+    // Reset simulation state (fresh store to avoid stale declared-unit
+    // carryover across config reloads).
+    store_ = SignalStore();
+    protected_write_signals_.clear();
+    physics_owned_signals_.clear();
     sim_time_ = 0.0;
     tick_generation_ = 0;
     last_completed_generation_ = 0;
     last_completed_sim_time_ = 0.0;
     last_completed_commands_.clear();
     sessions_.clear();
+
+    // Build write-authority map from spec.
+    // - All edge targets are derived outputs and protected from external
+    // writes.
+    // - Model output signals are physics-owned and protected.
+    for (const auto &edge : spec.edges) {
+      const SignalId target_id = signal_ns_.resolve(edge.target_path);
+      if (target_id != INVALID_SIGNAL) {
+        protected_write_signals_.insert(target_id);
+      }
+    }
+
+    for (const auto &model : spec.models) {
+      if (model.type == "thermal_mass") {
+        const auto temp_it = model.params.find("temp_signal");
+        if (temp_it != model.params.end() &&
+            std::holds_alternative<std::string>(temp_it->second)) {
+          const auto &temp_path = std::get<std::string>(temp_it->second);
+          const SignalId temp_id = signal_ns_.resolve(temp_path);
+          if (temp_id != INVALID_SIGNAL) {
+            protected_write_signals_.insert(temp_id);
+            physics_owned_signals_.insert(temp_id);
+            store_.mark_physics_driven(temp_id, true);
+          }
+        }
+      }
+    }
 
     // Update config hash
     current_config_hash_ = request->config_hash();
@@ -102,7 +133,7 @@ FluxGraphServiceImpl::LoadConfig(grpc::ServerContext * /*context*/,
 
     std::cout << "[FluxGraph] Config loaded: " << spec.models.size()
               << " models, " << spec.edges.size() << " edges, "
-              << spec.rules.size() << " rules\n";
+              << spec.rules.size() << " rules, dt=" << dt_ << "s\n";
 
     return grpc::Status::OK;
 
@@ -261,6 +292,10 @@ grpc::Status FluxGraphServiceImpl::UpdateSignals(
       return grpc::Status(grpc::StatusCode::INVALID_ARGUMENT,
                           "Unknown signal: " + sig.path());
     }
+    if (protected_write_signals_.count(id) > 0) {
+      return grpc::Status(grpc::StatusCode::PERMISSION_DENIED,
+                          "Write denied for protected signal: " + sig.path());
+    }
     store_.write(id, sig.value(), sig.unit().c_str());
   }
 
@@ -395,6 +430,9 @@ FluxGraphServiceImpl::Reset(grpc::ServerContext * /*context*/,
     // Reset engine state
     engine_.reset();
     store_.clear();
+    for (SignalId id : physics_owned_signals_) {
+      store_.mark_physics_driven(id, true);
+    }
     sim_time_ = 0.0;
 
     // Reset tick/cached state

@@ -20,6 +20,16 @@ TEST(EngineTest, TickRequiresLoadedProgram) {
   EXPECT_THROW(engine.tick(0.1, store), std::runtime_error);
 }
 
+TEST(EngineTest, TickRejectsNonPositiveDt) {
+  Engine engine;
+  SignalStore store;
+  CompiledProgram program;
+  engine.load(std::move(program));
+
+  EXPECT_THROW(engine.tick(0.0, store), std::runtime_error);
+  EXPECT_THROW(engine.tick(-0.1, store), std::runtime_error);
+}
+
 TEST(EngineTest, SimpleEdgeExecution) {
   GraphSpec spec;
 
@@ -150,4 +160,155 @@ TEST(EngineTest, ThermalMassIntegration) {
 
   double final_temp = store.read_value(temp_id);
   EXPECT_GT(final_temp, 25.0); // Should have heated up
+}
+
+TEST(EngineTest, RuntimeStabilityValidation) {
+  GraphSpec spec;
+
+  ModelSpec model_spec;
+  model_spec.id = "unstable";
+  model_spec.type = "thermal_mass";
+  model_spec.params["thermal_mass"] = 1.0;
+  model_spec.params["heat_transfer_coeff"] = 100.0; // limit = 0.02
+  model_spec.params["initial_temp"] = 25.0;
+  model_spec.params["temp_signal"] = std::string("unstable.temperature");
+  model_spec.params["power_signal"] = std::string("unstable.power");
+  model_spec.params["ambient_signal"] = std::string("unstable.ambient");
+  spec.models.push_back(model_spec);
+
+  SignalNamespace signal_ns;
+  FunctionNamespace func_ns;
+  SignalStore store;
+
+  GraphCompiler compiler;
+  auto program = compiler.compile(spec, signal_ns, func_ns);
+
+  Engine engine;
+  engine.load(std::move(program));
+
+  SignalId power_id = signal_ns.resolve("unstable.power");
+  SignalId ambient_id = signal_ns.resolve("unstable.ambient");
+  store.write(power_id, 0.0, "W");
+  store.write(ambient_id, 25.0, "degC");
+
+  EXPECT_THROW(engine.tick(0.1, store), std::runtime_error);
+}
+
+TEST(EngineTest, EdgeChainPropagatesWithinSameTick) {
+  GraphSpec spec;
+
+  EdgeSpec edge_ab;
+  edge_ab.source_path = "A";
+  edge_ab.target_path = "B";
+  edge_ab.transform.type = "linear";
+  edge_ab.transform.params["scale"] = 2.0;
+  edge_ab.transform.params["offset"] = 0.0;
+
+  EdgeSpec edge_bc;
+  edge_bc.source_path = "B";
+  edge_bc.target_path = "C";
+  edge_bc.transform.type = "linear";
+  edge_bc.transform.params["scale"] = 1.0;
+  edge_bc.transform.params["offset"] = 1.0;
+
+  spec.edges.push_back(edge_ab);
+  spec.edges.push_back(edge_bc);
+
+  SignalNamespace signal_ns;
+  FunctionNamespace func_ns;
+  SignalStore store;
+  GraphCompiler compiler;
+  auto program = compiler.compile(spec, signal_ns, func_ns);
+
+  Engine engine;
+  engine.load(std::move(program));
+
+  SignalId a_id = signal_ns.resolve("A");
+  SignalId b_id = signal_ns.resolve("B");
+  SignalId c_id = signal_ns.resolve("C");
+
+  store.write(a_id, 5.0, "dimensionless");
+  engine.tick(0.1, store);
+
+  EXPECT_DOUBLE_EQ(store.read_value(b_id), 10.0);
+  EXPECT_DOUBLE_EQ(store.read_value(c_id), 11.0);
+}
+
+TEST(EngineTest, ModelOutputVisibleToEdgesInSameTick) {
+  GraphSpec spec;
+
+  ModelSpec model_spec;
+  model_spec.id = "thermal";
+  model_spec.type = "thermal_mass";
+  model_spec.params["thermal_mass"] = 1000.0;
+  model_spec.params["heat_transfer_coeff"] = 10.0;
+  model_spec.params["initial_temp"] = 25.0;
+  model_spec.params["temp_signal"] = std::string("model.temperature");
+  model_spec.params["power_signal"] = std::string("model.power");
+  model_spec.params["ambient_signal"] = std::string("model.ambient");
+  spec.models.push_back(model_spec);
+
+  EdgeSpec edge;
+  edge.source_path = "model.temperature";
+  edge.target_path = "model.temperature_out";
+  edge.transform.type = "linear";
+  edge.transform.params["scale"] = 1.0;
+  edge.transform.params["offset"] = 0.0;
+  spec.edges.push_back(edge);
+
+  SignalNamespace signal_ns;
+  FunctionNamespace func_ns;
+  SignalStore store;
+  GraphCompiler compiler;
+  auto program = compiler.compile(spec, signal_ns, func_ns);
+
+  Engine engine;
+  engine.load(std::move(program));
+
+  SignalId power_id = signal_ns.resolve("model.power");
+  SignalId ambient_id = signal_ns.resolve("model.ambient");
+  SignalId temp_id = signal_ns.resolve("model.temperature");
+  SignalId out_id = signal_ns.resolve("model.temperature_out");
+
+  store.write(power_id, 0.0, "W");
+  store.write(ambient_id, 25.0, "degC");
+
+  engine.tick(0.1, store);
+
+  EXPECT_DOUBLE_EQ(store.read_value(temp_id), 25.0);
+  EXPECT_DOUBLE_EQ(store.read_value(out_id), 25.0);
+}
+
+TEST(EngineTest, RuleEvaluationEmitsCommands) {
+  GraphSpec spec;
+
+  RuleSpec rule;
+  rule.id = "over_limit";
+  rule.condition = "sensor.value > 10.0";
+
+  ActionSpec action;
+  action.device = "controller";
+  action.function = "shutdown";
+  action.args["reason"] = std::string("over_limit");
+  rule.actions.push_back(action);
+  spec.rules.push_back(rule);
+
+  SignalNamespace signal_ns;
+  FunctionNamespace func_ns;
+  SignalStore store;
+  GraphCompiler compiler;
+  auto program = compiler.compile(spec, signal_ns, func_ns);
+
+  Engine engine;
+  engine.load(std::move(program));
+
+  SignalId sensor_id = signal_ns.resolve("sensor.value");
+  store.write(sensor_id, 15.0, "dimensionless");
+
+  engine.tick(0.1, store);
+  auto commands = engine.drain_commands();
+
+  ASSERT_EQ(commands.size(), 1u);
+  EXPECT_EQ(func_ns.lookup_device(commands[0].device), "controller");
+  EXPECT_EQ(func_ns.lookup_function(commands[0].function), "shutdown");
 }

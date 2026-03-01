@@ -87,6 +87,28 @@ TEST_F(SignalStoreTest, OverwriteSignal) {
   EXPECT_EQ(store.read_value(1), 200.0);
 }
 
+TEST_F(SignalStoreTest, FirstWriteDeclaresUnit) {
+  SignalId id = 30;
+  store.write(id, 1.0, "V");
+  EXPECT_THROW(store.write(id, 2.0, "A"), std::runtime_error);
+  EXPECT_NO_THROW(store.write(id, 2.0, "V"));
+}
+
+TEST_F(SignalStoreTest, EmptyUnitNormalizedToDimensionless) {
+  SignalId id = 31;
+  store.write(id, 1.0, "");
+  auto sig = store.read(id);
+  EXPECT_EQ(sig.unit, "dimensionless");
+  EXPECT_NO_THROW(store.write(id, 2.0, "dimensionless"));
+}
+
+TEST_F(SignalStoreTest, DimensionlessDoesNotFreezeDeclaredUnit) {
+  SignalId id = 32;
+  store.write(id, 0.0, "dimensionless");
+  EXPECT_NO_THROW(store.write(id, 1.0, "V"));
+  EXPECT_THROW(store.write(id, 2.0, "A"), std::runtime_error);
+}
+
 TEST_F(SignalStoreTest, Clear) {
   store.write(1, 10.0);
   store.write(2, 20.0);

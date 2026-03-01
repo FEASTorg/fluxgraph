@@ -18,21 +18,29 @@ void Engine::tick(double dt, SignalStore &store) {
   if (!loaded_) {
     throw std::runtime_error("Engine: No program loaded");
   }
+  if (dt <= 0.0) {
+    throw std::runtime_error("Engine: dt must be positive");
+  }
 
-  // EXECUTION MODEL: Snapshot-based with topologically-ordered edges
-  // - All edge source values are cached at tick start (prevents algebraic
-  // loops)
-  // - Edges are evaluated in topological order (ensures determinism)
-  // - Within-tick signal propagation is NOT supported (use explicit delays)
+  // Runtime stability contract: enforce model limits for supplied dt.
+  for (const auto &model : models_) {
+    const double limit = model->compute_stability_limit();
+    if (dt > limit) {
+      throw std::runtime_error("Engine: stability violation for model '" +
+                               model->describe() +
+                               "' (dt=" + std::to_string(dt) +
+                               " exceeds limit=" + std::to_string(limit) + ")");
+    }
+  }
 
-  // Stage 1: Snapshot all edge source values
-  snapshot_inputs(store);
+  // Stage 1: Input boundary freeze
+  // (external writes are assumed complete before tick entry)
 
-  // Stage 2: Apply transforms using snapshots, in topological order
-  process_edges(dt, store);
-
-  // Stage 3: Update physics models
+  // Stage 2: Update physics models
   update_models(dt, store);
+
+  // Stage 3: Apply transforms in topological order with immediate propagation
+  process_edges(dt, store);
 
   // Stage 4: Commit outputs (future: validation, dirty flags)
   commit_outputs(store);
@@ -56,26 +64,17 @@ void Engine::reset() {
   // Reset all transforms
   for (auto &edge : edges_) {
     edge.transform->reset();
-    edge.snapshot = 0.0;
   }
 
   // Clear command queue
   command_queue_.clear();
 }
 
-void Engine::snapshot_inputs(SignalStore &store) {
-  for (auto &edge : edges_) {
-    edge.snapshot = store.read_value(edge.source);
-  }
-}
-
 void Engine::process_edges(double dt, SignalStore &store) {
   for (auto &edge : edges_) {
-    // Apply transform to snapshot value
-    double output = edge.transform->apply(edge.snapshot, dt);
-
-    // Write to target signal (unit unknown at this stage, use dimensionless)
-    store.write(edge.target, output, "dimensionless");
+    const auto source = store.read(edge.source);
+    double output = edge.transform->apply(source.value, dt);
+    store.write(edge.target, output, source.unit);
   }
 }
 

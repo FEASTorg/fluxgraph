@@ -114,7 +114,8 @@ int main(int argc, char *argv[]) {
 
   try {
     // Create service implementation
-    auto service = std::make_unique<fluxgraph::server::FluxGraphServiceImpl>();
+    auto service =
+        std::make_unique<fluxgraph::server::FluxGraphServiceImpl>(dt);
 
     // Preload config if provided
     if (!config_path.empty()) {

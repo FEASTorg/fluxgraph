@@ -135,15 +135,16 @@ Unit handling policy is strict and deterministic.
 3. Implicit solver algebraic-loop handling.
 4. Automatic unit conversion ontology.
 
-## 11. Conformance Snapshot (March 1, 2026)
+## 11. Conformance Snapshot (March 1, 2026 - Post Phase 1 Pass)
 
 This section records current implementation alignment against the normative contract.
 
-1. Engine currently snapshots edge sources and executes edges before models: **non-conformant** with Sections 4 and 6.
-2. Rule conditions are currently stubbed false in compiler: **non-conformant** with Section 4 rule stage semantics.
-3. Stability validator exists but is not called in compile/load path: **non-conformant** with Section 9.
-4. Server `--dt` flag is parsed but not wired into service `dt_`: **non-conformant** with Section 9.
-5. External write protection for physics-owned signals is not enforced in server update path: **non-conformant** with Section 7.
-6. Unit checks are partial and do not yet provide full compile/load/runtime contract enforcement: **partial** for Section 8.
+1. Engine stage order now executes models before edges with immediate topological propagation: **conformant** with Section 4 baseline.
+2. Rule conditions now support comparator expressions (`<`, `<=`, `>`, `>=`, `==`, `!=`) over scalar signal paths: **partial** for Section 4 (minimum subset implemented).
+3. Stability validation is active in server load/compile path and enforced at runtime in `Engine::tick`: **conformant** with Section 9 baseline.
+4. Server CLI `--dt` is wired into service runtime timestep and compile-time stability validation: **conformant** with Section 9.
+5. External writes to protected model-owned and derived target signals are rejected in server update flow: **conformant** with Section 7 for server path.
+6. Unit checks enforce declared/first-write consistency and runtime mismatches throw: **partial** for Section 8 (compile-time inferential checks remain limited).
+7. Delay-mediated cycle acceptance is implemented via non-delay subgraph cycle policy: **partial** pending deeper delay-buffer semantics validation in complex mixed-order graphs.
 
-These gaps define mandatory Phase 1 contract work.
+Remaining gaps define follow-up Phase 1 hardening and Phase 3 evidence work.

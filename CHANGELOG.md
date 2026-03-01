@@ -5,6 +5,46 @@ All notable changes to FluxGraph will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- Engine tick semantics now follow model-first then edge-propagation execution for immediate within-tick signal flow.
+- Edge processing now propagates source units to targets instead of forcing `"dimensionless"`.
+- Graph compiler supports delay-mediated feedback policy by detecting cycles on the non-delay subgraph.
+- Graph compiler topological ordering is deterministic for non-delay edges (stable tie-break by `SignalId`).
+- Server `--dt` is now wired into runtime timestep and compile-time stability validation.
+- GoogleTest discovery switched to `POST_BUILD` mode for more reliable Visual Studio multi-config test registration.
+
+### Added
+
+- Runtime stability validation in `Engine::tick` (`dt` must be positive and within model stability limits).
+- Rule condition execution in compiler for comparator expressions:
+  - `<`, `<=`, `>`, `>=`, `==`, `!=`
+- Compiler parameter parsing hardening:
+  - numeric coercion `int64 -> double` where valid
+  - path-precise parameter type/missing-key diagnostics
+  - optional `noise.seed` default
+  - alias support for `saturation` (`min_value/max_value`) and `rate_limiter` (`max_rate`)
+- Single-writer ownership checks across model outputs and edge targets.
+- Server write-authority enforcement rejecting writes to protected model-owned and edge-derived signals.
+- New/expanded tests covering:
+  - immediate chain propagation
+  - rule condition emission path
+  - delay-mediated cycle acceptance
+  - stability validation (compile-time + runtime paths)
+  - server protected-write rejection
+  - server `--dt` timestep behavior
+  - SignalStore unit-declaration behavior
+
+### Fixed
+
+- Rule execution path was previously non-functional (conditions were hardcoded false).
+- Stability validation function existed but was not integrated into active server compile/load path.
+- CLI timestep argument was previously parsed but not applied to service runtime behavior.
+- Signal unit contract now prevents accidental mismatches while avoiding premature lock-in to `"dimensionless"` defaults.
+- Windows test executables no longer link both `gtest_main` and `gmock` runtimes in `fluxgraph_tests`, which could cause zero discovered/registered tests at runtime.
+
 ## [0.1.1] - 2024-02-16
 
 ### Fixed
@@ -133,3 +173,4 @@ FluxGraph follows these principles:
 
 [0.1.1]: https://github.com/FEASTorg/fluxgraph/releases/tag/v0.1.1
 [0.1.0]: https://github.com/FEASTorg/fluxgraph/releases/tag/v0.1.0
+[unreleased]: https://github.com/FEASTorg/fluxgraph/compare/v0.1.1...HEAD

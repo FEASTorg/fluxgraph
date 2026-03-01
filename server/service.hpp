@@ -7,6 +7,7 @@
 #include <map>
 #include <mutex>
 #include <optional>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -35,7 +36,7 @@ struct ProviderSession {
 /// UpdateSignals for the same generation before advancing one simulation tick.
 class FluxGraphServiceImpl final : public fluxgraph::rpc::FluxGraph::Service {
 public:
-  FluxGraphServiceImpl();
+  explicit FluxGraphServiceImpl(double dt = 0.1);
   ~FluxGraphServiceImpl() override;
 
   // ========================================================================
@@ -96,8 +97,10 @@ private:
   // Configuration
   bool loaded_ = false;
   std::string current_config_hash_;
-  double dt_ = 0.1; // Default timestep (10Hz)
+  double dt_; // Runtime timestep in seconds
   double sim_time_ = 0.0;
+  std::set<SignalId> protected_write_signals_;
+  std::set<SignalId> physics_owned_signals_;
 
   // Provider tracking
   std::map<std::string, ProviderSession> sessions_; // session_id -> session

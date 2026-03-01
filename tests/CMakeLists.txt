@@ -26,13 +26,12 @@ add_executable(fluxgraph_tests
 target_link_libraries(fluxgraph_tests
     PRIVATE fluxgraph
     PRIVATE GTest::gtest_main
-    PRIVATE GTest::gmock
 )
 
 # Discover tests
 include(GoogleTest)
 gtest_discover_tests(fluxgraph_tests
-    DISCOVERY_MODE PRE_TEST
+    DISCOVERY_MODE POST_BUILD
     DISCOVERY_TIMEOUT 60
 )
 
@@ -44,7 +43,7 @@ if(FLUXGRAPH_JSON_ENABLED)
         PRIVATE GTest::gtest_main
     )
     gtest_discover_tests(json_loader_test
-        DISCOVERY_MODE PRE_TEST
+        DISCOVERY_MODE POST_BUILD
         DISCOVERY_TIMEOUT 60
     )
 endif()
@@ -56,7 +55,7 @@ if(FLUXGRAPH_YAML_ENABLED)
         PRIVATE GTest::gtest_main
     )
     gtest_discover_tests(yaml_loader_test
-        DISCOVERY_MODE PRE_TEST
+        DISCOVERY_MODE POST_BUILD
         DISCOVERY_TIMEOUT 60
     )
 endif()

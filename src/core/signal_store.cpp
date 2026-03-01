@@ -11,15 +11,26 @@ void SignalStore::write(SignalId id, double value, const std::string &unit) {
     return; // Silently ignore invalid IDs
   }
 
-  // Validate unit if declared
-  auto it = declared_units_.find(id);
-  if (it != declared_units_.end() && it->second != unit) {
-    throw std::runtime_error("Unit mismatch for signal " + std::to_string(id) +
-                             ": expected '" + it->second + "', got '" + unit +
-                             "'");
+  const std::string normalized_unit =
+      unit.empty() ? std::string("dimensionless") : unit;
+
+  // First non-dimensionless write declares expected unit if none is declared.
+  // This avoids accidentally freezing unit contracts to "dimensionless" when a
+  // signal is still in its unwritten/default state.
+  if (declared_units_.find(id) == declared_units_.end() &&
+      normalized_unit != "dimensionless") {
+    declared_units_[id] = normalized_unit;
   }
 
-  signals_[id] = Signal(value, unit);
+  // Validate unit if declared
+  auto it = declared_units_.find(id);
+  if (it != declared_units_.end() && it->second != normalized_unit) {
+    throw std::runtime_error("Unit mismatch for signal " + std::to_string(id) +
+                             ": expected '" + it->second + "', got '" +
+                             normalized_unit + "'");
+  }
+
+  signals_[id] = Signal(value, normalized_unit);
 }
 
 Signal SignalStore::read(SignalId id) const {
@@ -53,11 +64,13 @@ void SignalStore::declare_unit(SignalId id, const std::string &expected_unit) {
 }
 
 void SignalStore::validate_unit(SignalId id, const std::string &unit) const {
+  const std::string normalized_unit =
+      unit.empty() ? std::string("dimensionless") : unit;
   auto it = declared_units_.find(id);
-  if (it != declared_units_.end() && it->second != unit) {
+  if (it != declared_units_.end() && it->second != normalized_unit) {
     throw std::runtime_error("Unit mismatch for signal " + std::to_string(id) +
-                             ": expected '" + it->second + "', got '" + unit +
-                             "'");
+                             ": expected '" + it->second + "', got '" +
+                             normalized_unit + "'");
   }
 }
 

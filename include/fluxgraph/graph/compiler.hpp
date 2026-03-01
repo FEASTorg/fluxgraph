@@ -44,8 +44,8 @@ struct CompiledProgram {
 /// Compiles GraphSpec into executable CompiledProgram
 class GraphCompiler {
 public:
-  using TransformFactory = std::function<std::unique_ptr<ITransform>(
-      const TransformSpec &)>;
+  using TransformFactory =
+      std::function<std::unique_ptr<ITransform>(const TransformSpec &)>;
   using ModelFactory = std::function<std::unique_ptr<IModel>(
       const ModelSpec &, SignalNamespace &)>;
 

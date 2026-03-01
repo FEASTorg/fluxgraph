@@ -407,8 +407,8 @@ TEST(EngineTest, RuleCommandBacklogOverflowThrows) {
     try {
       engine.tick(0.1, store);
     } catch (const std::runtime_error &e) {
-      overflow_observed = std::string(e.what()).find("command backlog") !=
-                          std::string::npos;
+      overflow_observed =
+          std::string(e.what()).find("command backlog") != std::string::npos;
       break;
     }
   }

@@ -31,7 +31,9 @@ class AffineTestTransform : public ITransform {
 public:
   explicit AffineTestTransform(double bias) : bias_(bias) {}
 
-  double apply(double input, double /*dt*/) override { return input * 2.0 + bias_; }
+  double apply(double input, double /*dt*/) override {
+    return input * 2.0 + bias_;
+  }
   void reset() override {}
   ITransform *clone() const override { return new AffineTestTransform(*this); }
 
@@ -43,7 +45,8 @@ class ConstantSignalModel : public IModel {
 public:
   ConstantSignalModel(std::string id, SignalId output, double value,
                       std::string unit)
-      : id_(std::move(id)), output_(output), value_(value), unit_(std::move(unit)) {}
+      : id_(std::move(id)), output_(output), value_(value),
+        unit_(std::move(unit)) {}
 
   void tick(double /*dt*/, SignalStore &store) override {
     store.write(output_, value_, unit_);
@@ -55,7 +58,9 @@ public:
     return std::numeric_limits<double>::infinity();
   }
 
-  std::string describe() const override { return "ConstantSignalModel(" + id_ + ")"; }
+  std::string describe() const override {
+    return "ConstantSignalModel(" + id_ + ")";
+  }
   std::vector<SignalId> output_signal_ids() const override { return {output_}; }
 
 private:
@@ -108,11 +113,12 @@ TEST(GraphCompilerTest, UnknownTransformThrows) {
 TEST(GraphCompilerTest, RegisterTransformFactoryRejectsInvalidInputs) {
   GraphCompiler::TransformFactory empty_factory;
 
-  EXPECT_THROW(
-      GraphCompiler::register_transform_factory("", [](const TransformSpec &) {
-        return std::make_unique<AffineTestTransform>(0.0);
-      }),
-      std::invalid_argument);
+  EXPECT_THROW(GraphCompiler::register_transform_factory(
+                   "",
+                   [](const TransformSpec &) {
+                     return std::make_unique<AffineTestTransform>(0.0);
+                   }),
+               std::invalid_argument);
   EXPECT_THROW(GraphCompiler::register_transform_factory("test.empty_factory",
                                                          empty_factory),
                std::invalid_argument);
@@ -151,12 +157,12 @@ TEST(GraphCompilerTest, RegisterTransformFactoryRejectsDuplicateType) {
         });
   }
 
-  EXPECT_THROW(
-      GraphCompiler::register_transform_factory(
-          type, [](const TransformSpec &) -> std::unique_ptr<ITransform> {
-            return std::make_unique<AffineTestTransform>(1.0);
-          }),
-      std::runtime_error);
+  EXPECT_THROW(GraphCompiler::register_transform_factory(
+                   type,
+                   [](const TransformSpec &) -> std::unique_ptr<ITransform> {
+                     return std::make_unique<AffineTestTransform>(1.0);
+                   }),
+               std::runtime_error);
 }
 
 TEST(GraphCompilerTest, CompileSimpleGraph) {
@@ -268,7 +274,8 @@ TEST(GraphCompilerTest, RegisterModelFactoryRejectsInvalidInputs) {
 
   EXPECT_THROW(
       GraphCompiler::register_model_factory(
-          "", [](const ModelSpec &, SignalNamespace &) -> std::unique_ptr<IModel> {
+          "",
+          [](const ModelSpec &, SignalNamespace &) -> std::unique_ptr<IModel> {
             return nullptr;
           }),
       std::invalid_argument);
@@ -281,8 +288,9 @@ TEST(GraphCompilerTest, RegisterModelFactorySupportsExternalTypes) {
   const std::string type = "test.constant_signal_model";
   if (!GraphCompiler::is_model_registered(type)) {
     GraphCompiler::register_model_factory(
-        type, [](const ModelSpec &spec, SignalNamespace &ns)
-                  -> std::unique_ptr<IModel> {
+        type,
+        [](const ModelSpec &spec,
+           SignalNamespace &ns) -> std::unique_ptr<IModel> {
           auto output_it = spec.params.find("output_signal");
           auto value_it = spec.params.find("value");
           auto unit_it = spec.params.find("unit");
@@ -294,13 +302,14 @@ TEST(GraphCompilerTest, RegisterModelFactorySupportsExternalTypes) {
 
           const std::string output_path =
               variant_to_string(output_it->second, "model[test]/output_signal");
-          const double value = variant_to_double(value_it->second, "model[test]/value");
+          const double value =
+              variant_to_double(value_it->second, "model[test]/value");
           const std::string unit =
               variant_to_string(unit_it->second, "model[test]/unit");
           const SignalId output_id = ns.intern(output_path);
 
-          return std::make_unique<ConstantSignalModel>(spec.id, output_id, value,
-                                                       unit);
+          return std::make_unique<ConstantSignalModel>(spec.id, output_id,
+                                                       value, unit);
         });
   }
 
@@ -329,8 +338,9 @@ TEST(GraphCompilerTest, CompileGraphWithRegisteredCustomModel) {
   const std::string type = "test.constant_signal_model";
   if (!GraphCompiler::is_model_registered(type)) {
     GraphCompiler::register_model_factory(
-        type, [](const ModelSpec &spec, SignalNamespace &ns)
-                  -> std::unique_ptr<IModel> {
+        type,
+        [](const ModelSpec &spec,
+           SignalNamespace &ns) -> std::unique_ptr<IModel> {
           auto output_it = spec.params.find("output_signal");
           auto value_it = spec.params.find("value");
           auto unit_it = spec.params.find("unit");
@@ -342,13 +352,14 @@ TEST(GraphCompilerTest, CompileGraphWithRegisteredCustomModel) {
 
           const std::string output_path =
               variant_to_string(output_it->second, "model[test]/output_signal");
-          const double value = variant_to_double(value_it->second, "model[test]/value");
+          const double value =
+              variant_to_double(value_it->second, "model[test]/value");
           const std::string unit =
               variant_to_string(unit_it->second, "model[test]/unit");
           const SignalId output_id = ns.intern(output_path);
 
-          return std::make_unique<ConstantSignalModel>(spec.id, output_id, value,
-                                                       unit);
+          return std::make_unique<ConstantSignalModel>(spec.id, output_id,
+                                                       value, unit);
         });
   }
 
@@ -381,8 +392,9 @@ TEST(GraphCompilerTest, CustomModelOutputCollidesWithEdgeTarget) {
   const std::string type = "test.constant_signal_model";
   if (!GraphCompiler::is_model_registered(type)) {
     GraphCompiler::register_model_factory(
-        type, [](const ModelSpec &spec, SignalNamespace &ns)
-                  -> std::unique_ptr<IModel> {
+        type,
+        [](const ModelSpec &spec,
+           SignalNamespace &ns) -> std::unique_ptr<IModel> {
           auto output_it = spec.params.find("output_signal");
           auto value_it = spec.params.find("value");
           auto unit_it = spec.params.find("unit");
@@ -400,8 +412,8 @@ TEST(GraphCompilerTest, CustomModelOutputCollidesWithEdgeTarget) {
               variant_to_string(unit_it->second, "model[test]/unit");
           const SignalId output_id = ns.intern(output_path);
 
-          return std::make_unique<ConstantSignalModel>(spec.id, output_id, value,
-                                                       unit);
+          return std::make_unique<ConstantSignalModel>(spec.id, output_id,
+                                                       value, unit);
         });
   }
 
@@ -433,9 +445,10 @@ TEST(GraphCompilerTest, RegisterModelFactoryRejectsDuplicateType) {
   const std::string type = "test.duplicate_model";
   if (!GraphCompiler::is_model_registered(type)) {
     GraphCompiler::register_model_factory(
-        type, [](const ModelSpec &, SignalNamespace &) -> std::unique_ptr<IModel> {
-          return std::make_unique<ConstantSignalModel>(
-              "dup", INVALID_SIGNAL, 0.0, "dimensionless");
+        type,
+        [](const ModelSpec &, SignalNamespace &) -> std::unique_ptr<IModel> {
+          return std::make_unique<ConstantSignalModel>("dup", INVALID_SIGNAL,
+                                                       0.0, "dimensionless");
         });
   }
 
@@ -443,8 +456,8 @@ TEST(GraphCompilerTest, RegisterModelFactoryRejectsDuplicateType) {
       GraphCompiler::register_model_factory(
           type,
           [](const ModelSpec &, SignalNamespace &) -> std::unique_ptr<IModel> {
-            return std::make_unique<ConstantSignalModel>(
-                "dup2", INVALID_SIGNAL, 0.0, "dimensionless");
+            return std::make_unique<ConstantSignalModel>("dup2", INVALID_SIGNAL,
+                                                         0.0, "dimensionless");
           }),
       std::runtime_error);
 }
@@ -453,9 +466,10 @@ TEST(GraphCompilerTest, CustomModelWithInvalidOutputSignalIdThrows) {
   const std::string type = "test.invalid_output_model";
   if (!GraphCompiler::is_model_registered(type)) {
     GraphCompiler::register_model_factory(
-        type, [](const ModelSpec &, SignalNamespace &) -> std::unique_ptr<IModel> {
-          return std::make_unique<ConstantSignalModel>("invalid", INVALID_SIGNAL,
-                                                       1.0, "dimensionless");
+        type,
+        [](const ModelSpec &, SignalNamespace &) -> std::unique_ptr<IModel> {
+          return std::make_unique<ConstantSignalModel>(
+              "invalid", INVALID_SIGNAL, 1.0, "dimensionless");
         });
   }
 

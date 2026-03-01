@@ -32,7 +32,8 @@ void SignalStore::write(SignalId id, double value, const std::string &unit) {
 
   ensure_index(id);
   const size_t index = static_cast<size_t>(id);
-  const std::string &normalized_unit = unit.empty() ? dimensionless_unit() : unit;
+  const std::string &normalized_unit =
+      unit.empty() ? dimensionless_unit() : unit;
 
   // First non-dimensionless write declares expected unit if none is declared.
   // This avoids accidentally freezing unit contracts to "dimensionless" when a
@@ -45,8 +46,8 @@ void SignalStore::write(SignalId id, double value, const std::string &unit) {
   // Validate unit if declared
   if (has_declared_unit_[index] && declared_units_[index] != normalized_unit) {
     throw std::runtime_error("Unit mismatch for signal " + std::to_string(id) +
-                             ": expected '" + declared_units_[index] + "', got '" +
-                             normalized_unit + "'");
+                             ": expected '" + declared_units_[index] +
+                             "', got '" + normalized_unit + "'");
   }
 
   if (!has_signal_[index]) {
@@ -178,11 +179,12 @@ void SignalStore::validate_unit(SignalId id, const std::string &unit) const {
     return;
   }
 
-  const std::string &normalized_unit = unit.empty() ? dimensionless_unit() : unit;
+  const std::string &normalized_unit =
+      unit.empty() ? dimensionless_unit() : unit;
   if (declared_units_[index] != normalized_unit) {
     throw std::runtime_error("Unit mismatch for signal " + std::to_string(id) +
-                             ": expected '" + declared_units_[index] + "', got '" +
-                             normalized_unit + "'");
+                             ": expected '" + declared_units_[index] +
+                             "', got '" + normalized_unit + "'");
   }
 }
 
@@ -208,7 +210,8 @@ size_t SignalStore::size() const { return signal_count_; }
 
 void SignalStore::clear() {
   std::fill(has_signal_.begin(), has_signal_.end(), static_cast<uint8_t>(0));
-  std::fill(physics_driven_.begin(), physics_driven_.end(), static_cast<uint8_t>(0));
+  std::fill(physics_driven_.begin(), physics_driven_.end(),
+            static_cast<uint8_t>(0));
   signal_count_ = 0;
 
   // Note: We keep declared_units_ as they are part of the graph structure

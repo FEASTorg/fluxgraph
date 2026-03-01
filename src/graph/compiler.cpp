@@ -190,8 +190,9 @@ void ensure_default_factories_registered_locked(FactoryRegistry &registry) {
   registry.transform_factories.emplace(
       "delay", [](const TransformSpec &spec) -> std::unique_ptr<ITransform> {
         const std::string context = "transform[delay]";
-        double delay_sec = as_double(require_param(spec.params, "delay_sec", context),
-                                     context + "/delay_sec");
+        double delay_sec =
+            as_double(require_param(spec.params, "delay_sec", context),
+                      context + "/delay_sec");
         return std::make_unique<DelayTransform>(delay_sec);
       });
 
@@ -231,8 +232,7 @@ void ensure_default_factories_registered_locked(FactoryRegistry &registry) {
       });
 
   registry.transform_factories.emplace(
-      "deadband",
-      [](const TransformSpec &spec) -> std::unique_ptr<ITransform> {
+      "deadband", [](const TransformSpec &spec) -> std::unique_ptr<ITransform> {
         const std::string context = "transform[deadband]";
         double threshold =
             as_double(require_param(spec.params, "threshold", context),
@@ -272,14 +272,15 @@ void ensure_default_factories_registered_locked(FactoryRegistry &registry) {
 
   registry.model_factories.emplace(
       "thermal_mass",
-      [](const ModelSpec &spec, SignalNamespace &ns) -> std::unique_ptr<IModel> {
+      [](const ModelSpec &spec,
+         SignalNamespace &ns) -> std::unique_ptr<IModel> {
         const std::string context = "model[" + spec.id + ":thermal_mass]";
         double thermal_mass =
             as_double(require_param(spec.params, "thermal_mass", context),
                       context + "/thermal_mass");
-        double heat_transfer_coeff =
-            as_double(require_param(spec.params, "heat_transfer_coeff", context),
-                      context + "/heat_transfer_coeff");
+        double heat_transfer_coeff = as_double(
+            require_param(spec.params, "heat_transfer_coeff", context),
+            context + "/heat_transfer_coeff");
         double initial_temp =
             as_double(require_param(spec.params, "initial_temp", context),
                       context + "/initial_temp");
@@ -326,7 +327,8 @@ void GraphCompiler::register_transform_factory(const std::string &type,
   std::lock_guard<std::mutex> lock(registry.mutex);
   ensure_default_factories_registered_locked(registry);
 
-  auto [_, inserted] = registry.transform_factories.emplace(type, std::move(factory));
+  auto [_, inserted] =
+      registry.transform_factories.emplace(type, std::move(factory));
   if (!inserted) {
     throw std::runtime_error("GraphCompiler: transform factory already "
                              "registered for type '" +
@@ -342,7 +344,8 @@ void GraphCompiler::register_model_factory(const std::string &type,
   std::lock_guard<std::mutex> lock(registry.mutex);
   ensure_default_factories_registered_locked(registry);
 
-  auto [_, inserted] = registry.model_factories.emplace(type, std::move(factory));
+  auto [_, inserted] =
+      registry.model_factories.emplace(type, std::move(factory));
   if (!inserted) {
     throw std::runtime_error("GraphCompiler: model factory already registered "
                              "for type '" +

@@ -83,11 +83,7 @@ def grpc_stub_dt_025(server_exe: Any, free_port: int, proto_bindings: Any) -> An
     while time.time() - start < 10.0:
         if proc.poll() is not None:
             out, err = proc.communicate(timeout=2)
-            pytest.fail(
-                "Server exited before readiness check.\n"
-                f"stdout:\n{out}\n"
-                f"stderr:\n{err}"
-            )
+            pytest.fail(f"Server exited before readiness check.\nstdout:\n{out}\nstderr:\n{err}")
 
         try:
             resp = stub.Check(pb.HealthCheckRequest(service="fluxgraph"), timeout=0.5)
@@ -100,11 +96,7 @@ def grpc_stub_dt_025(server_exe: Any, free_port: int, proto_bindings: Any) -> An
     if not ready:
         proc.terminate()
         out, err = proc.communicate(timeout=2)
-        pytest.fail(
-            "Server failed readiness with --dt=0.25.\n"
-            f"stdout:\n{out}\n"
-            f"stderr:\n{err}"
-        )
+        pytest.fail(f"Server failed readiness with --dt=0.25.\nstdout:\n{out}\nstderr:\n{err}")
 
     try:
         yield stub

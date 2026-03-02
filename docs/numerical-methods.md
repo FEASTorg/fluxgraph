@@ -55,3 +55,17 @@ Future methods (for example trapezoidal or implicit schemes) must define:
 1. Stability policy and limits.
 2. Deterministic selection and defaults.
 3. Regression and analytical validation coverage before release.
+
+## Reproducible Validation Run
+
+Use the validation runner to produce Phase 3 artifacts:
+
+```bash
+python scripts/run_numerical_validation.py --preset dev-release --enforce-order
+```
+
+Windows example:
+
+```powershell
+python .\scripts\run_numerical_validation.py --preset dev-windows-release --config Release --enforce-order
+```

@@ -83,6 +83,7 @@ endif()
 
 # Benchmark tests
 add_subdirectory(benchmarks)
+add_subdirectory(validation)
 
 # Add test command
 add_custom_target(check

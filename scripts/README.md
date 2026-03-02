@@ -59,6 +59,28 @@ Promote a run to baseline:
 
 - `python scripts/promote_benchmark_baseline.py --results artifacts/benchmarks/<dir>/benchmark_results.json --policy benchmarks/policy/bench_policy.json --profile ci-hosted --output benchmarks/policy/baselines/ci-hosted.windows-2022.json`
 
+## Numerical Validation
+
+Run thermal-model error/convergence validation:
+
+- Linux/macOS: `python3 scripts/run_numerical_validation.py --preset dev-release`
+- Windows: `python scripts/run_numerical_validation.py --preset dev-windows-release --config Release`
+
+Options:
+
+- `--duration-s`: simulation horizon used for each `dt`.
+- `--dt-values`: comma-separated `dt` sweep for convergence estimation.
+- `--enforce-order`: fail when observed order is below thresholds.
+- `--min-order-forward-euler`: minimum accepted Linf order for forward Euler.
+- `--min-order-rk4`: minimum accepted Linf order for RK4.
+
+Artifacts are written under `artifacts/validation/<timestamp>_<preset>/`:
+
+- `validation_results.json` (scenario metrics + observed order estimates)
+- `validation_results.csv` (per-point error table)
+- `validation_evaluation.json` (threshold checks + run metadata)
+- `validation.stdout.log`, `validation.stderr.log`
+
 ## Common Presets
 
 - `dev-debug`

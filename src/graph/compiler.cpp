@@ -293,10 +293,23 @@ void ensure_default_factories_registered_locked(FactoryRegistry &registry) {
         std::string ambient_path =
             as_string(require_param(spec.params, "ambient_signal", context),
                       context + "/ambient_signal");
+        ThermalIntegrationMethod integration_method =
+            ThermalIntegrationMethod::ForwardEuler;
+        if (auto it = spec.params.find("integration_method");
+            it != spec.params.end()) {
+          const std::string method_name =
+              as_string(it->second, context + "/integration_method");
+          try {
+            integration_method = parse_thermal_integration_method(method_name);
+          } catch (const std::invalid_argument &e) {
+            throw std::runtime_error("Invalid parameter at " + context +
+                                     "/integration_method: " + e.what());
+          }
+        }
 
         return std::make_unique<ThermalMassModel>(
             spec.id, thermal_mass, heat_transfer_coeff, initial_temp, temp_path,
-            power_path, ambient_path, ns);
+            power_path, ambient_path, ns, integration_method);
       });
 
   registry.defaults_registered = true;

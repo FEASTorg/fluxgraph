@@ -241,6 +241,7 @@ model.params["ambient_signal"] = std::string("ambient.temp");
 model.params["thermal_mass"] = 1000.0;  // J/degC
 model.params["heat_transfer_coeff"] = 10.0;  // W/degC
 model.params["initial_temp"] = 25.0;  // degC
+model.params["integration_method"] = std::string("forward_euler"); // optional: "forward_euler" (default) or "rk4"
 spec.models.push_back(model);
 ```
 
@@ -504,8 +505,12 @@ Parameters:
 - h: heat_transfer_coeff (W/degC) - Convection coefficient
 - P: power_signal (W) - Heat input
 - T_ambient: ambient_signal (degC) - Ambient temperature
+- integration_method (optional): `"forward_euler"` (default) or `"rk4"`
 
-**Stability limit:** dt < 2\*C/h
+**Stability limit:**
+
+- `forward_euler`: dt < 2\*C/h
+- `rk4`: dt < 2.785293563\*C/h (negative real-axis stability bound)
 
 Example usage:
 
@@ -518,6 +523,7 @@ model.params["ambient_signal"] = std::string("ambient");
 model.params["thermal_mass"] = 1000.0;
 model.params["heat_transfer_coeff"] = 10.0;
 model.params["initial_temp"] = 25.0;
+model.params["integration_method"] = std::string("rk4"); // optional
 ```
 
 ---

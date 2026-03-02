@@ -116,6 +116,105 @@ TEST_F(ThermalMassTest, StabilityLimit) {
   EXPECT_NEAR(limit, 200.0, 0.1); // 2*1000/10 = 200
 }
 
+TEST_F(ThermalMassTest, ExplicitForwardEulerMatchesDefault) {
+  auto default_ns = std::make_unique<SignalNamespace>();
+  auto explicit_ns = std::make_unique<SignalNamespace>();
+  auto default_store = std::make_unique<SignalStore>();
+  auto explicit_store = std::make_unique<SignalStore>();
+
+  SignalId default_temp = default_ns->intern("model/temperature");
+  SignalId default_power = default_ns->intern("model/heating_power");
+  SignalId default_ambient = default_ns->intern("model/ambient_temp");
+
+  SignalId explicit_temp = explicit_ns->intern("model/temperature");
+  SignalId explicit_power = explicit_ns->intern("model/heating_power");
+  SignalId explicit_ambient = explicit_ns->intern("model/ambient_temp");
+
+  ThermalMassModel default_compare("default_compare", 1000.0, 10.0, 25.0,
+                                   "model/temperature", "model/heating_power",
+                                   "model/ambient_temp", *default_ns);
+  ThermalMassModel explicit_compare(
+      "explicit_compare", 1000.0, 10.0, 25.0, "model/temperature",
+      "model/heating_power", "model/ambient_temp", *explicit_ns,
+      ThermalIntegrationMethod::ForwardEuler);
+
+  for (int i = 0; i < 100; ++i) {
+    const double power = (i < 50) ? 100.0 : 0.0;
+    default_store->write(default_power, power, "W");
+    default_store->write(default_ambient, 20.0, "degC");
+    explicit_store->write(explicit_power, power, "W");
+    explicit_store->write(explicit_ambient, 20.0, "degC");
+
+    default_compare.tick(0.1, *default_store);
+    explicit_compare.tick(0.1, *explicit_store);
+
+    EXPECT_DOUBLE_EQ(default_store->read_value(default_temp),
+                     explicit_store->read_value(explicit_temp));
+  }
+}
+
+TEST_F(ThermalMassTest, Rk4ImprovesAccuracyAtCoarseDt) {
+  auto euler_ns = std::make_unique<SignalNamespace>();
+  auto rk4_ns = std::make_unique<SignalNamespace>();
+  auto euler_store = std::make_unique<SignalStore>();
+  auto rk4_store = std::make_unique<SignalStore>();
+
+  SignalId euler_temp = euler_ns->intern("model/temperature");
+  SignalId euler_power = euler_ns->intern("model/heating_power");
+  SignalId euler_ambient = euler_ns->intern("model/ambient_temp");
+
+  SignalId rk4_temp = rk4_ns->intern("model/temperature");
+  SignalId rk4_power = rk4_ns->intern("model/heating_power");
+  SignalId rk4_ambient = rk4_ns->intern("model/ambient_temp");
+
+  constexpr double thermal_mass = 10.0;
+  constexpr double heat_transfer_coeff = 5.0;
+  constexpr double initial_temp = 100.0;
+  constexpr double ambient_temp = 0.0;
+  constexpr double power = 0.0;
+  constexpr double dt = 1.0;
+  constexpr int ticks = 10;
+
+  ThermalMassModel euler_model(
+      "euler", thermal_mass, heat_transfer_coeff, initial_temp,
+      "model/temperature", "model/heating_power", "model/ambient_temp",
+      *euler_ns, ThermalIntegrationMethod::ForwardEuler);
+  ThermalMassModel rk4_model("rk4", thermal_mass, heat_transfer_coeff,
+                             initial_temp, "model/temperature",
+                             "model/heating_power", "model/ambient_temp",
+                             *rk4_ns, ThermalIntegrationMethod::Rk4);
+
+  for (int i = 0; i < ticks; ++i) {
+    euler_store->write(euler_power, power, "W");
+    euler_store->write(euler_ambient, ambient_temp, "degC");
+    rk4_store->write(rk4_power, power, "W");
+    rk4_store->write(rk4_ambient, ambient_temp, "degC");
+
+    euler_model.tick(dt, *euler_store);
+    rk4_model.tick(dt, *rk4_store);
+  }
+
+  const double total_time = static_cast<double>(ticks) * dt;
+  const double k = heat_transfer_coeff / thermal_mass;
+  const double analytical =
+      ambient_temp + (initial_temp - ambient_temp) * std::exp(-k * total_time);
+
+  const double euler_error =
+      std::abs(euler_store->read_value(euler_temp) - analytical);
+  const double rk4_error =
+      std::abs(rk4_store->read_value(rk4_temp) - analytical);
+  EXPECT_LT(rk4_error, euler_error);
+}
+
+TEST_F(ThermalMassTest, Rk4StabilityLimit) {
+  ThermalMassModel model("rk4", 1000.0, 10.0, 25.0, "model/temperature",
+                         "model/heating_power", "model/ambient_temp", *ns,
+                         ThermalIntegrationMethod::Rk4);
+
+  const double expected_limit = 2.785293563405282 * 1000.0 / 10.0;
+  EXPECT_NEAR(model.compute_stability_limit(), expected_limit, 1e-6);
+}
+
 TEST_F(ThermalMassTest, PhysicsDrivenFlag) {
   ThermalMassModel model("test", 1000.0, 10.0, 25.0, "model/temperature",
                          "model/heating_power", "model/ambient_temp", *ns);

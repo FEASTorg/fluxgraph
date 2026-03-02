@@ -7,6 +7,15 @@
 
 namespace fluxgraph {
 
+enum class ThermalIntegrationMethod {
+  ForwardEuler,
+  Rk4,
+};
+
+const char *to_string(ThermalIntegrationMethod method);
+ThermalIntegrationMethod
+parse_thermal_integration_method(const std::string &method_name);
+
 /// Thermal mass model: simple heat capacity with power input and ambient
 /// cooling Physics: dT/dt = (P_in - h*(T - T_amb)) / C Where:
 ///   T = temperature (degC)
@@ -32,12 +41,14 @@ public:
                    double heat_transfer_coeff, double initial_temp,
                    const std::string &temp_signal_path,
                    const std::string &power_signal_path,
-                   const std::string &ambient_signal_path, SignalNamespace &ns);
+                   const std::string &ambient_signal_path, SignalNamespace &ns,
+                   ThermalIntegrationMethod integration_method =
+                       ThermalIntegrationMethod::ForwardEuler);
 
   void tick(double dt, SignalStore &store) override;
   void reset() override;
 
-  /// Stability limit for Forward Euler: dt < 2*C/h
+  /// Stability limit for the selected integration method
   double compute_stability_limit() const override;
 
   std::string describe() const override;
@@ -52,6 +63,10 @@ private:
   double heat_transfer_coeff_; // h (W/K)
   double temperature_;         // Current temp (degC)
   double initial_temp_;        // Initial temp for reset (degC)
+  ThermalIntegrationMethod integration_method_;
+
+  double derivative(double temperature, double net_power,
+                    double ambient) const;
 };
 
 } // namespace fluxgraph

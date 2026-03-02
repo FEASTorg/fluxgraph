@@ -21,7 +21,7 @@ public:
   virtual void reset() = 0;
 
   /// Compute maximum stable time step for this model
-  /// Based on Forward Euler stability criteria
+  /// Based on the model's configured integration method
   /// @return Maximum safe dt in seconds
   virtual double compute_stability_limit() const = 0;
 

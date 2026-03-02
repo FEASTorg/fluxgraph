@@ -139,6 +139,66 @@ TEST(DeterminismTest, SameInputSameOutput) {
   }
 }
 
+TEST(DeterminismTest, SameInputSameOutputRk4) {
+  auto build_graph = []() {
+    GraphSpec spec;
+
+    ModelSpec model;
+    model.id = "thermal";
+    model.type = "thermal_mass";
+    model.params["temp_signal"] = std::string("chamber.temp");
+    model.params["power_signal"] = std::string("chamber.power");
+    model.params["ambient_signal"] = std::string("ambient");
+    model.params["thermal_mass"] = 1000.0;
+    model.params["heat_transfer_coeff"] = 10.0;
+    model.params["initial_temp"] = 25.0;
+    model.params["integration_method"] = std::string("rk4");
+    spec.models.push_back(model);
+
+    return spec;
+  };
+
+  SignalNamespace ns1;
+  FunctionNamespace fn1;
+  SignalStore store1;
+  Engine engine1;
+
+  GraphCompiler compiler1;
+  auto program1 = compiler1.compile(build_graph(), ns1, fn1);
+  engine1.load(std::move(program1));
+
+  SignalNamespace ns2;
+  FunctionNamespace fn2;
+  SignalStore store2;
+  Engine engine2;
+
+  GraphCompiler compiler2;
+  auto program2 = compiler2.compile(build_graph(), ns2, fn2);
+  engine2.load(std::move(program2));
+
+  auto power_id1 = ns1.resolve("chamber.power");
+  auto ambient_id1 = ns1.resolve("ambient");
+  auto temp_id1 = ns1.resolve("chamber.temp");
+  auto power_id2 = ns2.resolve("chamber.power");
+  auto ambient_id2 = ns2.resolve("ambient");
+  auto temp_id2 = ns2.resolve("chamber.temp");
+
+  store1.write(ambient_id1, 20.0, "degC");
+  store2.write(ambient_id2, 20.0, "degC");
+
+  for (int i = 0; i < 500; ++i) {
+    const double power = (i % 200 < 100) ? 500.0 : 100.0;
+    store1.write(power_id1, power, "W");
+    store2.write(power_id2, power, "W");
+
+    engine1.tick(0.1, store1);
+    engine2.tick(0.1, store2);
+
+    EXPECT_DOUBLE_EQ(store1.read_value(temp_id1), store2.read_value(temp_id2))
+        << "Mismatch at tick " << i;
+  }
+}
+
 TEST(DeterminismTest, NoDriftOver10kTicks) {
   // Verify no floating-point drift over long simulations
 

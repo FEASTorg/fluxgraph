@@ -269,6 +269,43 @@ TEST(GraphCompilerTest, ParseThermalMassModel) {
   delete model;
 }
 
+TEST(GraphCompilerTest, ParseThermalMassModelWithRk4) {
+  ModelSpec spec;
+  spec.id = "chamber_air";
+  spec.type = "thermal_mass";
+  spec.params["thermal_mass"] = 1000.0;
+  spec.params["heat_transfer_coeff"] = 10.0;
+  spec.params["initial_temp"] = 25.0;
+  spec.params["temp_signal"] = std::string("chamber_air/temperature");
+  spec.params["power_signal"] = std::string("chamber_air/power");
+  spec.params["ambient_signal"] = std::string("chamber_air/ambient");
+  spec.params["integration_method"] = std::string("rk4");
+
+  SignalNamespace ns;
+  GraphCompiler compiler;
+  std::unique_ptr<IModel> model(compiler.parse_model(spec, ns));
+
+  ASSERT_NE(model, nullptr);
+  EXPECT_NE(model->describe().find("method=rk4"), std::string::npos);
+}
+
+TEST(GraphCompilerTest, ParseThermalMassModelWithInvalidIntegrationMethodThrows) {
+  ModelSpec spec;
+  spec.id = "chamber_air";
+  spec.type = "thermal_mass";
+  spec.params["thermal_mass"] = 1000.0;
+  spec.params["heat_transfer_coeff"] = 10.0;
+  spec.params["initial_temp"] = 25.0;
+  spec.params["temp_signal"] = std::string("chamber_air/temperature");
+  spec.params["power_signal"] = std::string("chamber_air/power");
+  spec.params["ambient_signal"] = std::string("chamber_air/ambient");
+  spec.params["integration_method"] = std::string("invalid_method");
+
+  SignalNamespace ns;
+  GraphCompiler compiler;
+  EXPECT_THROW(compiler.parse_model(spec, ns), std::runtime_error);
+}
+
 TEST(GraphCompilerTest, RegisterModelFactoryRejectsInvalidInputs) {
   GraphCompiler::ModelFactory empty_factory;
 

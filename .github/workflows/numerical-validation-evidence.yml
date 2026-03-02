@@ -1,0 +1,98 @@
+name: Numerical Validation Evidence
+
+on:
+  workflow_dispatch:
+    inputs:
+      duration_s:
+        description: Simulation duration in seconds
+        required: false
+        default: "10.0"
+        type: string
+      dt_values:
+        description: Comma-separated dt sweep
+        required: false
+        default: "0.4,0.2,0.1,0.05,0.025"
+        type: string
+      enforce_order:
+        description: Enforce convergence thresholds
+        required: false
+        default: true
+        type: boolean
+  schedule:
+    - cron: "30 7 * * 1"
+
+env:
+  VCPKG_COMMIT: "66c0373dc7fca549e5803087b9487edfe3aca0a1"
+
+jobs:
+  windows-validation:
+    name: Windows numerical validation evidence
+    runs-on: windows-2022
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgGitCommitId: ${{ env.VCPKG_COMMIT }}
+          doNotCache: false
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Resolve validation options
+        id: opts
+        shell: pwsh
+        run: |
+          $duration = "10.0"
+          $dtValues = "0.4,0.2,0.1,0.05,0.025"
+          $enforce = "true"
+
+          if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+            if ("${{ github.event.inputs.duration_s }}" -ne "") {
+              $duration = "${{ github.event.inputs.duration_s }}"
+            }
+            if ("${{ github.event.inputs.dt_values }}" -ne "") {
+              $dtValues = "${{ github.event.inputs.dt_values }}"
+            }
+            if ("${{ github.event.inputs.enforce_order }}" -eq "false") {
+              $enforce = "false"
+            }
+          }
+
+          $validationDir = "artifacts/validation/${{ github.run_id }}_${{ github.run_attempt }}_ci-windows-release"
+
+          "duration=$duration" >> $env:GITHUB_OUTPUT
+          "dt_values=$dtValues" >> $env:GITHUB_OUTPUT
+          "enforce=$enforce" >> $env:GITHUB_OUTPUT
+          "validation_dir=$validationDir" >> $env:GITHUB_OUTPUT
+
+      - name: Run numerical validation
+        shell: pwsh
+        run: |
+          $args = @(
+            "scripts/run_numerical_validation.py",
+            "--preset", "ci-windows-release",
+            "--config", "Release",
+            "--output-dir", "${{ steps.opts.outputs.validation_dir }}",
+            "--duration-s", "${{ steps.opts.outputs.duration }}",
+            "--dt-values", "${{ steps.opts.outputs.dt_values }}"
+          )
+
+          if ("${{ steps.opts.outputs.enforce }}" -eq "true") {
+            $args += "--enforce-order"
+          }
+
+          python @args
+
+      - name: Upload validation artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: numerical-validation-evidence-windows-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.opts.outputs.validation_dir }}
+          if-no-files-found: error

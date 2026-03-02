@@ -5,6 +5,7 @@
 This document defines the numerical integration policy for FluxGraph models.
 It complements `docs/semantics_spec.md` and is authoritative for solver
 selection and stability interpretation.
+Validation protocol details are documented in `docs/validation-methodology.md`.
 
 ## Current Policy (Phase 3.1 baseline)
 
@@ -69,3 +70,7 @@ Windows example:
 ```powershell
 python .\scripts\run_numerical_validation.py --preset dev-windows-release --config Release --enforce-order
 ```
+
+CI evidence runs are produced by:
+
+1. `.github/workflows/numerical-validation-evidence.yml`

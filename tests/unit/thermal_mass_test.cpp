@@ -133,10 +133,10 @@ TEST_F(ThermalMassTest, ExplicitForwardEulerMatchesDefault) {
   ThermalMassModel default_compare("default_compare", 1000.0, 10.0, 25.0,
                                    "model/temperature", "model/heating_power",
                                    "model/ambient_temp", *default_ns);
-  ThermalMassModel explicit_compare(
-      "explicit_compare", 1000.0, 10.0, 25.0, "model/temperature",
-      "model/heating_power", "model/ambient_temp", *explicit_ns,
-      ThermalIntegrationMethod::ForwardEuler);
+  ThermalMassModel explicit_compare("explicit_compare", 1000.0, 10.0, 25.0,
+                                    "model/temperature", "model/heating_power",
+                                    "model/ambient_temp", *explicit_ns,
+                                    ThermalIntegrationMethod::ForwardEuler);
 
   for (int i = 0; i < 100; ++i) {
     const double power = (i < 50) ? 100.0 : 0.0;

@@ -289,7 +289,8 @@ TEST(GraphCompilerTest, ParseThermalMassModelWithRk4) {
   EXPECT_NE(model->describe().find("method=rk4"), std::string::npos);
 }
 
-TEST(GraphCompilerTest, ParseThermalMassModelWithInvalidIntegrationMethodThrows) {
+TEST(GraphCompilerTest,
+     ParseThermalMassModelWithInvalidIntegrationMethodThrows) {
   ModelSpec spec;
   spec.id = "chamber_air";
   spec.type = "thermal_mass";

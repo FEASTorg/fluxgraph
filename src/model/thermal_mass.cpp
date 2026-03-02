@@ -1,7 +1,7 @@
 #include "fluxgraph/model/thermal_mass.hpp"
 #include <limits>
-#include <stdexcept>
 #include <sstream>
+#include <stdexcept>
 
 namespace fluxgraph {
 
@@ -30,9 +30,9 @@ parse_thermal_integration_method(const std::string &method_name) {
     return ThermalIntegrationMethod::Rk4;
   }
 
-  throw std::invalid_argument(
-      "Unknown thermal integration method '" + method_name +
-      "' (expected one of: forward_euler, rk4)");
+  throw std::invalid_argument("Unknown thermal integration method '" +
+                              method_name +
+                              "' (expected one of: forward_euler, rk4)");
 }
 
 ThermalMassModel::ThermalMassModel(const std::string &id, double thermal_mass,
@@ -67,8 +67,10 @@ void ThermalMassModel::tick(double dt, SignalStore &store) {
   } else {
     // Classic RK4 with fixed inputs over the tick interval.
     const double k1 = derivative(temperature_, net_power, ambient);
-    const double k2 = derivative(temperature_ + 0.5 * dt * k1, net_power, ambient);
-    const double k3 = derivative(temperature_ + 0.5 * dt * k2, net_power, ambient);
+    const double k2 =
+        derivative(temperature_ + 0.5 * dt * k1, net_power, ambient);
+    const double k3 =
+        derivative(temperature_ + 0.5 * dt * k2, net_power, ambient);
     const double k4 = derivative(temperature_ + dt * k3, net_power, ambient);
     temperature_ += (dt / 6.0) * (k1 + 2.0 * k2 + 2.0 * k3 + k4);
   }

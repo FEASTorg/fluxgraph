@@ -65,8 +65,7 @@ private:
   double initial_temp_;        // Initial temp for reset (degC)
   ThermalIntegrationMethod integration_method_;
 
-  double derivative(double temperature, double net_power,
-                    double ambient) const;
+  double derivative(double temperature, double net_power, double ambient) const;
 };
 
 } // namespace fluxgraph

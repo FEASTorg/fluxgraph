@@ -1,6 +1,7 @@
 #include "fluxgraph/model/thermal_mass.hpp"
 #include <cmath>
 #include <gtest/gtest.h>
+#include <limits>
 
 using namespace fluxgraph;
 
@@ -31,6 +32,41 @@ TEST_F(ThermalMassTest, InitialTemperature) {
 
   double temp = store->read_value(temp_id);
   EXPECT_NE(temp, 25.0); // Should start cooling
+}
+
+TEST_F(ThermalMassTest, ConstructorRejectsNonPositiveThermalMass) {
+  try {
+    ThermalMassModel model("invalid", 0.0, 10.0, 25.0, "model/temperature",
+                           "model/heating_power", "model/ambient_temp", *ns);
+    (void)model;
+    FAIL() << "Expected invalid_argument for non-positive thermal_mass";
+  } catch (const std::invalid_argument &e) {
+    EXPECT_NE(std::string(e.what()).find("thermal_mass"), std::string::npos);
+  }
+}
+
+TEST_F(ThermalMassTest, ConstructorRejectsNonPositiveHeatTransferCoeff) {
+  try {
+    ThermalMassModel model("invalid", 1000.0, 0.0, 25.0, "model/temperature",
+                           "model/heating_power", "model/ambient_temp", *ns);
+    (void)model;
+    FAIL() << "Expected invalid_argument for non-positive heat_transfer_coeff";
+  } catch (const std::invalid_argument &e) {
+    EXPECT_NE(std::string(e.what()).find("heat_transfer_coeff"),
+              std::string::npos);
+  }
+}
+
+TEST_F(ThermalMassTest, ConstructorRejectsNonFiniteInitialTemperature) {
+  try {
+    ThermalMassModel model(
+        "invalid", 1000.0, 10.0, std::numeric_limits<double>::infinity(),
+        "model/temperature", "model/heating_power", "model/ambient_temp", *ns);
+    (void)model;
+    FAIL() << "Expected invalid_argument for non-finite initial_temp";
+  } catch (const std::invalid_argument &e) {
+    EXPECT_NE(std::string(e.what()).find("initial_temp"), std::string::npos);
+  }
 }
 
 TEST_F(ThermalMassTest, HeatingBehavior) {

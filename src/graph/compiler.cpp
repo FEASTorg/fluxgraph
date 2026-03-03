@@ -12,6 +12,7 @@
 #include "fluxgraph/transform/unit_convert.hpp"
 #include <algorithm>
 #include <cctype>
+#include <cmath>
 #include <limits>
 #include <map>
 #include <mutex>
@@ -74,6 +75,19 @@ std::string as_string(const Variant &value, const std::string &path) {
   }
   throw std::runtime_error("Type error at " + path + ": expected string, got " +
                            variant_type_name(value));
+}
+
+void require_finite(const double value, const std::string &path) {
+  if (!std::isfinite(value)) {
+    throw std::runtime_error("Invalid parameter at " + path +
+                             ": expected finite number");
+  }
+}
+
+void require_finite_positive(const double value, const std::string &path) {
+  if (!std::isfinite(value) || value <= 0.0) {
+    throw std::runtime_error("Invalid parameter at " + path + ": expected > 0");
+  }
 }
 
 std::string trim_copy(const std::string &text) {
@@ -349,15 +363,24 @@ void ensure_default_factories_registered_locked(FactoryRegistry &registry) {
       [](const ModelSpec &spec,
          SignalNamespace &ns) -> std::unique_ptr<IModel> {
         const std::string context = "model[" + spec.id + ":thermal_mass]";
+        const std::string thermal_mass_path = context + "/thermal_mass";
+        const std::string heat_transfer_coeff_path =
+            context + "/heat_transfer_coeff";
+        const std::string initial_temp_path = context + "/initial_temp";
         double thermal_mass =
             as_double(require_param(spec.params, "thermal_mass", context),
-                      context + "/thermal_mass");
+                      thermal_mass_path);
         double heat_transfer_coeff = as_double(
             require_param(spec.params, "heat_transfer_coeff", context),
-            context + "/heat_transfer_coeff");
+            heat_transfer_coeff_path);
         double initial_temp =
             as_double(require_param(spec.params, "initial_temp", context),
-                      context + "/initial_temp");
+                      initial_temp_path);
+
+        require_finite_positive(thermal_mass, thermal_mass_path);
+        require_finite_positive(heat_transfer_coeff, heat_transfer_coeff_path);
+        require_finite(initial_temp, initial_temp_path);
+
         std::string temp_path =
             as_string(require_param(spec.params, "temp_signal", context),
                       context + "/temp_signal");

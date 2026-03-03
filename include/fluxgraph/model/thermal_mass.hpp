@@ -27,9 +27,10 @@ class ThermalMassModel : public IModel {
 public:
   /// Construct thermal mass model
   /// @param id Model identifier
-  /// @param thermal_mass Heat capacity in J/K
-  /// @param heat_transfer_coeff Heat transfer coefficient in W/K
-  /// @param initial_temp Initial temperature in degC
+  /// @param thermal_mass Heat capacity in J/K (must be finite and > 0)
+  /// @param heat_transfer_coeff Heat transfer coefficient in W/K (must be
+  /// finite and > 0)
+  /// @param initial_temp Initial temperature in degC (must be finite)
   /// @param temp_signal_path Signal path for temperature output (e.g.,
   /// "chamber_air/temperature")
   /// @param power_signal_path Signal path for power input (e.g.,

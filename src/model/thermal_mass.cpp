@@ -1,4 +1,5 @@
 #include "fluxgraph/model/thermal_mass.hpp"
+#include <cmath>
 #include <limits>
 #include <sstream>
 #include <stdexcept>
@@ -8,6 +9,10 @@ namespace fluxgraph {
 namespace {
 
 constexpr double kRk4NegativeRealAxisStabilityLimit = 2.785293563405282;
+
+bool is_finite_positive(double value) {
+  return std::isfinite(value) && value > 0.0;
+}
 
 } // namespace
 
@@ -48,7 +53,20 @@ ThermalMassModel::ThermalMassModel(const std::string &id, double thermal_mass,
       ambient_signal_(ns.intern(ambient_signal_path)),
       thermal_mass_(thermal_mass), heat_transfer_coeff_(heat_transfer_coeff),
       temperature_(initial_temp), initial_temp_(initial_temp),
-      integration_method_(integration_method) {}
+      integration_method_(integration_method) {
+  if (!is_finite_positive(thermal_mass_)) {
+    throw std::invalid_argument(
+        "ThermalMassModel: thermal_mass must be finite and > 0");
+  }
+  if (!is_finite_positive(heat_transfer_coeff_)) {
+    throw std::invalid_argument(
+        "ThermalMassModel: heat_transfer_coeff must be finite and > 0");
+  }
+  if (!std::isfinite(initial_temp_)) {
+    throw std::invalid_argument(
+        "ThermalMassModel: initial_temp must be finite");
+  }
+}
 
 double ThermalMassModel::derivative(double temperature, double net_power,
                                     double ambient) const {

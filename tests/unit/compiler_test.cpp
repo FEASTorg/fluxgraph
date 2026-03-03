@@ -307,6 +307,74 @@ TEST(GraphCompilerTest,
   EXPECT_THROW(compiler.parse_model(spec, ns), std::runtime_error);
 }
 
+TEST(GraphCompilerTest, ParseThermalMassModelWithNonPositiveThermalMassThrows) {
+  ModelSpec spec;
+  spec.id = "chamber_air";
+  spec.type = "thermal_mass";
+  spec.params["thermal_mass"] = 0.0;
+  spec.params["heat_transfer_coeff"] = 10.0;
+  spec.params["initial_temp"] = 25.0;
+  spec.params["temp_signal"] = std::string("chamber_air/temperature");
+  spec.params["power_signal"] = std::string("chamber_air/power");
+  spec.params["ambient_signal"] = std::string("chamber_air/ambient");
+
+  SignalNamespace ns;
+  GraphCompiler compiler;
+  try {
+    std::unique_ptr<IModel> model(compiler.parse_model(spec, ns));
+    (void)model;
+    FAIL() << "Expected runtime_error for non-positive thermal_mass";
+  } catch (const std::runtime_error &e) {
+    EXPECT_NE(std::string(e.what()).find("/thermal_mass"), std::string::npos);
+  }
+}
+
+TEST(GraphCompilerTest,
+     ParseThermalMassModelWithNonPositiveHeatTransferCoeffThrows) {
+  ModelSpec spec;
+  spec.id = "chamber_air";
+  spec.type = "thermal_mass";
+  spec.params["thermal_mass"] = 1000.0;
+  spec.params["heat_transfer_coeff"] = 0.0;
+  spec.params["initial_temp"] = 25.0;
+  spec.params["temp_signal"] = std::string("chamber_air/temperature");
+  spec.params["power_signal"] = std::string("chamber_air/power");
+  spec.params["ambient_signal"] = std::string("chamber_air/ambient");
+
+  SignalNamespace ns;
+  GraphCompiler compiler;
+  try {
+    std::unique_ptr<IModel> model(compiler.parse_model(spec, ns));
+    (void)model;
+    FAIL() << "Expected runtime_error for non-positive heat_transfer_coeff";
+  } catch (const std::runtime_error &e) {
+    EXPECT_NE(std::string(e.what()).find("/heat_transfer_coeff"),
+              std::string::npos);
+  }
+}
+
+TEST(GraphCompilerTest, ParseThermalMassModelWithNonFiniteInitialTempThrows) {
+  ModelSpec spec;
+  spec.id = "chamber_air";
+  spec.type = "thermal_mass";
+  spec.params["thermal_mass"] = 1000.0;
+  spec.params["heat_transfer_coeff"] = 10.0;
+  spec.params["initial_temp"] = std::numeric_limits<double>::infinity();
+  spec.params["temp_signal"] = std::string("chamber_air/temperature");
+  spec.params["power_signal"] = std::string("chamber_air/power");
+  spec.params["ambient_signal"] = std::string("chamber_air/ambient");
+
+  SignalNamespace ns;
+  GraphCompiler compiler;
+  try {
+    std::unique_ptr<IModel> model(compiler.parse_model(spec, ns));
+    (void)model;
+    FAIL() << "Expected runtime_error for non-finite initial_temp";
+  } catch (const std::runtime_error &e) {
+    EXPECT_NE(std::string(e.what()).find("/initial_temp"), std::string::npos);
+  }
+}
+
 TEST(GraphCompilerTest, RegisterModelFactoryRejectsInvalidInputs) {
   GraphCompiler::ModelFactory empty_factory;
 

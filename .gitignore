@@ -278,6 +278,11 @@ CTestTestfile.cmake
 _deps/
 compile_commands.json
 
+# Local diagram tool outputs
+graph_example*.dot
+graph_example*.svg
+graph_example*.png
+
 # vcpkg manifest-mode artifacts (machine-local)
 vcpkg_installed/
 

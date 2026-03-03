@@ -197,6 +197,29 @@ jobs:
       - name: Run C++ tests
         run: ctest --preset ci-windows-release
 
+  windows-diagram:
+    name: Windows diagram-dot
+    runs-on: windows-2022
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgGitCommitId: ${{ env.VCPKG_COMMIT }}
+          doNotCache: false
+
+      - name: Configure
+        run: cmake --preset ci-windows-release-diagram
+
+      - name: Build
+        run: cmake --build --preset ci-windows-release-diagram --parallel
+
+      - name: Run C++ tests
+        run: ctest --preset ci-windows-release-diagram
+
   diagram-render-smoke:
     name: Diagram Render Smoke
     runs-on: ubuntu-24.04

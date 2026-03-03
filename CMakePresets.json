@@ -82,6 +82,14 @@
       }
     },
     {
+      "name": "ci-windows-release-diagram",
+      "inherits": "ci-windows-release",
+      "cacheVariables": {
+        "FLUXGRAPH_BUILD_DIAGRAM_TOOL": "ON",
+        "FLUXGRAPH_JSON_ENABLED": "ON"
+      }
+    },
+    {
       "name": "ci-linux-release-json",
       "inherits": "ci-linux-release",
       "cacheVariables": {
@@ -163,6 +171,11 @@
       "configuration": "Release"
     },
     {
+      "name": "ci-windows-release-diagram",
+      "configurePreset": "ci-windows-release-diagram",
+      "configuration": "Release"
+    },
+    {
       "name": "ci-linux-release-json",
       "configurePreset": "ci-linux-release-json"
     },
@@ -230,6 +243,14 @@
     {
       "name": "ci-windows-release",
       "configurePreset": "ci-windows-release",
+      "configuration": "Release",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "ci-windows-release-diagram",
+      "configurePreset": "ci-windows-release-diagram",
       "configuration": "Release",
       "output": {
         "outputOnFailure": true

@@ -27,7 +27,7 @@ This document defines FluxGraph policy for dependency management, preset usage, 
 
 ## CI Lane Tiers
 
-- **Required**: Linux core build/test lane, Windows core build/test lane.
+- **Required**: Linux core build/test lane, Linux diagram-dot lane, Windows core build/test lane, Windows diagram-dot lane, and diagram render smoke lane.
 - **Advisory/matrix**: Linux JSON, YAML, and server-enabled lanes.
 - **Optional heavy lanes**: extended sanitizer/stress/integration runs.
 

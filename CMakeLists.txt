@@ -43,7 +43,9 @@ set(FLUXGRAPH_SOURCES
     src/core/signal_store.cpp
     src/core/namespace.cpp
     src/core/units.cpp
+    src/model/thermal_integration.cpp
     src/model/thermal_mass.cpp
+    src/model/thermal_rc2.cpp
     src/graph/compiler.cpp
     src/engine.cpp
 )

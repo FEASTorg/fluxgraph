@@ -16,11 +16,13 @@ add_executable(fluxgraph_tests
     unit/transform_moving_average_test.cpp
     unit/unit_convert_transform_test.cpp
     unit/thermal_mass_test.cpp
+    unit/thermal_rc2_test.cpp
     unit/compiler_test.cpp
     unit/engine_test.cpp
     unit/unit_registry_test.cpp
     analytical/first_order_lag_analytical_test.cpp
     analytical/thermal_mass_analytical_test.cpp
+    analytical/thermal_rc2_analytical_test.cpp
     analytical/delay_analytical_test.cpp
     analytical/transform_analytical_test.cpp
 )

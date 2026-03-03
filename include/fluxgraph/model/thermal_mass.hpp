@@ -2,19 +2,11 @@
 
 #include "fluxgraph/core/namespace.hpp"
 #include "fluxgraph/model/interface.hpp"
+#include "fluxgraph/model/thermal_integration.hpp"
 #include <string>
 #include <vector>
 
 namespace fluxgraph {
-
-enum class ThermalIntegrationMethod {
-  ForwardEuler,
-  Rk4,
-};
-
-const char *to_string(ThermalIntegrationMethod method);
-ThermalIntegrationMethod
-parse_thermal_integration_method(const std::string &method_name);
 
 /// Thermal mass model: simple heat capacity with power input and ambient
 /// cooling Physics: dT/dt = (P_in - h*(T - T_amb)) / C Where:

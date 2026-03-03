@@ -126,6 +126,7 @@ int main() {
 - [`02_thermal_mass`](./examples/02_thermal_mass/) - Physics simulation with models
 - [`03_json_graph`](./examples/03_json_graph/) - Load graph from JSON file
 - [`04_yaml_graph`](./examples/04_yaml_graph/) - Load graph from YAML file
+- [`05_thermal_rc2`](./examples/05_thermal_rc2/) - Two-node thermal RC model example
 
 ## Project Structure
 

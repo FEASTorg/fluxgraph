@@ -1,0 +1,2 @@
+add_executable(example_thermal_rc2 main.cpp)
+target_link_libraries(example_thermal_rc2 PRIVATE fluxgraph)

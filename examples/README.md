@@ -165,6 +165,22 @@ cmake --build build-yaml --config Debug
 - Optional dependency (core library still zero-dep)
 - Can enable both JSON and YAML simultaneously
 
+## Example 5: Two-Node Thermal RC Simulation
+
+**Location:** `05_thermal_rc2/`
+
+Demonstrates a coupled two-temperature physics model:
+
+- `thermal_rc2` - Two-node thermal RC network (shell/core style)
+- Multiple model outputs (`temp_signal_a`, `temp_signal_b`)
+- Ambient coupling + inter-node conductance
+
+**Run:**
+
+```bash
+./build/examples/05_thermal_rc2/Debug/example_thermal_rc2.exe
+```
+
 ## When to Use Each Approach
 
 ### Manual GraphSpec (Examples 1 & 2)
@@ -255,7 +271,7 @@ double result = store.read_value(output_sig);
 
 **"Unknown model type" error:**
 
-- Check ModelSpec `type` field matches implemented model ("thermal_mass")
+- Check ModelSpec `type` field matches implemented model ("thermal_mass" or "thermal_rc2")
 - Ensure all required params are present
 
 **Signals read as 0.0:**
@@ -267,7 +283,7 @@ double result = store.read_value(output_sig);
 **Unexpected NaN/Inf values:**
 
 - Check model stability limits (dt too large)
-- Verify thermal_mass and heat_transfer_coeff > 0
+- Verify model parameters satisfy constraints (for example: thermal_mass > 0, heat_transfer_coeff > 0)
 - Ensure ambient temperature is initialized
 
 **Compile errors:**

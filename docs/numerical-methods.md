@@ -14,9 +14,9 @@ Validation protocol details are documented in `docs/validation-methodology.md`.
 3. Methods are selected at compile time and remain fixed at runtime.
 4. Runtime behavior must be deterministic for identical inputs and `dt`.
 
-## ThermalMassModel Integration Methods
+## Thermal Model Integration Methods
 
-`thermal_mass` supports:
+Both `thermal_mass` and `thermal_rc2` support:
 
 1. `forward_euler` (default)
 2. `rk4` (classic fourth-order Runge-Kutta)
@@ -33,13 +33,22 @@ Unknown method names are compile-time errors.
 
 ## Stability Limits
 
-For the linear thermal model `dT/dt = (P - h*(T - T_amb)) / C`, with
-`k = h/C`:
+For the linear thermal mass model `dT/dt = (P - h*(T - T_amb)) / C`, with
+`k = h/C`, the stability limits are:
 
 1. `forward_euler`: `dt < 2/k = 2*C/h`
 2. `rk4`: `dt < 2.785293563/k = 2.785293563*C/h`
 
 If `h <= 0`, the model is treated as unconditionally stable for this criterion.
+
+For the two-node thermal RC model, the system is linear: `dT/dt = A*T + c`.
+Let `lambda_min` be the most negative eigenvalue of `A` (largest magnitude on
+the negative real axis). The stability limits use:
+
+1. `forward_euler`: `dt < 2/|lambda_min|`
+2. `rk4`: `dt < 2.785293563/|lambda_min|`
+
+FluxGraph enforces these via `IModel::compute_stability_limit()`.
 
 ## Validation Expectations
 

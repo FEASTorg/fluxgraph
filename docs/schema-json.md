@@ -58,7 +58,7 @@ Models represent physical systems with internal state and differential equations
 **Fields:**
 
 - `id` (string, required) - Unique model identifier
-- `type` (string, required) - Model type (`"thermal_mass"` only in v1.0)
+- `type` (string, required) - Model type (built-in: `"thermal_mass"`, `"thermal_rc2"`)
 - `params` (object, required) - Model-specific parameters
 
 ### ThermalMass Model
@@ -74,6 +74,7 @@ Lumped thermal capacitance with heat transfer: `C * dT/dt = P - h * (T - T_ambie
 | `thermal_mass` | number | J/K | Heat capacity (must be > 0) |
 | `heat_transfer_coeff` | number | W/K | Heat transfer coefficient (must be > 0) |
 | `initial_temp` | number | degC | Initial temperature |
+| `integration_method` | string | - | Optional: `"forward_euler"` (default) or `"rk4"` |
 
 **Example:**
 
@@ -93,6 +94,49 @@ Lumped thermal capacitance with heat transfer: `C * dT/dt = P - h * (T - T_ambie
 ```
 
 **Stability:** Forward Euler integration requires `dt < 2 * thermal_mass / heat_transfer_coeff`
+
+### ThermalRc2 Model
+
+Two-node thermal RC network with ambient coupling and inter-node conductance.
+
+**Parameters:**
+| Parameter | Type | Units | Description |
+|-----------|------|-------|-------------|
+| `temp_signal_a` | string | - | Output signal path for node A temperature |
+| `temp_signal_b` | string | - | Output signal path for node B temperature |
+| `power_signal` | string | W | Input signal path for heating power (applied to node A) |
+| `ambient_signal` | string | degC | Input signal path for ambient temperature |
+| `thermal_mass_a` | number | J/K | Heat capacity of node A (must be > 0) |
+| `thermal_mass_b` | number | J/K | Heat capacity of node B (must be > 0) |
+| `heat_transfer_coeff_a` | number | W/K | Ambient coupling of node A (must be > 0) |
+| `heat_transfer_coeff_b` | number | W/K | Ambient coupling of node B (must be > 0) |
+| `coupling_coeff` | number | W/K | Conductance between nodes (must be >= 0) |
+| `initial_temp_a` | number | degC | Initial temperature of node A |
+| `initial_temp_b` | number | degC | Initial temperature of node B |
+| `integration_method` | string | - | Optional: `"forward_euler"` (default) or `"rk4"` |
+
+**Example:**
+
+```json
+{
+  "id": "chamber_rc",
+  "type": "thermal_rc2",
+  "params": {
+    "temp_signal_a": "chamber.shell_temp",
+    "temp_signal_b": "chamber.core_temp",
+    "power_signal": "chamber.heater_power",
+    "ambient_signal": "ambient.temp",
+    "thermal_mass_a": 1000.0,
+    "thermal_mass_b": 2000.0,
+    "heat_transfer_coeff_a": 10.0,
+    "heat_transfer_coeff_b": 8.0,
+    "coupling_coeff": 6.0,
+    "initial_temp_a": 25.0,
+    "initial_temp_b": 25.0,
+    "integration_method": "rk4"
+  }
+}
+```
 
 ## Edges
 

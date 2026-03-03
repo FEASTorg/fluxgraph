@@ -238,8 +238,8 @@ model.type = "thermal_mass";
 model.params["temp_signal"] = std::string("chamber.temp");
 model.params["power_signal"] = std::string("chamber.power");
 model.params["ambient_signal"] = std::string("ambient.temp");
-model.params["thermal_mass"] = 1000.0;  // J/degC
-model.params["heat_transfer_coeff"] = 10.0;  // W/degC
+model.params["thermal_mass"] = 1000.0;  // J/K
+model.params["heat_transfer_coeff"] = 10.0;  // W/K
 model.params["initial_temp"] = 25.0;  // degC
 model.params["integration_method"] = std::string("forward_euler"); // optional: "forward_euler" (default) or "rk4"
 spec.models.push_back(model);
@@ -248,6 +248,7 @@ spec.models.push_back(model);
 **Available model types:**
 
 - `thermal_mass` - Heat transfer simulation
+- `thermal_rc2` - Two-node thermal RC network (coupled temperatures)
 
 #### RuleSpec
 

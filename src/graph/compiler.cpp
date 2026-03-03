@@ -90,6 +90,41 @@ void require_finite_positive(const double value, const std::string &path) {
   }
 }
 
+std::string format_scalar_constraint_rule(const ScalarConstraint &constraint) {
+  switch (constraint.kind) {
+  case ScalarConstraint::Kind::finite:
+    return "finite number";
+  case ScalarConstraint::Kind::greater_than:
+    return "> " + std::to_string(constraint.a);
+  case ScalarConstraint::Kind::greater_equal:
+    return ">= " + std::to_string(constraint.a);
+  case ScalarConstraint::Kind::closed_interval:
+    return "in [" + std::to_string(constraint.a) + ", " +
+           std::to_string(constraint.b) + "]";
+  }
+  return "finite number";
+}
+
+bool satisfies_scalar_constraint(const double value,
+                                 const ScalarConstraint &constraint) {
+  if (!std::isfinite(value)) {
+    return false;
+  }
+
+  switch (constraint.kind) {
+  case ScalarConstraint::Kind::finite:
+    return true;
+  case ScalarConstraint::Kind::greater_than:
+    return value > constraint.a;
+  case ScalarConstraint::Kind::greater_equal:
+    return value >= constraint.a;
+  case ScalarConstraint::Kind::closed_interval:
+    return constraint.a <= constraint.b && value >= constraint.a &&
+           value <= constraint.b;
+  }
+  return false;
+}
+
 std::string trim_copy(const std::string &text) {
   auto begin = std::find_if_not(text.begin(), text.end(), [](unsigned char c) {
     return std::isspace(c) != 0;
@@ -357,6 +392,15 @@ void ensure_default_factories_registered_locked(FactoryRegistry &registry) {
   thermal_signature.signal_param_units.emplace("power_signal", "W");
   thermal_signature.signal_param_units.emplace("ambient_signal", "degC");
   thermal_signature.signal_param_units.emplace("temp_signal", "degC");
+  thermal_signature.scalar_param_signatures.emplace(
+      "thermal_mass",
+      ScalarParamSignature{"J/K", ScalarConstraint::greater_than(0.0), true});
+  thermal_signature.scalar_param_signatures.emplace(
+      "heat_transfer_coeff",
+      ScalarParamSignature{"W/K", ScalarConstraint::greater_than(0.0), true});
+  thermal_signature.scalar_param_signatures.emplace(
+      "initial_temp",
+      ScalarParamSignature{"degC", ScalarConstraint::finite_only(), true});
 
   register_builtin_model(
       registry, "thermal_mass",
@@ -463,6 +507,95 @@ std::string resolve_signal_contract_or_empty(
     return "";
   }
   return it->second;
+}
+
+void validate_model_signature_contracts(
+    const ModelSpec &model_spec, const ModelSignature &signature,
+    SignalNamespace &signal_ns,
+    const std::unordered_map<SignalId, std::string> &signal_contracts,
+    const UnitRegistry &unit_registry, const CompilationOptions &options,
+    bool strict) {
+  for (const auto &[param_name, expected_unit] : signature.signal_param_units) {
+    auto param_it = model_spec.params.find(param_name);
+    if (param_it == model_spec.params.end()) {
+      continue;
+    }
+
+    const std::string path = as_string(
+        param_it->second,
+        "model[" + model_spec.id + ":" + model_spec.type + "]/{" + param_name +
+            "}");
+    const SignalId id = signal_ns.intern(path);
+    const std::string actual_unit =
+        resolve_signal_contract_or_empty(signal_contracts, id);
+
+    if (actual_unit.empty()) {
+      if (strict) {
+        throw std::runtime_error(
+            "GraphCompiler: strict mode requires declared signal contract "
+            "for model '" +
+            model_spec.id + "' parameter '" + param_name + "' (path '" + path +
+            "')");
+      }
+      continue;
+    }
+
+    if (actual_unit != expected_unit) {
+      const std::string message =
+          "GraphCompiler: model '" + model_spec.id + "' parameter '" +
+          param_name + "' expects unit '" + expected_unit + "' but found '" +
+          actual_unit + "'";
+      if (strict) {
+        throw std::runtime_error(message);
+      }
+      emit_warning(options, message);
+    }
+  }
+
+  for (const auto &[param_name, param_signature] :
+       signature.scalar_param_signatures) {
+    auto param_it = model_spec.params.find(param_name);
+    const std::string path =
+        "model[" + model_spec.id + ":" + model_spec.type + "]/" + param_name;
+
+    if (param_it == model_spec.params.end()) {
+      if (strict && param_signature.required) {
+        throw std::runtime_error("GraphCompiler: strict mode requires scalar "
+                                 "parameter '" +
+                                 param_name + "' for model '" + model_spec.id +
+                                 "'");
+      }
+      if (!strict && param_signature.required) {
+        emit_warning(options,
+                     "GraphCompiler: missing required scalar parameter '" +
+                         param_name + "' for model '" + model_spec.id + "'");
+      }
+      continue;
+    }
+
+    if (!param_signature.unit_symbol.empty() &&
+        !is_unit_known(unit_registry, param_signature.unit_symbol)) {
+      const std::string message =
+          "GraphCompiler: model signature for type '" + model_spec.type +
+          "' references unknown scalar unit symbol '" +
+          param_signature.unit_symbol + "' for parameter '" + param_name + "'";
+      if (strict) {
+        throw std::runtime_error(message);
+      }
+      emit_warning(options, message);
+    }
+
+    const double value = as_double(param_it->second, path);
+    if (!satisfies_scalar_constraint(value, param_signature.constraint)) {
+      const std::string message =
+          "Invalid parameter at " + path + ": expected " +
+          format_scalar_constraint_rule(param_signature.constraint);
+      if (strict) {
+        throw std::runtime_error(message);
+      }
+      emit_warning(options, message);
+    }
+  }
 }
 
 } // namespace
@@ -645,42 +778,9 @@ CompiledProgram GraphCompiler::compile(const GraphSpec &spec,
       }
 
       if (entry.has_signature) {
-        for (const auto &[param_name, expected_unit] :
-             entry.signature.signal_param_units) {
-          auto param_it = model_spec.params.find(param_name);
-          if (param_it == model_spec.params.end()) {
-            continue;
-          }
-
-          const std::string path = as_string(
-              param_it->second, "model[" + model_spec.id + ":" +
-                                    model_spec.type + "]/{" + param_name + "}");
-          const SignalId id = signal_ns.intern(path);
-          const std::string actual_unit =
-              resolve_signal_contract_or_empty(signal_contracts, id);
-
-          if (actual_unit.empty()) {
-            if (strict) {
-              throw std::runtime_error("GraphCompiler: strict mode requires "
-                                       "declared signal contract "
-                                       "for model '" +
-                                       model_spec.id + "' parameter '" +
-                                       param_name + "' (path '" + path + "')");
-            }
-            continue;
-          }
-
-          if (actual_unit != expected_unit) {
-            const std::string message =
-                "GraphCompiler: model '" + model_spec.id + "' parameter '" +
-                param_name + "' expects unit '" + expected_unit +
-                "' but found '" + actual_unit + "'";
-            if (strict) {
-              throw std::runtime_error(message);
-            }
-            emit_warning(options, message);
-          }
-        }
+        validate_model_signature_contracts(
+            model_spec, entry.signature, signal_ns, signal_contracts,
+            unit_registry, options, strict);
       }
     }
   }

@@ -950,6 +950,144 @@ TEST(GraphCompilerTest, StrictModeAllowsSignedCustomModel) {
   EXPECT_NO_THROW(compiler.compile(spec, signal_ns, func_ns, options));
 }
 
+TEST(GraphCompilerTest,
+     StrictModeRejectsSignedCustomModelMissingRequiredScalarParameter) {
+  const std::string type = "test.strict_scalar_required_model";
+  if (!GraphCompiler::is_model_registered(type)) {
+    ModelSignature signature;
+    signature.signal_param_units["output_signal"] = "dimensionless";
+    signature.scalar_param_signatures["gain"] = ScalarParamSignature{
+        "dimensionless", ScalarConstraint::greater_than(0.0), true};
+    GraphCompiler::register_model_factory_with_signature(
+        type,
+        [](const ModelSpec &model_spec,
+           SignalNamespace &ns) -> std::unique_ptr<IModel> {
+          const auto output_it = model_spec.params.find("output_signal");
+          if (output_it == model_spec.params.end()) {
+            throw std::runtime_error("Missing output_signal");
+          }
+          const SignalId output_id = ns.intern(
+              variant_to_string(output_it->second, "model/output_signal"));
+          return std::make_unique<ConstantSignalModel>(model_spec.id, output_id,
+                                                       5.0, "dimensionless");
+        },
+        signature);
+  }
+
+  GraphSpec spec;
+  spec.signals.push_back({"signed.scalar.output", "dimensionless"});
+  ModelSpec model;
+  model.id = "signed_scalar_missing";
+  model.type = type;
+  model.params["output_signal"] = std::string("signed.scalar.output");
+  spec.models.push_back(model);
+
+  SignalNamespace signal_ns;
+  FunctionNamespace func_ns;
+  GraphCompiler compiler;
+  CompilationOptions options;
+  options.dimensional_policy = DimensionalPolicy::strict;
+
+  try {
+    auto program = compiler.compile(spec, signal_ns, func_ns, options);
+    (void)program;
+    FAIL() << "Expected strict-mode compile failure for missing scalar param";
+  } catch (const std::runtime_error &e) {
+    EXPECT_NE(std::string(e.what()).find("scalar parameter 'gain'"),
+              std::string::npos);
+  }
+}
+
+TEST(GraphCompilerTest,
+     StrictModeRejectsSignedCustomModelScalarConstraintViolation) {
+  const std::string type = "test.strict_scalar_violation_model";
+  if (!GraphCompiler::is_model_registered(type)) {
+    ModelSignature signature;
+    signature.signal_param_units["output_signal"] = "dimensionless";
+    signature.scalar_param_signatures["gain"] = ScalarParamSignature{
+        "dimensionless", ScalarConstraint::greater_than(0.0), true};
+    GraphCompiler::register_model_factory_with_signature(
+        type,
+        [](const ModelSpec &model_spec,
+           SignalNamespace &ns) -> std::unique_ptr<IModel> {
+          const auto output_it = model_spec.params.find("output_signal");
+          if (output_it == model_spec.params.end()) {
+            throw std::runtime_error("Missing output_signal");
+          }
+          const SignalId output_id = ns.intern(
+              variant_to_string(output_it->second, "model/output_signal"));
+          return std::make_unique<ConstantSignalModel>(model_spec.id, output_id,
+                                                       5.0, "dimensionless");
+        },
+        signature);
+  }
+
+  GraphSpec spec;
+  spec.signals.push_back({"signed.scalar.output", "dimensionless"});
+  ModelSpec model;
+  model.id = "signed_scalar_invalid";
+  model.type = type;
+  model.params["output_signal"] = std::string("signed.scalar.output");
+  model.params["gain"] = 0.0;
+  spec.models.push_back(model);
+
+  SignalNamespace signal_ns;
+  FunctionNamespace func_ns;
+  GraphCompiler compiler;
+  CompilationOptions options;
+  options.dimensional_policy = DimensionalPolicy::strict;
+
+  try {
+    auto program = compiler.compile(spec, signal_ns, func_ns, options);
+    (void)program;
+    FAIL() << "Expected strict-mode compile failure for scalar constraint";
+  } catch (const std::runtime_error &e) {
+    EXPECT_NE(std::string(e.what()).find("/gain"), std::string::npos);
+  }
+}
+
+TEST(GraphCompilerTest,
+     StrictModeAllowsSignedCustomModelWithValidScalarConstraint) {
+  const std::string type = "test.strict_scalar_valid_model";
+  if (!GraphCompiler::is_model_registered(type)) {
+    ModelSignature signature;
+    signature.signal_param_units["output_signal"] = "dimensionless";
+    signature.scalar_param_signatures["gain"] = ScalarParamSignature{
+        "dimensionless", ScalarConstraint::greater_than(0.0), true};
+    GraphCompiler::register_model_factory_with_signature(
+        type,
+        [](const ModelSpec &model_spec,
+           SignalNamespace &ns) -> std::unique_ptr<IModel> {
+          const auto output_it = model_spec.params.find("output_signal");
+          if (output_it == model_spec.params.end()) {
+            throw std::runtime_error("Missing output_signal");
+          }
+          const SignalId output_id = ns.intern(
+              variant_to_string(output_it->second, "model/output_signal"));
+          return std::make_unique<ConstantSignalModel>(model_spec.id, output_id,
+                                                       5.0, "dimensionless");
+        },
+        signature);
+  }
+
+  GraphSpec spec;
+  spec.signals.push_back({"signed.scalar.output", "dimensionless"});
+  ModelSpec model;
+  model.id = "signed_scalar_valid";
+  model.type = type;
+  model.params["output_signal"] = std::string("signed.scalar.output");
+  model.params["gain"] = 1.0;
+  spec.models.push_back(model);
+
+  SignalNamespace signal_ns;
+  FunctionNamespace func_ns;
+  GraphCompiler compiler;
+  CompilationOptions options;
+  options.dimensional_policy = DimensionalPolicy::strict;
+
+  EXPECT_NO_THROW(compiler.compile(spec, signal_ns, func_ns, options));
+}
+
 TEST(GraphCompilerTest, StrictModeRejectsRuleWithoutDeclaredLhsContract) {
   GraphSpec spec;
   RuleSpec rule;
@@ -1019,4 +1157,59 @@ TEST(GraphCompilerTest, PermissiveModeEmitsLinearBoundaryWarning) {
   GraphCompiler compiler;
   EXPECT_NO_THROW(compiler.compile(spec, signal_ns, func_ns, options));
   EXPECT_FALSE(warnings.empty());
+}
+
+TEST(GraphCompilerTest,
+     PermissiveModeWarnsOnSignedCustomModelScalarConstraintViolation) {
+  const std::string type = "test.permissive_scalar_warning_model";
+  if (!GraphCompiler::is_model_registered(type)) {
+    ModelSignature signature;
+    signature.signal_param_units["output_signal"] = "dimensionless";
+    signature.scalar_param_signatures["gain"] = ScalarParamSignature{
+        "dimensionless", ScalarConstraint::greater_than(0.0), true};
+    GraphCompiler::register_model_factory_with_signature(
+        type,
+        [](const ModelSpec &model_spec,
+           SignalNamespace &ns) -> std::unique_ptr<IModel> {
+          const auto output_it = model_spec.params.find("output_signal");
+          if (output_it == model_spec.params.end()) {
+            throw std::runtime_error("Missing output_signal");
+          }
+          const SignalId output_id = ns.intern(
+              variant_to_string(output_it->second, "model/output_signal"));
+          return std::make_unique<ConstantSignalModel>(model_spec.id, output_id,
+                                                       5.0, "dimensionless");
+        },
+        signature);
+  }
+
+  GraphSpec spec;
+  spec.signals.push_back({"permissive.scalar.output", "dimensionless"});
+  ModelSpec model;
+  model.id = "permissive_scalar_warning";
+  model.type = type;
+  model.params["output_signal"] = std::string("permissive.scalar.output");
+  model.params["gain"] = 0.0;
+  spec.models.push_back(model);
+
+  std::vector<std::string> warnings;
+  CompilationOptions options;
+  options.dimensional_policy = DimensionalPolicy::permissive;
+  options.warning_handler = [&warnings](const std::string &message) {
+    warnings.push_back(message);
+  };
+
+  SignalNamespace signal_ns;
+  FunctionNamespace func_ns;
+  GraphCompiler compiler;
+  EXPECT_NO_THROW(compiler.compile(spec, signal_ns, func_ns, options));
+
+  bool saw_gain_warning = false;
+  for (const auto &warning : warnings) {
+    if (warning.find("/gain") != std::string::npos) {
+      saw_gain_warning = true;
+      break;
+    }
+  }
+  EXPECT_TRUE(saw_gain_warning);
 }

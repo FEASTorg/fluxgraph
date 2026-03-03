@@ -29,10 +29,59 @@ struct TransformSignature {
   Contract contract = Contract::preserve;
 };
 
+struct ScalarConstraint {
+  enum class Kind {
+    finite,
+    greater_than,
+    greater_equal,
+    closed_interval,
+  };
+
+  Kind kind = Kind::finite;
+  double a = 0.0;
+  double b = 0.0;
+
+  static ScalarConstraint finite_only() { return {}; }
+
+  static ScalarConstraint greater_than(double lower_bound) {
+    ScalarConstraint constraint;
+    constraint.kind = Kind::greater_than;
+    constraint.a = lower_bound;
+    return constraint;
+  }
+
+  static ScalarConstraint greater_equal(double lower_bound) {
+    ScalarConstraint constraint;
+    constraint.kind = Kind::greater_equal;
+    constraint.a = lower_bound;
+    return constraint;
+  }
+
+  static ScalarConstraint closed_interval(double lower_bound,
+                                          double upper_bound) {
+    ScalarConstraint constraint;
+    constraint.kind = Kind::closed_interval;
+    constraint.a = lower_bound;
+    constraint.b = upper_bound;
+    return constraint;
+  }
+};
+
+struct ScalarParamSignature {
+  /// Optional expected unit symbol for this scalar parameter.
+  /// This is metadata for dimensional rigor and diagnostics.
+  std::string unit_symbol;
+  ScalarConstraint constraint = ScalarConstraint::finite_only();
+  bool required = true;
+};
+
 struct ModelSignature {
   /// Mapping from model parameter name (signal path parameter) to expected unit
   /// symbol.
   std::map<std::string, std::string> signal_param_units;
+
+  /// Mapping from scalar parameter name to numeric domain/unit metadata.
+  std::map<std::string, ScalarParamSignature> scalar_param_signatures;
 };
 
 struct CompilationOptions {

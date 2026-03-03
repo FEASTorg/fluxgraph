@@ -36,16 +36,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - server protected-write rejection
   - server `--dt` timestep behavior
   - SignalStore unit-declaration behavior
-- Benchmark evidence tooling for Phase 2:
+- Benchmark evidence tooling:
   - policy profiles (`local`, `ci-hosted`, `ci-dedicated`)
   - benchmark evaluation script (`scripts/evaluate_benchmarks.py`)
   - benchmark evidence CI workflow with artifact upload (`.github/workflows/benchmark-evidence.yml`)
-- Phase 3 numerical validation framework:
+- Numerical validation framework:
   - `thermal_mass` integration method policy (`forward_euler`, `rk4`)
   - numerical validation runner (`scripts/run_numerical_validation.py`)
   - thermal validation target (`tests/validation/thermal_mass_validation.cpp`)
   - numerical validation CI evidence workflow (`.github/workflows/numerical-validation-evidence.yml`)
-  - methodology/evidence docs (`docs/validation-methodology.md`, `docs/phase3-evidence.md`)
+  - methodology/evidence docs (`docs/validation-methodology.md`, `docs/numerical-methods.md`)
 
 ### Fixed
 

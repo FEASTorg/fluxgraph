@@ -23,4 +23,3 @@ TEST(VizFormat, ReturnsStableFormatNames) {
 
 } // namespace
 } // namespace fluxgraph
-

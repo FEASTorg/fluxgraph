@@ -1,17 +1,17 @@
-# Graph Visualization Contract
+# Graph Visualization
 
-**Status:** Phase 4 contract; Sprint 4.3 renderer integration implemented.  
-**Purpose:** lock the visualization interface and behavior before coding to prevent drift in tests and CLI behavior.
+**Status:** Implemented  
+**Purpose:** define the public behavior and evidence contract for FluxGraph graph-diagram generation.
 
 ## 1. Scope
 
-This phase adds an optional graph-diagram toolchain that:
+FluxGraph provides an optional graph-diagram toolchain that:
 
-1. takes FluxGraph graph definitions (JSON/YAML via existing loaders, or direct `GraphSpec` in C++),
-2. produces deterministic DOT output as the canonical artifact,
+1. accepts FluxGraph graph definitions (JSON/YAML via existing loaders, or direct `GraphSpec` in C++),
+2. emits deterministic DOT as the canonical artifact,
 3. optionally renders DOT to image formats using external Graphviz CLI tooling.
 
-## 2. Non-Goals (Phase 4)
+## 2. Current Non-Goals
 
 1. Live runtime graph tracing or time-series overlays.
 2. Interactive web UI or editor.
@@ -21,22 +21,18 @@ This phase adds an optional graph-diagram toolchain that:
 ## 3. Build and Dependency Contract
 
 1. Feature flag: `FLUXGRAPH_BUILD_DIAGRAM_TOOL` (default `OFF`).
-2. No new vcpkg feature is required for the CLI-renderer path in Phase 4.
+2. No new vcpkg feature is required for the current CLI-renderer path.
 3. Rendering uses external `dot` process when image output is requested.
 4. Core `fluxgraph` library dependency contract remains unchanged.
 
 ## 4. Architecture Contract
-
-Planned split:
 
 1. `viz-core`: pure C++ emitter (`GraphSpec -> DOT`), no third-party dependencies.
 2. `fluxgraph-diagram` CLI: input parsing/validation, file I/O, optional renderer invocation.
 
 `viz-core` depends on FluxGraph public graph spec types (`GraphSpec`, `ModelSpec`, `EdgeSpec`, `RuleSpec`) and does not depend on runtime engine internals.
 
-## 5. C++ API Sketch (for Direct Integrator Use)
-
-Planned public surface (names may be finalized during implementation, contract intent is stable):
+## 5. C++ API Sketch (Direct Integrator Use)
 
 ```cpp
 #include <fluxgraph/graph/spec.hpp>
@@ -54,12 +50,12 @@ std::string emit_dot(const GraphSpec& spec, const DotEmitOptions& options = {});
 } // namespace fluxgraph::viz
 ```
 
-Contract guarantees:
+Guarantees:
 
 1. `emit_dot` is deterministic for the same `GraphSpec` and options.
 2. Resulting DOT is syntactically valid for Graphviz `dot`.
 
-## 6. DOT Emission Policy (Determinism + Escaping)
+## 6. DOT Emission Policy
 
 ## 6.1 Identifier and Label Escaping
 
@@ -68,7 +64,7 @@ Contract guarantees:
 - `\` -> `\\`
 - `"` -> `\"`
 - newline -> `\n`
-3. Signal paths containing `/`, `.`, spaces, or other punctuation are valid and must be preserved via quoting.
+3. Signal paths containing `/`, `.`, spaces, or other punctuation are preserved via quoting.
 
 ## 6.2 Ordering Rules
 
@@ -82,11 +78,11 @@ No reliance on container insertion order is allowed for canonical DOT output.
 
 1. Unknown transform types are rendered (not dropped) using raw `type` text in edge annotation.
 2. Unknown transform types do not fail DOT generation unless required fields are structurally invalid.
-3. CLI should emit a non-fatal warning for unknown transform types.
+3. CLI emits a non-fatal warning for unknown transform types.
 
-## 7. CLI Contract Phasing
+## 7. CLI Contract
 
-Supported CLI flags:
+Supported flags:
 
 1. `--in <path>`: required graph input (`.json`, `.yaml`, `.yml`)
 2. `--out <path>`: required output artifact path
@@ -101,28 +97,22 @@ Behavior:
 3. Graphviz invocation failures are explicit and include command context.
 4. For image outputs, `--dot-out` (if provided) must differ from `--out`.
 
-Exit code contract (planned):
+Exit codes:
 
 1. `0`: success
 2. `1`: input/load/validation failure
-3. `2`: unsupported option/format for current build
+3. `2`: unsupported option/format
 4. `3`: renderer invocation failure
 
-Current implementation status:
+## 8. Evidence Mapping
 
-1. DOT emission is implemented.
-2. SVG/PNG rendering via Graphviz CLI is implemented.
-3. `--dot-bin` and `--dot-out` are implemented.
-
-## 8. Evidence and Governance Mapping
-
-Planning source for claim-evidence governance: `working/archive/claim_evidence_matrix.md`.
-
-Visualization claims and expected evidence for this phase:
-
-1. "Deterministic DOT output": `tests/unit/viz_dot_emitter_test.cpp` and `tests/unit/viz_dot_golden_test.cpp`.
-2. "CLI DOT determinism end-to-end": `tests/integration/diagram_cli_e2e.cmake` (registered as `integration.diagram_cli_json_dot`).
-3. "Core isolation": default presets keep `FLUXGRAPH_BUILD_DIAGRAM_TOOL=OFF`.
-4. "Optional rendering": advisory GitHub Actions job `diagram-render-smoke` in `.github/workflows/ci.yml`.
-
-This mapping is the baseline evidence package for the Phase 4 visualization surface.
+1. Deterministic DOT output:
+- `tests/unit/viz_dot_emitter_test.cpp`
+- `tests/unit/viz_dot_golden_test.cpp`
+2. CLI DOT determinism end-to-end:
+- `tests/integration/diagram_cli_e2e.cmake` (registered as `integration.diagram_cli_json_dot`)
+3. Core isolation:
+- default presets keep `FLUXGRAPH_BUILD_DIAGRAM_TOOL=OFF`
+4. Renderer coverage in CI:
+- `linux-matrix` lane `diagram-dot`
+- `diagram-render-smoke` job in `.github/workflows/ci.yml`

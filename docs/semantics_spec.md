@@ -1,7 +1,7 @@
 # FluxGraph Semantics Specification
 
-**Status:** Phase 0 baseline (pending dual sign-off)  
-**Version:** 0.1.0-phase0  
+**Status:** Baseline semantics specification  
+**Version:** 0.1.0  
 **Last Updated:** March 1, 2026
 
 ## 1. Scope and Authority
@@ -135,7 +135,7 @@ Unit handling policy is strict and deterministic.
 3. Implicit solver algebraic-loop handling.
 4. Automatic unit conversion ontology.
 
-## 11. Conformance Snapshot (March 1, 2026 - Post Phase 1 Pass)
+## 11. Conformance Snapshot (March 1, 2026)
 
 This section records current implementation alignment against the normative contract.
 
@@ -147,4 +147,4 @@ This section records current implementation alignment against the normative cont
 6. Unit checks enforce declared/first-write consistency and runtime mismatches throw: **partial** for Section 8 (compile-time inferential checks remain limited).
 7. Delay-mediated cycle acceptance is implemented via non-delay subgraph cycle policy: **partial** pending deeper delay-buffer semantics validation in complex mixed-order graphs.
 
-Remaining gaps define follow-up Phase 1 hardening and Phase 3 evidence work.
+Remaining gaps define follow-up hardening and expanded evidence work.

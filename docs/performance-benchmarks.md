@@ -6,7 +6,7 @@ This document defines the reproducible benchmark workflow for FluxGraph.
 
 Goals:
 
-1. Provide repeatable measurement artifacts for Phase 2 gates.
+1. Provide repeatable measurement artifacts for benchmark quality gates.
 2. Separate measured evidence from narrative claims.
 3. Keep benchmark runs deterministic enough for regression comparison.
 
@@ -87,7 +87,7 @@ Required files:
 4. Git commit hash and dirty-worktree flag
 5. Per-benchmark executable path, command, exit code, duration, parsed PASS/FAIL status lines
 
-Tick benchmark output additionally tracks measured heap allocations during the timed loop (`Allocations`, `Alloc/tick`) so Phase 2 zero-allocation evidence is captured per scenario.
+Tick benchmark output additionally tracks measured heap allocations during the timed loop (`Allocations`, `Alloc/tick`) so zero-allocation evidence is captured per scenario.
 
 `benchmark_evaluation.json` contains:
 
@@ -134,7 +134,7 @@ Recommended:
 2. Store artifacts as CI build artifacts.
 3. Apply `ci-hosted` profile on hosted runners and reserve strict gating for dedicated runners.
 
-## Next Phase 2 Steps
+## Next Steps
 
 1. Calibrate thresholds using several hosted-runner samples (reduce false positives while preserving sensitivity).
 2. Provision and commit a true `ci-dedicated` baseline from stable hardware.

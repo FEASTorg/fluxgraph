@@ -23,4 +23,3 @@ std::string build_graphviz_command(const GraphvizRenderRequest &request);
 GraphvizRenderResult render_with_graphviz(const GraphvizRenderRequest &request);
 
 } // namespace fluxgraph::viz
-

@@ -34,4 +34,3 @@ TEST(GraphvizRenderer, RejectsDotOutputFormatForRenderer) {
 
 } // namespace
 } // namespace fluxgraph
-

@@ -15,7 +15,7 @@ struct DotEmitOptions {
 std::string emit_dot(const GraphSpec &spec, const DotEmitOptions &options = {});
 
 /// Return sorted transform types that are not part of the built-in set.
-std::vector<std::string> collect_extension_transform_types(const GraphSpec &spec);
+std::vector<std::string>
+collect_extension_transform_types(const GraphSpec &spec);
 
 } // namespace fluxgraph::viz
-

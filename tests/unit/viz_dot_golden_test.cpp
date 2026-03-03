@@ -57,13 +57,12 @@ TEST(DotEmitter, MatchesGoldenFixtureForSimpleGraph) {
   spec.edges.push_back(edge);
 
   const std::string emitted = normalize_newlines(viz::emit_dot(spec));
-  const std::string golden = normalize_newlines(
-      read_text_file(std::string(FLUXGRAPH_SOURCE_DIR) +
-                     "/tests/golden/viz_simple_graph.dot"));
+  const std::string golden =
+      normalize_newlines(read_text_file(std::string(FLUXGRAPH_SOURCE_DIR) +
+                                        "/tests/golden/viz_simple_graph.dot"));
 
   EXPECT_EQ(emitted, golden);
 }
 
 } // namespace
 } // namespace fluxgraph
-

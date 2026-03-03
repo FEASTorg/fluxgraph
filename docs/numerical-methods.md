@@ -7,7 +7,7 @@ It complements `docs/semantics_spec.md` and is authoritative for solver
 selection and stability interpretation.
 Validation protocol details are documented in `docs/validation-methodology.md`.
 
-## Current Policy (Phase 3.1 baseline)
+## Current Policy
 
 1. Integration method selection is explicit per model via model parameters.
 2. If not specified, the deterministic default is `forward_euler`.
@@ -43,7 +43,7 @@ If `h <= 0`, the model is treated as unconditionally stable for this criterion.
 
 ## Validation Expectations
 
-Phase 3 validation must report:
+Validation runs must report:
 
 1. Error metrics (`L2`, `Linf`) versus analytical references.
 2. Convergence behavior as `dt` is refined.
@@ -59,7 +59,7 @@ Future methods (for example trapezoidal or implicit schemes) must define:
 
 ## Reproducible Validation Run
 
-Use the validation runner to produce Phase 3 artifacts:
+Use the validation runner to produce validation artifacts:
 
 ```bash
 python scripts/run_numerical_validation.py --preset dev-release --enforce-order

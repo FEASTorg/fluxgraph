@@ -198,9 +198,8 @@ jobs:
         run: ctest --preset ci-windows-release
 
   diagram-render-smoke:
-    name: Diagram Render Smoke (advisory)
+    name: Diagram Render Smoke
     runs-on: ubuntu-24.04
-    continue-on-error: true
 
     steps:
       - name: Checkout

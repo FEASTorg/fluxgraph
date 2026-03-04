@@ -90,4 +90,3 @@ inline double ray_stability_limit(IntegrationMethod method,
 }
 
 } // namespace fluxgraph::detail
-

@@ -229,6 +229,23 @@ Demonstrates a simple translational mechanical model:
 ./build/examples/08_mass_spring_damper/Debug/example_mass_spring_damper.exe
 ```
 
+## Example 9: DC Motor (Electromechanical)
+
+**Location:** `09_dc_motor/`
+
+Demonstrates an electromechanical model with coupled electrical + mechanical
+dynamics:
+
+- `dc_motor` model with physical parameters (`R`, `L`, `Kt`, `Ke`, `J`, `b`)
+- Voltage input (`V`) and load torque input (`N*m`)
+- Speed/current/torque outputs (`rad/s`, `A`, `N*m`)
+
+**Run:**
+
+```bash
+./build/examples/09_dc_motor/Debug/example_dc_motor.exe
+```
+
 ## When to Use Each Approach
 
 ### Manual GraphSpec (Examples 1 & 2)

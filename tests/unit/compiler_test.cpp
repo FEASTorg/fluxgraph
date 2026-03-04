@@ -490,6 +490,56 @@ TEST(GraphCompilerTest,
   EXPECT_THROW(compiler.parse_model(spec, ns), std::runtime_error);
 }
 
+TEST(GraphCompilerTest, ParseDcMotorModel) {
+  ModelSpec spec;
+  spec.id = "motor";
+  spec.type = "dc_motor";
+  spec.params["resistance_ohm"] = 2.0;
+  spec.params["inductance_h"] = 0.5;
+  spec.params["torque_constant"] = 0.1;
+  spec.params["back_emf_constant"] = 0.1;
+  spec.params["inertia"] = 0.02;
+  spec.params["viscous_friction"] = 0.2;
+  spec.params["initial_current"] = 0.0;
+  spec.params["initial_speed"] = 0.0;
+  spec.params["speed_signal"] = std::string("motor.omega");
+  spec.params["current_signal"] = std::string("motor.i");
+  spec.params["torque_signal"] = std::string("motor.tau");
+  spec.params["voltage_signal"] = std::string("motor.V");
+  spec.params["load_torque_signal"] = std::string("motor.load");
+
+  SignalNamespace ns;
+  GraphCompiler compiler;
+  std::unique_ptr<IModel> model(compiler.parse_model(spec, ns));
+
+  ASSERT_NE(model, nullptr);
+  EXPECT_NE(model->describe().find("DcMotor"), std::string::npos);
+}
+
+TEST(GraphCompilerTest, ParseDcMotorModelWithInvalidIntegrationMethodThrows) {
+  ModelSpec spec;
+  spec.id = "motor";
+  spec.type = "dc_motor";
+  spec.params["resistance_ohm"] = 2.0;
+  spec.params["inductance_h"] = 0.5;
+  spec.params["torque_constant"] = 0.1;
+  spec.params["back_emf_constant"] = 0.1;
+  spec.params["inertia"] = 0.02;
+  spec.params["viscous_friction"] = 0.2;
+  spec.params["initial_current"] = 0.0;
+  spec.params["initial_speed"] = 0.0;
+  spec.params["speed_signal"] = std::string("motor.omega");
+  spec.params["current_signal"] = std::string("motor.i");
+  spec.params["torque_signal"] = std::string("motor.tau");
+  spec.params["voltage_signal"] = std::string("motor.V");
+  spec.params["load_torque_signal"] = std::string("motor.load");
+  spec.params["integration_method"] = std::string("invalid_method");
+
+  SignalNamespace ns;
+  GraphCompiler compiler;
+  EXPECT_THROW(compiler.parse_model(spec, ns), std::runtime_error);
+}
+
 TEST(GraphCompilerTest, StrictModeRejectsUndeclaredModelSignalContracts) {
   GraphSpec spec;
 

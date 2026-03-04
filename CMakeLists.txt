@@ -49,6 +49,7 @@ set(FLUXGRAPH_SOURCES
     src/model/first_order_process.cpp
     src/model/second_order_process.cpp
     src/model/mass_spring_damper.cpp
+    src/model/dc_motor.cpp
     src/graph/compiler.cpp
     src/engine.cpp
 )

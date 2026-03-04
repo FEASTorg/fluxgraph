@@ -26,22 +26,43 @@ UnitRegistry::UnitRegistry() {
 
   units_.emplace("dimensionless",
                  UnitDef{"dimensionless", {}, 1.0, 0.0, UnitKind::generic});
-  units_.emplace("s", UnitDef{"s", dim(0, 0, 1, 0, 0, 0, 0), 1.0, 0.0,
-                              UnitKind::generic});
+  units_.emplace("rad", UnitDef{"rad", {}, 1.0, 0.0, UnitKind::generic});
+  units_.emplace(
+      "s", UnitDef{"s", dim(0, 0, 1, 0, 0, 0, 0), 1.0, 0.0, UnitKind::generic});
   units_.emplace("1/s", UnitDef{"1/s", dim(0, 0, -1, 0, 0, 0, 0), 1.0, 0.0,
                                 UnitKind::generic});
-  units_.emplace("m", UnitDef{"m", dim(0, 1, 0, 0, 0, 0, 0), 1.0, 0.0,
-                              UnitKind::generic});
+  units_.emplace("rad/s", UnitDef{"rad/s", dim(0, 0, -1, 0, 0, 0, 0), 1.0, 0.0,
+                                  UnitKind::generic});
+  units_.emplace(
+      "m", UnitDef{"m", dim(0, 1, 0, 0, 0, 0, 0), 1.0, 0.0, UnitKind::generic});
   units_.emplace("m/s", UnitDef{"m/s", dim(0, 1, -1, 0, 0, 0, 0), 1.0, 0.0,
                                 UnitKind::generic});
   units_.emplace("kg", UnitDef{"kg", dim(1, 0, 0, 0, 0, 0, 0), 1.0, 0.0,
                                UnitKind::generic});
+  units_.emplace("kg*m^2", UnitDef{"kg*m^2", dim(1, 2, 0, 0, 0, 0, 0), 1.0, 0.0,
+                                   UnitKind::generic});
   units_.emplace("N", UnitDef{"N", dim(1, 1, -2, 0, 0, 0, 0), 1.0, 0.0,
                               UnitKind::generic});
   units_.emplace("N/m", UnitDef{"N/m", dim(1, 0, -2, 0, 0, 0, 0), 1.0, 0.0,
                                 UnitKind::generic});
   units_.emplace("N*s/m", UnitDef{"N*s/m", dim(1, 0, -1, 0, 0, 0, 0), 1.0, 0.0,
                                   UnitKind::generic});
+  units_.emplace("N*m", UnitDef{"N*m", dim(1, 2, -2, 0, 0, 0, 0), 1.0, 0.0,
+                                UnitKind::generic});
+  units_.emplace("N*m*s/rad", UnitDef{"N*m*s/rad", dim(1, 2, -1, 0, 0, 0, 0),
+                                      1.0, 0.0, UnitKind::generic});
+  units_.emplace(
+      "A", UnitDef{"A", dim(0, 0, 0, 1, 0, 0, 0), 1.0, 0.0, UnitKind::generic});
+  units_.emplace("V", UnitDef{"V", dim(1, 2, -3, -1, 0, 0, 0), 1.0, 0.0,
+                              UnitKind::generic});
+  units_.emplace("Ohm", UnitDef{"Ohm", dim(1, 2, -3, -2, 0, 0, 0), 1.0, 0.0,
+                                UnitKind::generic});
+  units_.emplace("H", UnitDef{"H", dim(1, 2, -2, -2, 0, 0, 0), 1.0, 0.0,
+                              UnitKind::generic});
+  units_.emplace("N*m/A", UnitDef{"N*m/A", dim(1, 2, -2, -1, 0, 0, 0), 1.0, 0.0,
+                                  UnitKind::generic});
+  units_.emplace("V*s/rad", UnitDef{"V*s/rad", dim(1, 2, -2, -1, 0, 0, 0), 1.0,
+                                    0.0, UnitKind::generic});
   units_.emplace("W", UnitDef{"W", dim(1, 2, -3, 0, 0, 0, 0), 1.0, 0.0,
                               UnitKind::generic});
   units_.emplace("K", UnitDef{"K", dim(0, 0, 0, 0, 1, 0, 0), 1.0, 0.0,

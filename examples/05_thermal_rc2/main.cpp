@@ -19,13 +19,13 @@ int main() {
   model.params["temp_signal_b"] = std::string("chamber.core_temp");
   model.params["power_signal"] = std::string("chamber.heater_power");
   model.params["ambient_signal"] = std::string("ambient.temp");
-  model.params["thermal_mass_a"] = 1000.0;          // J/K
-  model.params["thermal_mass_b"] = 2000.0;          // J/K
-  model.params["heat_transfer_coeff_a"] = 10.0;     // W/K
-  model.params["heat_transfer_coeff_b"] = 8.0;      // W/K
-  model.params["coupling_coeff"] = 6.0;             // W/K
-  model.params["initial_temp_a"] = 25.0;            // degC
-  model.params["initial_temp_b"] = 25.0;            // degC
+  model.params["thermal_mass_a"] = 1000.0;                 // J/K
+  model.params["thermal_mass_b"] = 2000.0;                 // J/K
+  model.params["heat_transfer_coeff_a"] = 10.0;            // W/K
+  model.params["heat_transfer_coeff_b"] = 8.0;             // W/K
+  model.params["coupling_coeff"] = 6.0;                    // W/K
+  model.params["initial_temp_a"] = 25.0;                   // degC
+  model.params["initial_temp_b"] = 25.0;                   // degC
   model.params["integration_method"] = std::string("rk4"); // optional
   spec.models.push_back(model);
 

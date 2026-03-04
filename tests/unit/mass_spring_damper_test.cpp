@@ -25,20 +25,20 @@ double expected_overdamped_limit(double mass, double damping, double spring,
 TEST(MassSpringDamperTest, ConstructorRejectsInvalidParams) {
   SignalNamespace ns;
 
-  EXPECT_THROW(MassSpringDamperModel("bad", 0.0, 0.0, 1.0, 0.0, 0.0, "x", "v",
-                                     "F", ns),
-               std::invalid_argument);
+  EXPECT_THROW(
+      MassSpringDamperModel("bad", 0.0, 0.0, 1.0, 0.0, 0.0, "x", "v", "F", ns),
+      std::invalid_argument);
   EXPECT_THROW(MassSpringDamperModel("bad",
                                      std::numeric_limits<double>::infinity(),
                                      0.0, 1.0, 0.0, 0.0, "x", "v", "F", ns),
                std::invalid_argument);
 
-  EXPECT_THROW(MassSpringDamperModel("bad", 1.0, -1.0, 1.0, 0.0, 0.0, "x", "v",
-                                     "F", ns),
-               std::invalid_argument);
-  EXPECT_THROW(MassSpringDamperModel("bad", 1.0, 0.0, -1.0, 0.0, 0.0, "x", "v",
-                                     "F", ns),
-               std::invalid_argument);
+  EXPECT_THROW(
+      MassSpringDamperModel("bad", 1.0, -1.0, 1.0, 0.0, 0.0, "x", "v", "F", ns),
+      std::invalid_argument);
+  EXPECT_THROW(
+      MassSpringDamperModel("bad", 1.0, 0.0, -1.0, 0.0, 0.0, "x", "v", "F", ns),
+      std::invalid_argument);
 
   EXPECT_THROW(MassSpringDamperModel("bad", 1.0, 0.0, 1.0,
                                      std::numeric_limits<double>::quiet_NaN(),
@@ -106,12 +106,12 @@ TEST(MassSpringDamperTest, StabilityLimitMatchesOverdampedEigenvalueBound) {
   constexpr double spring = 10.0;
 
   MassSpringDamperModel euler("euler", mass, damping, spring, 0.0, 0.0, "x1",
-                              "v1", "F1", ns,
-                              IntegrationMethod::ForwardEuler);
+                              "v1", "F1", ns, IntegrationMethod::ForwardEuler);
   MassSpringDamperModel rk4("rk4", mass, damping, spring, 0.0, 0.0, "x2", "v2",
                             "F2", ns, IntegrationMethod::Rk4);
 
-  const double expected_euler = expected_overdamped_limit(mass, damping, spring, 2.0);
+  const double expected_euler =
+      expected_overdamped_limit(mass, damping, spring, 2.0);
   const double expected_rk4 = expected_overdamped_limit(
       mass, damping, spring, kRk4NegativeRealAxisStabilityLimit);
 
@@ -132,4 +132,3 @@ TEST(MassSpringDamperTest, UndampedOscillatorEulerIsUnstableForAnyDt) {
   EXPECT_GT(dt_limit, 0.1);
   EXPECT_LT(dt_limit, 0.4);
 }
-

@@ -8,6 +8,7 @@
 # Example 6: First-order process (dimensionless PT1)
 # Example 7: Second-order process (dimensionless PT2)
 # Example 8: Mass-spring-damper (translational mechanical model)
+# Example 9: DC motor (electromechanical model)
 
 add_subdirectory(01_basic_transform)
 add_subdirectory(02_thermal_mass)
@@ -17,3 +18,4 @@ add_subdirectory(05_thermal_rc2)
 add_subdirectory(06_first_order_process)
 add_subdirectory(07_second_order_process)
 add_subdirectory(08_mass_spring_damper)
+add_subdirectory(09_dc_motor)

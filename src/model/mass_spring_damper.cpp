@@ -27,8 +27,9 @@ MassSpringDamperModel::MassSpringDamperModel(
     const std::string &id, double mass, double damping_coeff,
     double spring_constant, double initial_position, double initial_velocity,
     const std::string &position_signal_path,
-    const std::string &velocity_signal_path, const std::string &force_signal_path,
-    SignalNamespace &ns, IntegrationMethod integration_method)
+    const std::string &velocity_signal_path,
+    const std::string &force_signal_path, SignalNamespace &ns,
+    IntegrationMethod integration_method)
     : id_(id), position_signal_(ns.intern(position_signal_path)),
       velocity_signal_(ns.intern(velocity_signal_path)),
       force_signal_(ns.intern(force_signal_path)), mass_(mass),
@@ -79,8 +80,7 @@ void MassSpringDamperModel::tick(double dt, SignalStore &store) {
         derivative(x_ + 0.5 * dt * k1.dx, v_ + 0.5 * dt * k1.dv, force);
     const auto k3 =
         derivative(x_ + 0.5 * dt * k2.dx, v_ + 0.5 * dt * k2.dv, force);
-    const auto k4 =
-        derivative(x_ + dt * k3.dx, v_ + dt * k3.dv, force);
+    const auto k4 = derivative(x_ + dt * k3.dx, v_ + dt * k3.dv, force);
 
     x_ += (dt / 6.0) * (k1.dx + 2.0 * k2.dx + 2.0 * k3.dx + k4.dx);
     v_ += (dt / 6.0) * (k1.dv + 2.0 * k2.dv + 2.0 * k3.dv + k4.dv);
@@ -102,8 +102,8 @@ double MassSpringDamperModel::compute_stability_limit() const {
   //   [x]' = [  0        1 ] [x] + [0] * F
   //   [v]    [ -k/m  -c/m ] [v]   [1/m]
   //
-  // Stability of explicit methods depends on z = lambda * dt for each eigenvalue
-  // lambda of A.
+  // Stability of explicit methods depends on z = lambda * dt for each
+  // eigenvalue lambda of A.
   const double trace = -damping_coeff_ / mass_;
   const double det = spring_constant_ / mass_;
   const std::complex<double> disc(trace * trace - 4.0 * det, 0.0);
@@ -112,14 +112,14 @@ double MassSpringDamperModel::compute_stability_limit() const {
   const std::complex<double> lambda1 = 0.5 * (trace + sqrt_disc);
   const std::complex<double> lambda2 = 0.5 * (trace - sqrt_disc);
 
-  const double dt1 = (integration_method_ == IntegrationMethod::ForwardEuler)
-                         ? detail::forward_euler_stability_limit(lambda1)
-                         : detail::ray_stability_limit(integration_method_,
-                                                       lambda1);
-  const double dt2 = (integration_method_ == IntegrationMethod::ForwardEuler)
-                         ? detail::forward_euler_stability_limit(lambda2)
-                         : detail::ray_stability_limit(integration_method_,
-                                                       lambda2);
+  const double dt1 =
+      (integration_method_ == IntegrationMethod::ForwardEuler)
+          ? detail::forward_euler_stability_limit(lambda1)
+          : detail::ray_stability_limit(integration_method_, lambda1);
+  const double dt2 =
+      (integration_method_ == IntegrationMethod::ForwardEuler)
+          ? detail::forward_euler_stability_limit(lambda2)
+          : detail::ray_stability_limit(integration_method_, lambda2);
   return std::min(dt1, dt2);
 }
 
@@ -139,4 +139,3 @@ std::vector<SignalId> MassSpringDamperModel::output_signal_ids() const {
 }
 
 } // namespace fluxgraph
-

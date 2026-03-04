@@ -18,13 +18,11 @@ namespace fluxgraph {
 /// - output_signal: dimensionless
 class FirstOrderProcessModel : public IModel {
 public:
-  FirstOrderProcessModel(const std::string &id, double gain, double tau_s,
-                         double initial_output,
-                         const std::string &output_signal_path,
-                         const std::string &input_signal_path,
-                         SignalNamespace &ns,
-                         IntegrationMethod integration_method =
-                             IntegrationMethod::ForwardEuler);
+  FirstOrderProcessModel(
+      const std::string &id, double gain, double tau_s, double initial_output,
+      const std::string &output_signal_path,
+      const std::string &input_signal_path, SignalNamespace &ns,
+      IntegrationMethod integration_method = IntegrationMethod::ForwardEuler);
 
   void tick(double dt, SignalStore &store) override;
   void reset() override;

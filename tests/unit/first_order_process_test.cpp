@@ -7,18 +7,16 @@ using namespace fluxgraph;
 
 TEST(FirstOrderProcessTest, ConstructorRejectsInvalidParams) {
   SignalNamespace ns;
-  EXPECT_THROW(
-      FirstOrderProcessModel("bad", 1.0, 0.0, 0.0, "y", "u", ns),
-      std::invalid_argument);
-  EXPECT_THROW(
-      FirstOrderProcessModel("bad", std::numeric_limits<double>::infinity(),
-                             1.0, 0.0, "y", "u", ns),
-      std::invalid_argument);
-  EXPECT_THROW(
-      FirstOrderProcessModel("bad", 1.0, 1.0,
-                             std::numeric_limits<double>::quiet_NaN(), "y", "u",
-                             ns),
-      std::invalid_argument);
+  EXPECT_THROW(FirstOrderProcessModel("bad", 1.0, 0.0, 0.0, "y", "u", ns),
+               std::invalid_argument);
+  EXPECT_THROW(FirstOrderProcessModel("bad",
+                                      std::numeric_limits<double>::infinity(),
+                                      1.0, 0.0, "y", "u", ns),
+               std::invalid_argument);
+  EXPECT_THROW(FirstOrderProcessModel("bad", 1.0, 1.0,
+                                      std::numeric_limits<double>::quiet_NaN(),
+                                      "y", "u", ns),
+               std::invalid_argument);
 }
 
 TEST(FirstOrderProcessTest, StepResponseApproachesGain) {
@@ -45,8 +43,7 @@ TEST(FirstOrderProcessTest, StepResponseApproachesGain) {
   constexpr double tau_s = 1.0;
   constexpr double y0 = 0.0;
   const double t = static_cast<double>(steps) * dt;
-  const double y_expected =
-      gain * u + (y0 - gain * u) * std::exp(-t / tau_s);
+  const double y_expected = gain * u + (y0 - gain * u) * std::exp(-t / tau_s);
   EXPECT_NEAR(y, y_expected, 1e-9);
   EXPECT_TRUE(store.is_physics_driven(y_id));
 }

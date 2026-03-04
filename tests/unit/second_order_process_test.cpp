@@ -22,16 +22,16 @@ double expected_overdamped_limit(double zeta, double omega, double limit) {
 
 TEST(SecondOrderProcessTest, ConstructorRejectsInvalidParams) {
   SignalNamespace ns;
-  EXPECT_THROW(SecondOrderProcessModel("bad", 1.0, 0.0, 0.0, 0.0, 0.0, "y",
-                                       "u", ns),
+  EXPECT_THROW(
+      SecondOrderProcessModel("bad", 1.0, 0.0, 0.0, 0.0, 0.0, "y", "u", ns),
+      std::invalid_argument);
+  EXPECT_THROW(SecondOrderProcessModel("bad",
+                                       std::numeric_limits<double>::infinity(),
+                                       0.1, 1.0, 0.0, 0.0, "y", "u", ns),
                std::invalid_argument);
   EXPECT_THROW(
-      SecondOrderProcessModel("bad", std::numeric_limits<double>::infinity(),
-                              0.1, 1.0, 0.0, 0.0, "y", "u", ns),
+      SecondOrderProcessModel("bad", 1.0, -1.0, 1.0, 0.0, 0.0, "y", "u", ns),
       std::invalid_argument);
-  EXPECT_THROW(SecondOrderProcessModel("bad", 1.0, -1.0, 1.0, 0.0, 0.0, "y",
-                                       "u", ns),
-               std::invalid_argument);
 }
 
 TEST(SecondOrderProcessTest, StepResponseMovesTowardGain) {
@@ -85,8 +85,8 @@ TEST(SecondOrderProcessTest, StabilityLimitMatchesOverdampedEigenvalueBound) {
                               IntegrationMethod::Rk4);
 
   const double expected_euler = expected_overdamped_limit(zeta, omega, 2.0);
-  const double expected_rk4 =
-      expected_overdamped_limit(zeta, omega, kRk4NegativeRealAxisStabilityLimit);
+  const double expected_rk4 = expected_overdamped_limit(
+      zeta, omega, kRk4NegativeRealAxisStabilityLimit);
 
   EXPECT_NEAR(euler.compute_stability_limit(), expected_euler, 1e-4);
   EXPECT_NEAR(rk4.compute_stability_limit(), expected_rk4, 1e-4);

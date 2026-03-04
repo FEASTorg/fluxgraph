@@ -73,12 +73,11 @@ void SecondOrderProcessModel::tick(double dt, SignalStore &store) {
     y_dot_ += k1.dy_dot * dt;
   } else {
     const auto k1 = derivative(y_, y_dot_, u);
-    const auto k2 = derivative(y_ + 0.5 * dt * k1.dy,
-                               y_dot_ + 0.5 * dt * k1.dy_dot, u);
-    const auto k3 = derivative(y_ + 0.5 * dt * k2.dy,
-                               y_dot_ + 0.5 * dt * k2.dy_dot, u);
-    const auto k4 =
-        derivative(y_ + dt * k3.dy, y_dot_ + dt * k3.dy_dot, u);
+    const auto k2 =
+        derivative(y_ + 0.5 * dt * k1.dy, y_dot_ + 0.5 * dt * k1.dy_dot, u);
+    const auto k3 =
+        derivative(y_ + 0.5 * dt * k2.dy, y_dot_ + 0.5 * dt * k2.dy_dot, u);
+    const auto k4 = derivative(y_ + dt * k3.dy, y_dot_ + dt * k3.dy_dot, u);
 
     y_ += (dt / 6.0) * (k1.dy + 2.0 * k2.dy + 2.0 * k3.dy + k4.dy);
     y_dot_ += (dt / 6.0) *
@@ -105,14 +104,14 @@ double SecondOrderProcessModel::compute_stability_limit() const {
   const std::complex<double> lambda1 = 0.5 * (trace + sqrt_disc);
   const std::complex<double> lambda2 = 0.5 * (trace - sqrt_disc);
 
-  const double dt1 = (integration_method_ == IntegrationMethod::ForwardEuler)
-                         ? detail::forward_euler_stability_limit(lambda1)
-                         : detail::ray_stability_limit(integration_method_,
-                                                       lambda1);
-  const double dt2 = (integration_method_ == IntegrationMethod::ForwardEuler)
-                         ? detail::forward_euler_stability_limit(lambda2)
-                         : detail::ray_stability_limit(integration_method_,
-                                                       lambda2);
+  const double dt1 =
+      (integration_method_ == IntegrationMethod::ForwardEuler)
+          ? detail::forward_euler_stability_limit(lambda1)
+          : detail::ray_stability_limit(integration_method_, lambda1);
+  const double dt2 =
+      (integration_method_ == IntegrationMethod::ForwardEuler)
+          ? detail::forward_euler_stability_limit(lambda2)
+          : detail::ray_stability_limit(integration_method_, lambda2);
   return std::min(dt1, dt2);
 }
 

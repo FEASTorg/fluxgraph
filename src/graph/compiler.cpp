@@ -1,7 +1,8 @@
 #include "fluxgraph/graph/compiler.hpp"
 #include "fluxgraph/core/units.hpp"
-#include "fluxgraph/model/integration.hpp"
+#include "fluxgraph/model/dc_motor.hpp"
 #include "fluxgraph/model/first_order_process.hpp"
+#include "fluxgraph/model/integration.hpp"
 #include "fluxgraph/model/mass_spring_damper.hpp"
 #include "fluxgraph/model/second_order_process.hpp"
 #include "fluxgraph/model/thermal_mass.hpp"
@@ -589,9 +590,9 @@ void ensure_default_factories_registered_locked(FactoryRegistry &registry) {
       "tau_s",
       ScalarParamSignature{"s", ScalarConstraint::greater_than(0.0), true});
   first_order_signature.scalar_param_signatures.emplace(
-      "initial_output", ScalarParamSignature{"dimensionless",
-                                             ScalarConstraint::finite_only(),
-                                             true});
+      "initial_output",
+      ScalarParamSignature{"dimensionless", ScalarConstraint::finite_only(),
+                           true});
 
   register_builtin_model(
       registry, "first_order_process",
@@ -606,11 +607,11 @@ void ensure_default_factories_registered_locked(FactoryRegistry &registry) {
 
         const double gain =
             as_double(require_param(spec.params, "gain", context), gain_path);
-        const double tau_s = as_double(
-            require_param(spec.params, "tau_s", context), tau_path);
-        const double initial_output = as_double(
-            require_param(spec.params, "initial_output", context),
-            initial_output_path);
+        const double tau_s =
+            as_double(require_param(spec.params, "tau_s", context), tau_path);
+        const double initial_output =
+            as_double(require_param(spec.params, "initial_output", context),
+                      initial_output_path);
 
         require_finite(gain, gain_path);
         require_finite_positive(tau_s, tau_path);
@@ -651,16 +652,15 @@ void ensure_default_factories_registered_locked(FactoryRegistry &registry) {
       "gain", ScalarParamSignature{"dimensionless",
                                    ScalarConstraint::finite_only(), true});
   second_order_signature.scalar_param_signatures.emplace(
-      "zeta",
-      ScalarParamSignature{"dimensionless", ScalarConstraint::greater_equal(0.0),
-                           true});
+      "zeta", ScalarParamSignature{"dimensionless",
+                                   ScalarConstraint::greater_equal(0.0), true});
   second_order_signature.scalar_param_signatures.emplace(
       "omega_n_rad_s",
       ScalarParamSignature{"1/s", ScalarConstraint::greater_than(0.0), true});
   second_order_signature.scalar_param_signatures.emplace(
-      "initial_output", ScalarParamSignature{"dimensionless",
-                                             ScalarConstraint::finite_only(),
-                                             true});
+      "initial_output",
+      ScalarParamSignature{"dimensionless", ScalarConstraint::finite_only(),
+                           true});
   second_order_signature.scalar_param_signatures.emplace(
       "initial_output_rate",
       ScalarParamSignature{"1/s", ScalarConstraint::finite_only(), true});
@@ -685,9 +685,9 @@ void ensure_default_factories_registered_locked(FactoryRegistry &registry) {
             as_double(require_param(spec.params, "zeta", context), zeta_path);
         const double omega_n_rad_s = as_double(
             require_param(spec.params, "omega_n_rad_s", context), omega_path);
-        const double initial_output = as_double(
-            require_param(spec.params, "initial_output", context),
-            initial_output_path);
+        const double initial_output =
+            as_double(require_param(spec.params, "initial_output", context),
+                      initial_output_path);
         const double initial_output_rate = as_double(
             require_param(spec.params, "initial_output_rate", context),
             initial_output_rate_path);
@@ -730,11 +730,12 @@ void ensure_default_factories_registered_locked(FactoryRegistry &registry) {
   mass_spring_signature.signal_param_units.emplace("position_signal", "m");
   mass_spring_signature.signal_param_units.emplace("velocity_signal", "m/s");
   mass_spring_signature.scalar_param_signatures.emplace(
-      "mass", ScalarParamSignature{"kg", ScalarConstraint::greater_than(0.0),
-                                   true});
+      "mass",
+      ScalarParamSignature{"kg", ScalarConstraint::greater_than(0.0), true});
   mass_spring_signature.scalar_param_signatures.emplace(
       "damping_coeff",
-      ScalarParamSignature{"N*s/m", ScalarConstraint::greater_equal(0.0), true});
+      ScalarParamSignature{"N*s/m", ScalarConstraint::greater_equal(0.0),
+                           true});
   mass_spring_signature.scalar_param_signatures.emplace(
       "spring_constant",
       ScalarParamSignature{"N/m", ScalarConstraint::greater_equal(0.0), true});
@@ -749,8 +750,7 @@ void ensure_default_factories_registered_locked(FactoryRegistry &registry) {
       registry, "mass_spring_damper",
       [](const ModelSpec &spec,
          SignalNamespace &ns) -> std::unique_ptr<IModel> {
-        const std::string context =
-            "model[" + spec.id + ":mass_spring_damper]";
+        const std::string context = "model[" + spec.id + ":mass_spring_damper]";
 
         const std::string mass_path = context + "/mass";
         const std::string damping_path = context + "/damping_coeff";
@@ -762,14 +762,15 @@ void ensure_default_factories_registered_locked(FactoryRegistry &registry) {
             as_double(require_param(spec.params, "mass", context), mass_path);
         const double damping_coeff = as_double(
             require_param(spec.params, "damping_coeff", context), damping_path);
-        const double spring_constant = as_double(
-            require_param(spec.params, "spring_constant", context), spring_path);
-        const double initial_position = as_double(
-            require_param(spec.params, "initial_position", context),
-            initial_position_path);
-        const double initial_velocity = as_double(
-            require_param(spec.params, "initial_velocity", context),
-            initial_velocity_path);
+        const double spring_constant =
+            as_double(require_param(spec.params, "spring_constant", context),
+                      spring_path);
+        const double initial_position =
+            as_double(require_param(spec.params, "initial_position", context),
+                      initial_position_path);
+        const double initial_velocity =
+            as_double(require_param(spec.params, "initial_velocity", context),
+                      initial_velocity_path);
 
         require_finite_positive(mass, mass_path);
         require_finite_non_negative(damping_coeff, damping_path);
@@ -806,6 +807,126 @@ void ensure_default_factories_registered_locked(FactoryRegistry &registry) {
             integration_method);
       },
       mass_spring_signature);
+
+  ModelSignature dc_motor_signature;
+  dc_motor_signature.signal_param_units.emplace("voltage_signal", "V");
+  dc_motor_signature.signal_param_units.emplace("load_torque_signal", "N*m");
+  dc_motor_signature.signal_param_units.emplace("speed_signal", "rad/s");
+  dc_motor_signature.signal_param_units.emplace("current_signal", "A");
+  dc_motor_signature.signal_param_units.emplace("torque_signal", "N*m");
+
+  dc_motor_signature.scalar_param_signatures.emplace(
+      "resistance_ohm",
+      ScalarParamSignature{"Ohm", ScalarConstraint::greater_than(0.0), true});
+  dc_motor_signature.scalar_param_signatures.emplace(
+      "inductance_h",
+      ScalarParamSignature{"H", ScalarConstraint::greater_than(0.0), true});
+  dc_motor_signature.scalar_param_signatures.emplace(
+      "torque_constant",
+      ScalarParamSignature{"N*m/A", ScalarConstraint::greater_than(0.0), true});
+  dc_motor_signature.scalar_param_signatures.emplace(
+      "back_emf_constant",
+      ScalarParamSignature{"V*s/rad", ScalarConstraint::greater_than(0.0),
+                           true});
+  dc_motor_signature.scalar_param_signatures.emplace(
+      "inertia", ScalarParamSignature{
+                     "kg*m^2", ScalarConstraint::greater_than(0.0), true});
+  dc_motor_signature.scalar_param_signatures.emplace(
+      "viscous_friction",
+      ScalarParamSignature{"N*m*s/rad", ScalarConstraint::greater_equal(0.0),
+                           true});
+  dc_motor_signature.scalar_param_signatures.emplace(
+      "initial_current",
+      ScalarParamSignature{"A", ScalarConstraint::finite_only(), true});
+  dc_motor_signature.scalar_param_signatures.emplace(
+      "initial_speed",
+      ScalarParamSignature{"rad/s", ScalarConstraint::finite_only(), true});
+
+  register_builtin_model(
+      registry, "dc_motor",
+      [](const ModelSpec &spec,
+         SignalNamespace &ns) -> std::unique_ptr<IModel> {
+        const std::string context = "model[" + spec.id + ":dc_motor]";
+
+        const std::string resistance_path = context + "/resistance_ohm";
+        const std::string inductance_path = context + "/inductance_h";
+        const std::string torque_constant_path = context + "/torque_constant";
+        const std::string back_emf_constant_path =
+            context + "/back_emf_constant";
+        const std::string inertia_path = context + "/inertia";
+        const std::string viscous_friction_path = context + "/viscous_friction";
+        const std::string initial_current_path = context + "/initial_current";
+        const std::string initial_speed_path = context + "/initial_speed";
+
+        const double resistance_ohm =
+            as_double(require_param(spec.params, "resistance_ohm", context),
+                      resistance_path);
+        const double inductance_h =
+            as_double(require_param(spec.params, "inductance_h", context),
+                      inductance_path);
+        const double torque_constant =
+            as_double(require_param(spec.params, "torque_constant", context),
+                      torque_constant_path);
+        const double back_emf_constant =
+            as_double(require_param(spec.params, "back_emf_constant", context),
+                      back_emf_constant_path);
+        const double inertia = as_double(
+            require_param(spec.params, "inertia", context), inertia_path);
+        const double viscous_friction =
+            as_double(require_param(spec.params, "viscous_friction", context),
+                      viscous_friction_path);
+        const double initial_current =
+            as_double(require_param(spec.params, "initial_current", context),
+                      initial_current_path);
+        const double initial_speed =
+            as_double(require_param(spec.params, "initial_speed", context),
+                      initial_speed_path);
+
+        require_finite_positive(resistance_ohm, resistance_path);
+        require_finite_positive(inductance_h, inductance_path);
+        require_finite_positive(torque_constant, torque_constant_path);
+        require_finite_positive(back_emf_constant, back_emf_constant_path);
+        require_finite_positive(inertia, inertia_path);
+        require_finite_non_negative(viscous_friction, viscous_friction_path);
+        require_finite(initial_current, initial_current_path);
+        require_finite(initial_speed, initial_speed_path);
+
+        const std::string speed_path =
+            as_string(require_param(spec.params, "speed_signal", context),
+                      context + "/speed_signal");
+        const std::string current_path =
+            as_string(require_param(spec.params, "current_signal", context),
+                      context + "/current_signal");
+        const std::string torque_path =
+            as_string(require_param(spec.params, "torque_signal", context),
+                      context + "/torque_signal");
+        const std::string voltage_path =
+            as_string(require_param(spec.params, "voltage_signal", context),
+                      context + "/voltage_signal");
+        const std::string load_torque_path =
+            as_string(require_param(spec.params, "load_torque_signal", context),
+                      context + "/load_torque_signal");
+
+        IntegrationMethod integration_method = IntegrationMethod::ForwardEuler;
+        if (auto it = spec.params.find("integration_method");
+            it != spec.params.end()) {
+          const std::string method_name =
+              as_string(it->second, context + "/integration_method");
+          try {
+            integration_method = parse_integration_method(method_name);
+          } catch (const std::invalid_argument &e) {
+            throw std::runtime_error("Invalid parameter at " + context +
+                                     "/integration_method: " + e.what());
+          }
+        }
+
+        return std::make_unique<DcMotorModel>(
+            spec.id, resistance_ohm, inductance_h, torque_constant,
+            back_emf_constant, inertia, viscous_friction, initial_current,
+            initial_speed, speed_path, current_path, torque_path, voltage_path,
+            load_torque_path, ns, integration_method);
+      },
+      dc_motor_signature);
 
   registry.defaults_registered = true;
 }
@@ -875,9 +996,8 @@ void validate_model_signature_contracts(
     }
 
     const std::string path = as_string(
-        param_it->second,
-        "model[" + model_spec.id + ":" + model_spec.type + "]/{" + param_name +
-            "}");
+        param_it->second, "model[" + model_spec.id + ":" + model_spec.type +
+                              "]/{" + param_name + "}");
     const SignalId id = signal_ns.intern(path);
     const std::string actual_unit =
         resolve_signal_contract_or_empty(signal_contracts, id);
@@ -894,10 +1014,10 @@ void validate_model_signature_contracts(
     }
 
     if (actual_unit != expected_unit) {
-      const std::string message =
-          "GraphCompiler: model '" + model_spec.id + "' parameter '" +
-          param_name + "' expects unit '" + expected_unit + "' but found '" +
-          actual_unit + "'";
+      const std::string message = "GraphCompiler: model '" + model_spec.id +
+                                  "' parameter '" + param_name +
+                                  "' expects unit '" + expected_unit +
+                                  "' but found '" + actual_unit + "'";
       if (strict) {
         throw std::runtime_error(message);
       }
@@ -1131,9 +1251,9 @@ CompiledProgram GraphCompiler::compile(const GraphSpec &spec,
       }
 
       if (entry.has_signature) {
-        validate_model_signature_contracts(
-            model_spec, entry.signature, signal_ns, signal_contracts,
-            unit_registry, options, strict);
+        validate_model_signature_contracts(model_spec, entry.signature,
+                                           signal_ns, signal_contracts,
+                                           unit_registry, options, strict);
       }
     }
   }

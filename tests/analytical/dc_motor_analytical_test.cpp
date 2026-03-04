@@ -1,4 +1,4 @@
-#include "fluxgraph/model/mass_spring_damper.hpp"
+#include "fluxgraph/model/dc_motor.hpp"
 #include <algorithm>
 #include <cmath>
 #include <gtest/gtest.h>
@@ -92,32 +92,37 @@ Vec2 exact_solution(const Mat2 &A, const Vec2 &c, const Vec2 &x0, double t) {
 
 } // namespace
 
-TEST(MassSpringDamperAnalytical, MatchesClosedFormForConstantForce) {
+TEST(DcMotorAnalytical, MatchesClosedFormForConstantInputs) {
   SignalNamespace ns;
   SignalStore store;
 
-  // Use an overdamped configuration so the real-matrix closed form above
-  // remains purely real.
-  constexpr double mass = 2.0;             // kg
-  constexpr double damping_coeff = 10.0;   // N*s/m
-  constexpr double spring_constant = 10.0; // N/m
-  constexpr double force = 4.0;            // N
-  constexpr double x0 = 0.0;               // m
-  constexpr double v0 = 0.0;               // m/s
+  constexpr double R = 2.0;    // Ohm
+  constexpr double L = 0.5;    // H
+  constexpr double Kt = 0.1;   // N*m/A
+  constexpr double Ke = 0.1;   // V*s/rad
+  constexpr double J = 0.02;   // kg*m^2
+  constexpr double b = 0.2;    // N*m*s/rad
+  constexpr double V = 12.0;   // V
+  constexpr double load = 0.1; // N*m
 
-  MassSpringDamperModel model("ref", mass, damping_coeff, spring_constant, x0,
-                              v0, "msd.x", "msd.v", "msd.F", ns,
-                              IntegrationMethod::Rk4);
+  constexpr double i0 = 0.0;
+  constexpr double omega0 = 0.0;
 
-  const auto x_id = ns.resolve("msd.x");
-  const auto v_id = ns.resolve("msd.v");
-  const auto f_id = ns.resolve("msd.F");
+  DcMotorModel model("ref", R, L, Kt, Ke, J, b, i0, omega0, "m.omega", "m.i",
+                     "m.tau", "m.V", "m.load", ns, IntegrationMethod::Rk4);
 
-  store.write(f_id, force, "N");
+  const auto omega_id = ns.resolve("m.omega");
+  const auto i_id = ns.resolve("m.i");
+  const auto tau_id = ns.resolve("m.tau");
+  const auto v_id = ns.resolve("m.V");
+  const auto load_id = ns.resolve("m.load");
 
-  const Mat2 A{0.0, 1.0, -spring_constant / mass, -damping_coeff / mass};
-  const Vec2 c{0.0, force / mass};
-  const Vec2 x_init{x0, v0};
+  store.write(v_id, V, "V");
+  store.write(load_id, load, "N*m");
+
+  const Mat2 A{-R / L, -Ke / L, Kt / J, -b / J};
+  const Vec2 c{V / L, -load / J};
+  const Vec2 x_init{i0, omega0};
 
   constexpr double dt = 0.01;
   constexpr int steps = 500; // 5 seconds
@@ -128,7 +133,8 @@ TEST(MassSpringDamperAnalytical, MatchesClosedFormForConstantForce) {
     t += dt;
 
     const Vec2 exact = exact_solution(A, c, x_init, t);
-    EXPECT_NEAR(store.read_value(x_id), exact.a, 1e-3);
-    EXPECT_NEAR(store.read_value(v_id), exact.b, 1e-3);
+    EXPECT_NEAR(store.read_value(i_id), exact.a, 1e-3);
+    EXPECT_NEAR(store.read_value(omega_id), exact.b, 1e-3);
+    EXPECT_NEAR(store.read_value(tau_id), Kt * exact.a, 1e-3);
   }
 }

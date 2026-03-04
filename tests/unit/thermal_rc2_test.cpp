@@ -30,19 +30,16 @@ double expected_stability_limit(double Ca, double Cb, double ha, double hb,
 
 TEST(ThermalRc2Test, ConstructorRejectsInvalidParams) {
   SignalNamespace ns;
-  EXPECT_THROW(
-      ThermalRc2Model("bad", 0.0, 1.0, 1.0, 1.0, 0.0, 20.0, 20.0, "a", "b",
-                      "power", "ambient", ns),
-      std::invalid_argument);
-  EXPECT_THROW(
-      ThermalRc2Model("bad", 1.0, 1.0, 1.0, 1.0, -1.0, 20.0, 20.0, "a", "b",
-                      "power", "ambient", ns),
-      std::invalid_argument);
-  EXPECT_THROW(
-      ThermalRc2Model("bad", 1.0, 1.0, 1.0, 1.0, 0.0,
-                      std::numeric_limits<double>::infinity(), 20.0, "a", "b",
-                      "power", "ambient", ns),
-      std::invalid_argument);
+  EXPECT_THROW(ThermalRc2Model("bad", 0.0, 1.0, 1.0, 1.0, 0.0, 20.0, 20.0, "a",
+                               "b", "power", "ambient", ns),
+               std::invalid_argument);
+  EXPECT_THROW(ThermalRc2Model("bad", 1.0, 1.0, 1.0, 1.0, -1.0, 20.0, 20.0, "a",
+                               "b", "power", "ambient", ns),
+               std::invalid_argument);
+  EXPECT_THROW(ThermalRc2Model("bad", 1.0, 1.0, 1.0, 1.0, 0.0,
+                               std::numeric_limits<double>::infinity(), 20.0,
+                               "a", "b", "power", "ambient", ns),
+               std::invalid_argument);
 }
 
 TEST(ThermalRc2Test, HeatingCouplesToSecondNode) {

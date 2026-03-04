@@ -18,4 +18,3 @@ ThermalIntegrationMethod
 parse_thermal_integration_method(const std::string &method_name);
 
 } // namespace fluxgraph
-

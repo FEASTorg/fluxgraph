@@ -20,6 +20,7 @@ add_executable(fluxgraph_tests
     unit/first_order_process_test.cpp
     unit/second_order_process_test.cpp
     unit/mass_spring_damper_test.cpp
+    unit/dc_motor_test.cpp
     unit/compiler_test.cpp
     unit/engine_test.cpp
     unit/unit_registry_test.cpp
@@ -29,6 +30,7 @@ add_executable(fluxgraph_tests
     analytical/first_order_process_analytical_test.cpp
     analytical/second_order_process_analytical_test.cpp
     analytical/mass_spring_damper_analytical_test.cpp
+    analytical/dc_motor_analytical_test.cpp
     analytical/delay_analytical_test.cpp
     analytical/transform_analytical_test.cpp
 )

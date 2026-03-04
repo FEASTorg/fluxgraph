@@ -242,6 +242,53 @@ Translational single-degree-of-freedom mass-spring-damper:
 }
 ```
 
+### DcMotor Model
+
+Armature-controlled DC motor with electrical inductance and viscous friction.
+
+**Parameters:**
+| Parameter | Type | Units | Description |
+|-----------|------|-------|-------------|
+| `speed_signal` | string | rad/s | Output speed signal path |
+| `current_signal` | string | A | Output current signal path |
+| `torque_signal` | string | N*m | Output electromagnetic torque signal path |
+| `voltage_signal` | string | V | Input voltage signal path |
+| `load_torque_signal` | string | N*m | Input load torque signal path |
+| `resistance_ohm` | number | Ohm | Armature resistance (must be > 0) |
+| `inductance_h` | number | H | Armature inductance (must be > 0) |
+| `torque_constant` | number | N*m/A | Torque constant (must be > 0) |
+| `back_emf_constant` | number | V*s/rad | Back-EMF constant (must be > 0) |
+| `inertia` | number | kg*m^2 | Rotor inertia (must be > 0) |
+| `viscous_friction` | number | N*m*s/rad | Viscous friction (must be >= 0) |
+| `initial_current` | number | A | Initial armature current |
+| `initial_speed` | number | rad/s | Initial angular speed |
+| `integration_method` | string | - | Optional: `"forward_euler"` (default) or `"rk4"` |
+
+**Example:**
+
+```json
+{
+  "id": "motor",
+  "type": "dc_motor",
+  "params": {
+    "speed_signal": "motor.omega",
+    "current_signal": "motor.i",
+    "torque_signal": "motor.tau",
+    "voltage_signal": "motor.V",
+    "load_torque_signal": "motor.load",
+    "resistance_ohm": 2.0,
+    "inductance_h": 0.5,
+    "torque_constant": 0.1,
+    "back_emf_constant": 0.1,
+    "inertia": 0.02,
+    "viscous_friction": 0.2,
+    "initial_current": 0.0,
+    "initial_speed": 0.0,
+    "integration_method": "rk4"
+  }
+}
+```
+
 ## Edges
 
 Edges connect signals through transforms, defining the dataflow graph.

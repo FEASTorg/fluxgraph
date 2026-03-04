@@ -19,18 +19,14 @@ bool is_finite_non_negative(double value) {
 
 } // namespace
 
-ThermalRc2Model::ThermalRc2Model(const std::string &id, double thermal_mass_a,
-                                 double thermal_mass_b,
-                                 double heat_transfer_coeff_a,
-                                 double heat_transfer_coeff_b,
-                                 double coupling_coeff, double initial_temp_a,
-                                 double initial_temp_b,
-                                 const std::string &temp_signal_a_path,
-                                 const std::string &temp_signal_b_path,
-                                 const std::string &power_signal_path,
-                                 const std::string &ambient_signal_path,
-                                 SignalNamespace &ns,
-                                 ThermalIntegrationMethod integration_method)
+ThermalRc2Model::ThermalRc2Model(
+    const std::string &id, double thermal_mass_a, double thermal_mass_b,
+    double heat_transfer_coeff_a, double heat_transfer_coeff_b,
+    double coupling_coeff, double initial_temp_a, double initial_temp_b,
+    const std::string &temp_signal_a_path,
+    const std::string &temp_signal_b_path, const std::string &power_signal_path,
+    const std::string &ambient_signal_path, SignalNamespace &ns,
+    ThermalIntegrationMethod integration_method)
     : id_(id), temp_a_signal_(ns.intern(temp_signal_a_path)),
       temp_b_signal_(ns.intern(temp_signal_b_path)),
       power_signal_(ns.intern(power_signal_path)),
@@ -71,8 +67,9 @@ ThermalRc2Model::ThermalRc2Model(const std::string &id, double thermal_mass_a,
   }
 }
 
-ThermalRc2Model::Derivative ThermalRc2Model::derivative(
-    double Ta, double Tb, double power, double ambient) const {
+ThermalRc2Model::Derivative ThermalRc2Model::derivative(double Ta, double Tb,
+                                                        double power,
+                                                        double ambient) const {
   Derivative out;
 
   const double heat_loss_a = heat_transfer_coeff_a_ * (Ta - ambient);
@@ -119,8 +116,10 @@ void ThermalRc2Model::reset() {
 double ThermalRc2Model::compute_stability_limit() const {
   // Stability is determined by the eigenvalues of the linear system matrix A.
   // A = -C^{-1} * L, with L symmetric positive definite for h_a,h_b>0 and k>=0.
-  const double a11 = -(heat_transfer_coeff_a_ + coupling_coeff_) / thermal_mass_a_;
-  const double a22 = -(heat_transfer_coeff_b_ + coupling_coeff_) / thermal_mass_b_;
+  const double a11 =
+      -(heat_transfer_coeff_a_ + coupling_coeff_) / thermal_mass_a_;
+  const double a22 =
+      -(heat_transfer_coeff_b_ + coupling_coeff_) / thermal_mass_b_;
   const double a12 = coupling_coeff_ / thermal_mass_a_;
   const double a21 = coupling_coeff_ / thermal_mass_b_;
 
@@ -162,4 +161,3 @@ std::vector<SignalId> ThermalRc2Model::output_signal_ids() const {
 }
 
 } // namespace fluxgraph
-

@@ -7,14 +7,25 @@ TEST(UnitRegistryTest, ContainsCuratedUnits) {
   const UnitRegistry &registry = UnitRegistry::instance();
 
   EXPECT_TRUE(registry.contains("dimensionless"));
+  EXPECT_TRUE(registry.contains("rad"));
   EXPECT_TRUE(registry.contains("s"));
   EXPECT_TRUE(registry.contains("1/s"));
+  EXPECT_TRUE(registry.contains("rad/s"));
   EXPECT_TRUE(registry.contains("m"));
   EXPECT_TRUE(registry.contains("m/s"));
   EXPECT_TRUE(registry.contains("kg"));
+  EXPECT_TRUE(registry.contains("kg*m^2"));
   EXPECT_TRUE(registry.contains("N"));
   EXPECT_TRUE(registry.contains("N/m"));
   EXPECT_TRUE(registry.contains("N*s/m"));
+  EXPECT_TRUE(registry.contains("N*m"));
+  EXPECT_TRUE(registry.contains("N*m*s/rad"));
+  EXPECT_TRUE(registry.contains("A"));
+  EXPECT_TRUE(registry.contains("V"));
+  EXPECT_TRUE(registry.contains("Ohm"));
+  EXPECT_TRUE(registry.contains("H"));
+  EXPECT_TRUE(registry.contains("N*m/A"));
+  EXPECT_TRUE(registry.contains("V*s/rad"));
   EXPECT_TRUE(registry.contains("W"));
   EXPECT_TRUE(registry.contains("K"));
   EXPECT_TRUE(registry.contains("degC"));

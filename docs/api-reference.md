@@ -252,6 +252,7 @@ spec.models.push_back(model);
 - `first_order_process` - First-order process primitive (PT1)
 - `second_order_process` - Second-order process primitive (PT2)
 - `mass_spring_damper` - Translational mass-spring-damper (mechanical)
+- `dc_motor` - Armature-controlled DC motor (electromechanical)
 
 #### RuleSpec
 

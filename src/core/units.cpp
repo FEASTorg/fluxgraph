@@ -30,6 +30,18 @@ UnitRegistry::UnitRegistry() {
                               UnitKind::generic});
   units_.emplace("1/s", UnitDef{"1/s", dim(0, 0, -1, 0, 0, 0, 0), 1.0, 0.0,
                                 UnitKind::generic});
+  units_.emplace("m", UnitDef{"m", dim(0, 1, 0, 0, 0, 0, 0), 1.0, 0.0,
+                              UnitKind::generic});
+  units_.emplace("m/s", UnitDef{"m/s", dim(0, 1, -1, 0, 0, 0, 0), 1.0, 0.0,
+                                UnitKind::generic});
+  units_.emplace("kg", UnitDef{"kg", dim(1, 0, 0, 0, 0, 0, 0), 1.0, 0.0,
+                               UnitKind::generic});
+  units_.emplace("N", UnitDef{"N", dim(1, 1, -2, 0, 0, 0, 0), 1.0, 0.0,
+                              UnitKind::generic});
+  units_.emplace("N/m", UnitDef{"N/m", dim(1, 0, -2, 0, 0, 0, 0), 1.0, 0.0,
+                                UnitKind::generic});
+  units_.emplace("N*s/m", UnitDef{"N*s/m", dim(1, 0, -1, 0, 0, 0, 0), 1.0, 0.0,
+                                  UnitKind::generic});
   units_.emplace("W", UnitDef{"W", dim(1, 2, -3, 0, 0, 0, 0), 1.0, 0.0,
                               UnitKind::generic});
   units_.emplace("K", UnitDef{"K", dim(0, 0, 0, 0, 1, 0, 0), 1.0, 0.0,

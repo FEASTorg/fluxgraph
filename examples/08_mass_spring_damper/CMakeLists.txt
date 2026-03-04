@@ -1,0 +1,3 @@
+add_executable(example_mass_spring_damper main.cpp)
+target_link_libraries(example_mass_spring_damper PRIVATE fluxgraph)
+

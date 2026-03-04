@@ -198,6 +198,42 @@ models:
       integration_method: rk4
 ```
 
+### MassSpringDamper Model
+
+Translational single-degree-of-freedom mass-spring-damper:
+`m*x'' + c*x' + k*x = F`
+
+**Parameters:**
+| Parameter | Type | Units | Description |
+|-----------|------|-------|-------------|
+| `position_signal` | string | m | Output position signal path |
+| `velocity_signal` | string | m/s | Output velocity signal path |
+| `force_signal` | string | N | Input force signal path |
+| `mass` | number | kg | Mass (must be > 0) |
+| `damping_coeff` | number | N*s/m | Damping coefficient (must be >= 0) |
+| `spring_constant` | number | N/m | Spring constant (must be >= 0) |
+| `initial_position` | number | m | Initial position |
+| `initial_velocity` | number | m/s | Initial velocity |
+| `integration_method` | string | - | Optional: `forward_euler` (default) or `rk4` |
+
+**Example:**
+
+```yaml
+models:
+  - id: msd
+    type: mass_spring_damper
+    params:
+      position_signal: msd.x
+      velocity_signal: msd.v
+      force_signal: msd.F
+      mass: 1.0
+      damping_coeff: 2.0
+      spring_constant: 20.0
+      initial_position: 0.0
+      initial_velocity: 0.0
+      integration_method: rk4
+```
+
 ## Edges
 
 Edges connect signals through transforms, defining the dataflow graph.

@@ -213,6 +213,22 @@ Demonstrates a canonical second-order process primitive:
 ./build/examples/07_second_order_process/Debug/example_second_order_process.exe
 ```
 
+## Example 8: Mass-Spring-Damper (Mechanical)
+
+**Location:** `08_mass_spring_damper/`
+
+Demonstrates a simple translational mechanical model:
+
+- `mass_spring_damper` model with physical parameters (`mass`, `damping_coeff`, `spring_constant`)
+- Force input contract (`N`) and position/velocity outputs (`m`, `m/s`)
+- Step force response
+
+**Run:**
+
+```bash
+./build/examples/08_mass_spring_damper/Debug/example_mass_spring_damper.exe
+```
+
 ## When to Use Each Approach
 
 ### Manual GraphSpec (Examples 1 & 2)

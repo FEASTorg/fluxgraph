@@ -7,6 +7,7 @@
 # Example 5: Thermal RC2 - Coupled two-node thermal model
 # Example 6: First-order process (dimensionless PT1)
 # Example 7: Second-order process (dimensionless PT2)
+# Example 8: Mass-spring-damper (translational mechanical model)
 
 add_subdirectory(01_basic_transform)
 add_subdirectory(02_thermal_mass)
@@ -15,3 +16,4 @@ add_subdirectory(04_yaml_graph)
 add_subdirectory(05_thermal_rc2)
 add_subdirectory(06_first_order_process)
 add_subdirectory(07_second_order_process)
+add_subdirectory(08_mass_spring_damper)

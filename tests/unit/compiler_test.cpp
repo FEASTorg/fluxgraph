@@ -449,6 +449,47 @@ TEST(GraphCompilerTest,
   EXPECT_THROW(compiler.parse_model(spec, ns), std::runtime_error);
 }
 
+TEST(GraphCompilerTest, ParseMassSpringDamperModel) {
+  ModelSpec spec;
+  spec.id = "msd";
+  spec.type = "mass_spring_damper";
+  spec.params["mass"] = 1.0;
+  spec.params["damping_coeff"] = 2.0;
+  spec.params["spring_constant"] = 20.0;
+  spec.params["initial_position"] = 0.0;
+  spec.params["initial_velocity"] = 0.0;
+  spec.params["position_signal"] = std::string("msd.x");
+  spec.params["velocity_signal"] = std::string("msd.v");
+  spec.params["force_signal"] = std::string("msd.F");
+
+  SignalNamespace ns;
+  GraphCompiler compiler;
+  std::unique_ptr<IModel> model(compiler.parse_model(spec, ns));
+
+  ASSERT_NE(model, nullptr);
+  EXPECT_NE(model->describe().find("MassSpringDamper"), std::string::npos);
+}
+
+TEST(GraphCompilerTest,
+     ParseMassSpringDamperModelWithInvalidIntegrationMethodThrows) {
+  ModelSpec spec;
+  spec.id = "msd";
+  spec.type = "mass_spring_damper";
+  spec.params["mass"] = 1.0;
+  spec.params["damping_coeff"] = 2.0;
+  spec.params["spring_constant"] = 20.0;
+  spec.params["initial_position"] = 0.0;
+  spec.params["initial_velocity"] = 0.0;
+  spec.params["position_signal"] = std::string("msd.x");
+  spec.params["velocity_signal"] = std::string("msd.v");
+  spec.params["force_signal"] = std::string("msd.F");
+  spec.params["integration_method"] = std::string("invalid_method");
+
+  SignalNamespace ns;
+  GraphCompiler compiler;
+  EXPECT_THROW(compiler.parse_model(spec, ns), std::runtime_error);
+}
+
 TEST(GraphCompilerTest, StrictModeRejectsUndeclaredModelSignalContracts) {
   GraphSpec spec;
 

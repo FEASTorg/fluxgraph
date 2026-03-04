@@ -49,7 +49,7 @@ int main() {
   auto temp_noisy_sig = sig_ns.resolve("chamber.temperature_noisy");
 
   // 5. Initialize ambient temperature
-  store.write(ambient_sig, 20.0, "celsius");
+  store.write(ambient_sig, 20.0, "degC");
 
   // 6. Simulation: heat chamber for 5 seconds, then turn off
   std::cout << "Thermal Mass Simulation\n";

@@ -129,6 +129,7 @@ int main() {
 - [`05_thermal_rc2`](./examples/05_thermal_rc2/) - Two-node thermal RC model example
 - [`06_first_order_process`](./examples/06_first_order_process/) - First-order process primitive (PT1)
 - [`07_second_order_process`](./examples/07_second_order_process/) - Second-order process primitive (PT2)
+- [`08_mass_spring_damper`](./examples/08_mass_spring_damper/) - Translational mass-spring-damper model example
 
 ## Project Structure
 

@@ -48,6 +48,7 @@ set(FLUXGRAPH_SOURCES
     src/model/thermal_rc2.cpp
     src/model/first_order_process.cpp
     src/model/second_order_process.cpp
+    src/model/mass_spring_damper.cpp
     src/graph/compiler.cpp
     src/engine.cpp
 )

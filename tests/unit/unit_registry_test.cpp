@@ -9,6 +9,12 @@ TEST(UnitRegistryTest, ContainsCuratedUnits) {
   EXPECT_TRUE(registry.contains("dimensionless"));
   EXPECT_TRUE(registry.contains("s"));
   EXPECT_TRUE(registry.contains("1/s"));
+  EXPECT_TRUE(registry.contains("m"));
+  EXPECT_TRUE(registry.contains("m/s"));
+  EXPECT_TRUE(registry.contains("kg"));
+  EXPECT_TRUE(registry.contains("N"));
+  EXPECT_TRUE(registry.contains("N/m"));
+  EXPECT_TRUE(registry.contains("N*s/m"));
   EXPECT_TRUE(registry.contains("W"));
   EXPECT_TRUE(registry.contains("K"));
   EXPECT_TRUE(registry.contains("degC"));

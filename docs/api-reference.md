@@ -249,6 +249,8 @@ spec.models.push_back(model);
 
 - `thermal_mass` - Heat transfer simulation
 - `thermal_rc2` - Two-node thermal RC network (coupled temperatures)
+- `first_order_process` - First-order process primitive (PT1)
+- `second_order_process` - Second-order process primitive (PT2)
 
 #### RuleSpec
 

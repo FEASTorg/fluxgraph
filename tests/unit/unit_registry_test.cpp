@@ -7,6 +7,8 @@ TEST(UnitRegistryTest, ContainsCuratedUnits) {
   const UnitRegistry &registry = UnitRegistry::instance();
 
   EXPECT_TRUE(registry.contains("dimensionless"));
+  EXPECT_TRUE(registry.contains("s"));
+  EXPECT_TRUE(registry.contains("1/s"));
   EXPECT_TRUE(registry.contains("W"));
   EXPECT_TRUE(registry.contains("K"));
   EXPECT_TRUE(registry.contains("degC"));

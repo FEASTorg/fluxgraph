@@ -5,9 +5,13 @@
 # Example 3: JSON loader - Load graph from JSON file (requires -DFLUXGRAPH_JSON_ENABLED=ON)
 # Example 4: YAML loader - Load graph from YAML file (requires -DFLUXGRAPH_YAML_ENABLED=ON)
 # Example 5: Thermal RC2 - Coupled two-node thermal model
+# Example 6: First-order process (dimensionless PT1)
+# Example 7: Second-order process (dimensionless PT2)
 
 add_subdirectory(01_basic_transform)
 add_subdirectory(02_thermal_mass)
 add_subdirectory(03_json_graph)
 add_subdirectory(04_yaml_graph)
 add_subdirectory(05_thermal_rc2)
+add_subdirectory(06_first_order_process)
+add_subdirectory(07_second_order_process)

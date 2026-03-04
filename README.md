@@ -127,6 +127,8 @@ int main() {
 - [`03_json_graph`](./examples/03_json_graph/) - Load graph from JSON file
 - [`04_yaml_graph`](./examples/04_yaml_graph/) - Load graph from YAML file
 - [`05_thermal_rc2`](./examples/05_thermal_rc2/) - Two-node thermal RC model example
+- [`06_first_order_process`](./examples/06_first_order_process/) - First-order process primitive (PT1)
+- [`07_second_order_process`](./examples/07_second_order_process/) - Second-order process primitive (PT2)
 
 ## Project Structure
 

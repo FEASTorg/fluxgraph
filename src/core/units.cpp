@@ -26,6 +26,10 @@ UnitRegistry::UnitRegistry() {
 
   units_.emplace("dimensionless",
                  UnitDef{"dimensionless", {}, 1.0, 0.0, UnitKind::generic});
+  units_.emplace("s", UnitDef{"s", dim(0, 0, 1, 0, 0, 0, 0), 1.0, 0.0,
+                              UnitKind::generic});
+  units_.emplace("1/s", UnitDef{"1/s", dim(0, 0, -1, 0, 0, 0, 0), 1.0, 0.0,
+                                UnitKind::generic});
   units_.emplace("W", UnitDef{"W", dim(1, 2, -3, 0, 0, 0, 0), 1.0, 0.0,
                               UnitKind::generic});
   units_.emplace("K", UnitDef{"K", dim(0, 0, 0, 0, 1, 0, 0), 1.0, 0.0,

@@ -58,7 +58,7 @@ Models represent physical systems with internal state and differential equations
 **Fields:**
 
 - `id` (string, required) - Unique model identifier
-- `type` (string, required) - Model type (built-in: `"thermal_mass"`, `"thermal_rc2"`)
+- `type` (string, required) - Model type (built-in: `"thermal_mass"`, `"thermal_rc2"`, `"first_order_process"`, `"second_order_process"`)
 - `params` (object, required) - Model-specific parameters
 
 ### ThermalMass Model
@@ -133,6 +133,72 @@ Two-node thermal RC network with ambient coupling and inter-node conductance.
     "coupling_coeff": 6.0,
     "initial_temp_a": 25.0,
     "initial_temp_b": 25.0,
+    "integration_method": "rk4"
+  }
+}
+```
+
+### FirstOrderProcess Model
+
+First-order process primitive: `dy/dt = (gain * u - y) / tau`.
+
+**Parameters:**
+| Parameter | Type | Units | Description |
+|-----------|------|-------|-------------|
+| `output_signal` | string | dimensionless | Output signal path |
+| `input_signal` | string | dimensionless | Input signal path |
+| `gain` | number | dimensionless | Static gain (finite) |
+| `tau_s` | number | s | Time constant (must be > 0) |
+| `initial_output` | number | dimensionless | Initial output value |
+| `integration_method` | string | - | Optional: `"forward_euler"` (default) or `"rk4"` |
+
+**Example:**
+
+```json
+{
+  "id": "pt1",
+  "type": "first_order_process",
+  "params": {
+    "output_signal": "pt1.y",
+    "input_signal": "pt1.u",
+    "gain": 2.0,
+    "tau_s": 1.0,
+    "initial_output": 0.0
+  }
+}
+```
+
+### SecondOrderProcess Model
+
+Second-order process primitive:
+`y'' + 2*zeta*omega_n*y' + omega_n^2*y = omega_n^2 * gain * u`
+
+**Parameters:**
+| Parameter | Type | Units | Description |
+|-----------|------|-------|-------------|
+| `output_signal` | string | dimensionless | Output signal path |
+| `input_signal` | string | dimensionless | Input signal path |
+| `gain` | number | dimensionless | Static gain (finite) |
+| `zeta` | number | dimensionless | Damping ratio (must be >= 0) |
+| `omega_n_rad_s` | number | 1/s | Natural frequency (must be > 0) |
+| `initial_output` | number | dimensionless | Initial output value |
+| `initial_output_rate` | number | 1/s | Initial output rate |
+| `integration_method` | string | - | Optional: `"forward_euler"` (default) or `"rk4"` |
+
+**Example:**
+
+```json
+{
+  "id": "pt2",
+  "type": "second_order_process",
+  "params": {
+    "output_signal": "pt2.y",
+    "input_signal": "pt2.u",
+    "gain": 2.0,
+    "zeta": 0.7,
+    "omega_n_rad_s": 4.0,
+    "initial_output": 0.0,
+    "initial_output_rate": 0.0,
     "integration_method": "rk4"
   }
 }

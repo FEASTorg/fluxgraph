@@ -181,6 +181,38 @@ Demonstrates a coupled two-temperature physics model:
 ./build/examples/05_thermal_rc2/Debug/example_thermal_rc2.exe
 ```
 
+## Example 6: First-Order Process (PT1)
+
+**Location:** `06_first_order_process/`
+
+Demonstrates a simple first-order process primitive:
+
+- `first_order_process` model with `gain` and `tau_s`
+- Dimensionless input/output contracts (`dimensionless`)
+- Step input response
+
+**Run:**
+
+```bash
+./build/examples/06_first_order_process/Debug/example_first_order_process.exe
+```
+
+## Example 7: Second-Order Process (PT2)
+
+**Location:** `07_second_order_process/`
+
+Demonstrates a canonical second-order process primitive:
+
+- `second_order_process` model with `gain`, `zeta`, and `omega_n_rad_s`
+- Dimensionless input/output contracts (`dimensionless`)
+- Step input response
+
+**Run:**
+
+```bash
+./build/examples/07_second_order_process/Debug/example_second_order_process.exe
+```
+
 ## When to Use Each Approach
 
 ### Manual GraphSpec (Examples 1 & 2)
@@ -271,7 +303,7 @@ double result = store.read_value(output_sig);
 
 **"Unknown model type" error:**
 
-- Check ModelSpec `type` field matches implemented model ("thermal_mass" or "thermal_rc2")
+- Check ModelSpec `type` field matches an implemented model type (`thermal_mass`, `thermal_rc2`, `first_order_process`, `second_order_process`)
 - Ensure all required params are present
 
 **Signals read as 0.0:**

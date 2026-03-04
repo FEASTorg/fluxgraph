@@ -14,9 +14,16 @@ Validation protocol details are documented in `docs/validation-methodology.md`.
 3. Methods are selected at compile time and remain fixed at runtime.
 4. Runtime behavior must be deterministic for identical inputs and `dt`.
 
-## Thermal Model Integration Methods
+## ODE Model Integration Methods
 
-Both `thermal_mass` and `thermal_rc2` support:
+The following built-in models support `integration_method`:
+
+1. `thermal_mass`
+2. `thermal_rc2`
+3. `first_order_process`
+4. `second_order_process`
+
+Supported methods:
 
 1. `forward_euler` (default)
 2. `rk4` (classic fourth-order Runge-Kutta)
@@ -49,6 +56,14 @@ the negative real axis). The stability limits use:
 2. `rk4`: `dt < 2.785293563/|lambda_min|`
 
 FluxGraph enforces these via `IModel::compute_stability_limit()`.
+
+For the process primitives:
+
+1. `first_order_process`: equivalent to `lambda = -1/tau_s`, so the same
+   negative-real-axis limits apply.
+2. `second_order_process`: eigenvalues may be complex; stability is evaluated
+   using the selected method's stability function `R(z)` along `z = lambda*dt`,
+   requiring `|R(lambda*dt)| <= 1` for each eigenvalue.
 
 ## Validation Expectations
 

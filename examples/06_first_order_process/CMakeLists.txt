@@ -1,0 +1,2 @@
+add_executable(example_first_order_process main.cpp)
+target_link_libraries(example_first_order_process PRIVATE fluxgraph)

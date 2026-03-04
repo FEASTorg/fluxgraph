@@ -375,6 +375,127 @@ TEST(GraphCompilerTest, ParseThermalMassModelWithNonFiniteInitialTempThrows) {
   }
 }
 
+TEST(GraphCompilerTest, ParseFirstOrderProcessModel) {
+  ModelSpec spec;
+  spec.id = "pt1";
+  spec.type = "first_order_process";
+  spec.params["gain"] = 2.0;
+  spec.params["tau_s"] = 1.0;
+  spec.params["initial_output"] = 0.0;
+  spec.params["output_signal"] = std::string("pt1.y");
+  spec.params["input_signal"] = std::string("pt1.u");
+
+  SignalNamespace ns;
+  GraphCompiler compiler;
+  std::unique_ptr<IModel> model(compiler.parse_model(spec, ns));
+
+  ASSERT_NE(model, nullptr);
+  EXPECT_NE(model->describe().find("FirstOrderProcess"), std::string::npos);
+}
+
+TEST(GraphCompilerTest,
+     ParseFirstOrderProcessModelWithInvalidIntegrationMethodThrows) {
+  ModelSpec spec;
+  spec.id = "pt1";
+  spec.type = "first_order_process";
+  spec.params["gain"] = 2.0;
+  spec.params["tau_s"] = 1.0;
+  spec.params["initial_output"] = 0.0;
+  spec.params["output_signal"] = std::string("pt1.y");
+  spec.params["input_signal"] = std::string("pt1.u");
+  spec.params["integration_method"] = std::string("invalid_method");
+
+  SignalNamespace ns;
+  GraphCompiler compiler;
+  EXPECT_THROW(compiler.parse_model(spec, ns), std::runtime_error);
+}
+
+TEST(GraphCompilerTest, ParseSecondOrderProcessModel) {
+  ModelSpec spec;
+  spec.id = "pt2";
+  spec.type = "second_order_process";
+  spec.params["gain"] = 2.0;
+  spec.params["zeta"] = 0.5;
+  spec.params["omega_n_rad_s"] = 3.0;
+  spec.params["initial_output"] = 0.0;
+  spec.params["initial_output_rate"] = 0.0;
+  spec.params["output_signal"] = std::string("pt2.y");
+  spec.params["input_signal"] = std::string("pt2.u");
+
+  SignalNamespace ns;
+  GraphCompiler compiler;
+  std::unique_ptr<IModel> model(compiler.parse_model(spec, ns));
+
+  ASSERT_NE(model, nullptr);
+  EXPECT_NE(model->describe().find("SecondOrderProcess"), std::string::npos);
+}
+
+TEST(GraphCompilerTest,
+     ParseSecondOrderProcessModelWithInvalidIntegrationMethodThrows) {
+  ModelSpec spec;
+  spec.id = "pt2";
+  spec.type = "second_order_process";
+  spec.params["gain"] = 2.0;
+  spec.params["zeta"] = 0.5;
+  spec.params["omega_n_rad_s"] = 3.0;
+  spec.params["initial_output"] = 0.0;
+  spec.params["initial_output_rate"] = 0.0;
+  spec.params["output_signal"] = std::string("pt2.y");
+  spec.params["input_signal"] = std::string("pt2.u");
+  spec.params["integration_method"] = std::string("invalid_method");
+
+  SignalNamespace ns;
+  GraphCompiler compiler;
+  EXPECT_THROW(compiler.parse_model(spec, ns), std::runtime_error);
+}
+
+TEST(GraphCompilerTest, StrictModeRejectsUndeclaredModelSignalContracts) {
+  GraphSpec spec;
+
+  ModelSpec model;
+  model.id = "pt1";
+  model.type = "first_order_process";
+  model.params["gain"] = 1.0;
+  model.params["tau_s"] = 1.0;
+  model.params["initial_output"] = 0.0;
+  model.params["output_signal"] = std::string("pt1.y");
+  model.params["input_signal"] = std::string("pt1.u");
+  spec.models.push_back(model);
+
+  SignalNamespace signal_ns;
+  FunctionNamespace func_ns;
+  GraphCompiler compiler;
+  CompilationOptions options;
+  options.dimensional_policy = DimensionalPolicy::strict;
+
+  EXPECT_THROW(compiler.compile(spec, signal_ns, func_ns, options),
+               std::runtime_error);
+}
+
+TEST(GraphCompilerTest, StrictModeAllowsDeclaredModelSignalContracts) {
+  GraphSpec spec;
+  spec.signals.push_back({"pt1.u", "dimensionless"});
+  spec.signals.push_back({"pt1.y", "dimensionless"});
+
+  ModelSpec model;
+  model.id = "pt1";
+  model.type = "first_order_process";
+  model.params["gain"] = 1.0;
+  model.params["tau_s"] = 1.0;
+  model.params["initial_output"] = 0.0;
+  model.params["output_signal"] = std::string("pt1.y");
+  model.params["input_signal"] = std::string("pt1.u");
+  spec.models.push_back(model);
+
+  SignalNamespace signal_ns;
+  FunctionNamespace func_ns;
+  GraphCompiler compiler;
+  CompilationOptions options;
+  options.dimensional_policy = DimensionalPolicy::strict;
+
+  EXPECT_NO_THROW(compiler.compile(spec, signal_ns, func_ns, options));
+}
+
 TEST(GraphCompilerTest, RegisterModelFactoryRejectsInvalidInputs) {
   GraphCompiler::ModelFactory empty_factory;
 

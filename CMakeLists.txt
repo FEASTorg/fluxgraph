@@ -46,6 +46,8 @@ set(FLUXGRAPH_SOURCES
     src/model/thermal_integration.cpp
     src/model/thermal_mass.cpp
     src/model/thermal_rc2.cpp
+    src/model/first_order_process.cpp
+    src/model/second_order_process.cpp
     src/graph/compiler.cpp
     src/engine.cpp
 )

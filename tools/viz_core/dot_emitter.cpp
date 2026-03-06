@@ -89,6 +89,53 @@ std::string variant_to_compact_string(const Variant &value) {
       value);
 }
 
+std::string param_to_compact_string(const ParamValue &value) {
+  return std::visit(
+      [](const auto &item) -> std::string {
+        using T = std::decay_t<decltype(item)>;
+        if constexpr (std::is_same_v<T, double>) {
+          std::ostringstream stream;
+          stream << std::setprecision(17) << item;
+          return stream.str();
+        } else if constexpr (std::is_same_v<T, int64_t>) {
+          return std::to_string(item);
+        } else if constexpr (std::is_same_v<T, bool>) {
+          return item ? "true" : "false";
+        } else if constexpr (std::is_same_v<T, std::string>) {
+          return "\"" + escape_dot_string(item) + "\"";
+        } else if constexpr (std::is_same_v<T, ParamArray>) {
+          std::string rendered = "[";
+          bool first = true;
+          for (const auto &element : item) {
+            if (!first) {
+              rendered += ", ";
+            }
+            first = false;
+            rendered += param_to_compact_string(element);
+          }
+          rendered += "]";
+          return rendered;
+        } else {
+          static_assert(std::is_same_v<T, ParamObject>,
+                        "Unhandled ParamValue variant alternative");
+          std::string rendered = "{";
+          bool first = true;
+          for (const auto &[key, nested] : item) {
+            if (!first) {
+              rendered += ", ";
+            }
+            first = false;
+            rendered += key;
+            rendered.push_back('=');
+            rendered += param_to_compact_string(nested);
+          }
+          rendered += "}";
+          return rendered;
+        }
+      },
+      static_cast<const ParamVariant &>(value));
+}
+
 std::string format_transform_label(const TransformSpec &transform) {
   std::string label = transform.type.empty() ? "transform" : transform.type;
 
@@ -105,7 +152,7 @@ std::string format_transform_label(const TransformSpec &transform) {
     first = false;
     label += key;
     label.push_back('=');
-    label += variant_to_compact_string(value);
+    label += param_to_compact_string(value);
   }
   label.push_back(')');
 
@@ -277,4 +324,3 @@ std::string emit_dot(const GraphSpec &spec, const DotEmitOptions &options) {
 }
 
 } // namespace fluxgraph::viz
-

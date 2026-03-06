@@ -64,6 +64,30 @@ TEST(DotEmitter, EscapesSpecialCharactersInLabels) {
   EXPECT_NE(dot.find("line1\\\\nline2"), std::string::npos);
 }
 
+TEST(DotEmitter, FormatsStructuredTransformParams) {
+  GraphSpec spec;
+
+  EdgeSpec edge;
+  edge.source_path = "src";
+  edge.target_path = "dst";
+  edge.transform.type = "custom_ext";
+
+  ParamArray taps;
+  taps.emplace_back(1.0);
+  taps.emplace_back(2.0);
+
+  ParamObject config;
+  config["name"] = std::string("fir");
+  config["taps"] = taps;
+
+  edge.transform.params["config"] = config;
+  spec.edges.push_back(edge);
+
+  const std::string dot = viz::emit_dot(spec);
+
+  EXPECT_NE(dot.find("config={name=\"fir\", taps=[1, 2]}"), std::string::npos);
+}
+
 TEST(DotEmitter, ReportsExtensionTransformTypesSortedAndUnique) {
   GraphSpec spec;
 

@@ -51,6 +51,9 @@ set(FLUXGRAPH_SOURCES
     src/model/mass_spring_damper.cpp
     src/model/dc_motor.cpp
     src/graph/compiler.cpp
+    src/graph/compiler/common.cpp
+    src/graph/compiler/dimensional.cpp
+    src/graph/compiler/registry.cpp
     src/engine.cpp
 )
 

@@ -48,6 +48,7 @@ set(FLUXGRAPH_SOURCES
     src/model/thermal_rc2.cpp
     src/model/first_order_process.cpp
     src/model/second_order_process.cpp
+    src/model/state_space_siso_discrete.cpp
     src/model/mass_spring_damper.cpp
     src/model/dc_motor.cpp
     src/graph/param_utils.cpp
@@ -59,6 +60,7 @@ set(FLUXGRAPH_SOURCES
     src/graph/compiler/registry_transforms.cpp
     src/graph/compiler/registry_models_thermal.cpp
     src/graph/compiler/registry_models_control.cpp
+    src/graph/compiler/registry_models_state_space.cpp
     src/graph/compiler/registry_models_mechanical.cpp
     src/graph/compiler/registry_models_electromechanical.cpp
     src/graph/compiler/registry.cpp

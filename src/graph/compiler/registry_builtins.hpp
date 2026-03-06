@@ -18,6 +18,7 @@ void register_builtin_model(FactoryRegistry &registry, const std::string &type,
 void register_builtin_transforms(FactoryRegistry &registry);
 void register_builtin_models_thermal(FactoryRegistry &registry);
 void register_builtin_models_control(FactoryRegistry &registry);
+void register_builtin_models_state_space(FactoryRegistry &registry);
 void register_builtin_models_mechanical(FactoryRegistry &registry);
 void register_builtin_models_electromechanical(FactoryRegistry &registry);
 

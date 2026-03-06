@@ -75,13 +75,23 @@ struct ScalarParamSignature {
   bool required = true;
 };
 
+struct CompilationOptions;
+
 struct ModelSignature {
+  using StructuredParamValidator =
+      std::function<void(const ModelSpec &, bool strict,
+                         const CompilationOptions &)>;
+
   /// Mapping from model parameter name (signal path parameter) to expected unit
   /// symbol.
   std::map<std::string, std::string> signal_param_units;
 
   /// Mapping from scalar parameter name to numeric domain/unit metadata.
   std::map<std::string, ScalarParamSignature> scalar_param_signatures;
+
+  /// Optional model-specific structured parameter validator hook.
+  /// Called during compile-time signature validation.
+  StructuredParamValidator structured_param_validator;
 };
 
 struct CompilationOptions {

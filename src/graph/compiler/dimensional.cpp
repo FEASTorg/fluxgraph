@@ -66,7 +66,7 @@ void validate_model_signature_contracts(
       continue;
     }
 
-    if (actual_unit != expected_unit) {
+    if (!expected_unit.empty() && actual_unit != expected_unit) {
       const std::string message = "GraphCompiler: model '" + model_spec.id +
                                   "' parameter '" + param_name +
                                   "' expects unit '" + expected_unit +
@@ -121,6 +121,10 @@ void validate_model_signature_contracts(
       }
       emit_warning(options, message);
     }
+  }
+
+  if (signature.structured_param_validator) {
+    signature.structured_param_validator(model_spec, strict, options);
   }
 }
 

@@ -27,6 +27,30 @@ std::string variant_to_string(const ParamValue &value, const std::string &path) 
   throw std::runtime_error("Expected string value at " + path);
 }
 
+ParamValue matrix_param(
+    std::initializer_list<std::initializer_list<double>> rows) {
+  ParamArray matrix;
+  matrix.reserve(rows.size());
+  for (const auto &row_values : rows) {
+    ParamArray row;
+    row.reserve(row_values.size());
+    for (double value : row_values) {
+      row.emplace_back(value);
+    }
+    matrix.emplace_back(row);
+  }
+  return ParamValue{matrix};
+}
+
+ParamValue vector_param(std::initializer_list<double> values) {
+  ParamArray out;
+  out.reserve(values.size());
+  for (double value : values) {
+    out.emplace_back(value);
+  }
+  return ParamValue{out};
+}
+
 class AffineTestTransform : public ITransform {
 public:
   explicit AffineTestTransform(double bias) : bias_(bias) {}
@@ -447,6 +471,95 @@ TEST(GraphCompilerTest,
   SignalNamespace ns;
   GraphCompiler compiler;
   EXPECT_THROW(compiler.parse_model(spec, ns), std::runtime_error);
+}
+
+TEST(GraphCompilerTest, ParseStateSpaceSisoDiscreteModel) {
+  ModelSpec spec;
+  spec.id = "ss";
+  spec.type = "state_space_siso_discrete";
+  spec.params["A_d"] = matrix_param({{0.8, 0.1}, {0.0, 0.9}});
+  spec.params["B_d"] = vector_param({0.1, 0.5});
+  spec.params["C"] = vector_param({1.0, 0.0});
+  spec.params["D"] = 0.0;
+  spec.params["x0"] = vector_param({0.0, 0.0});
+  spec.params["output_signal"] = std::string("ss.y");
+  spec.params["input_signal"] = std::string("ss.u");
+
+  SignalNamespace ns;
+  GraphCompiler compiler;
+  std::unique_ptr<IModel> model(compiler.parse_model(spec, ns));
+
+  ASSERT_NE(model, nullptr);
+  EXPECT_NE(model->describe().find("StateSpaceSisoDiscrete"),
+            std::string::npos);
+}
+
+TEST(GraphCompilerTest, ParseStateSpaceSisoDiscreteRejectsRaggedMatrix) {
+  ModelSpec spec;
+  spec.id = "ss";
+  spec.type = "state_space_siso_discrete";
+  spec.params["A_d"] = matrix_param({{1.0, 0.0}, {0.0}});
+  spec.params["B_d"] = vector_param({0.0, 1.0});
+  spec.params["C"] = vector_param({1.0, 0.0});
+  spec.params["D"] = 0.0;
+  spec.params["x0"] = vector_param({0.0, 0.0});
+  spec.params["output_signal"] = std::string("ss.y");
+  spec.params["input_signal"] = std::string("ss.u");
+
+  SignalNamespace ns;
+  GraphCompiler compiler;
+  EXPECT_THROW(compiler.parse_model(spec, ns), std::runtime_error);
+}
+
+TEST(GraphCompilerTest, StrictModeRejectsUndeclaredStateSpaceSignalContracts) {
+  GraphSpec spec;
+
+  ModelSpec model;
+  model.id = "ss";
+  model.type = "state_space_siso_discrete";
+  model.params["A_d"] = matrix_param({{0.9}});
+  model.params["B_d"] = vector_param({0.1});
+  model.params["C"] = vector_param({1.0});
+  model.params["D"] = 0.0;
+  model.params["x0"] = vector_param({0.0});
+  model.params["output_signal"] = std::string("ss.y");
+  model.params["input_signal"] = std::string("ss.u");
+  spec.models.push_back(model);
+
+  SignalNamespace signal_ns;
+  FunctionNamespace func_ns;
+  GraphCompiler compiler;
+  CompilationOptions options;
+  options.dimensional_policy = DimensionalPolicy::strict;
+
+  EXPECT_THROW(compiler.compile(spec, signal_ns, func_ns, options),
+               std::runtime_error);
+}
+
+TEST(GraphCompilerTest, StrictModeAllowsDeclaredStateSpaceSignalContracts) {
+  GraphSpec spec;
+  spec.signals.push_back({"ss.u", "V"});
+  spec.signals.push_back({"ss.y", "A"});
+
+  ModelSpec model;
+  model.id = "ss";
+  model.type = "state_space_siso_discrete";
+  model.params["A_d"] = matrix_param({{0.9}});
+  model.params["B_d"] = vector_param({0.1});
+  model.params["C"] = vector_param({1.0});
+  model.params["D"] = 0.0;
+  model.params["x0"] = vector_param({0.0});
+  model.params["output_signal"] = std::string("ss.y");
+  model.params["input_signal"] = std::string("ss.u");
+  spec.models.push_back(model);
+
+  SignalNamespace signal_ns;
+  FunctionNamespace func_ns;
+  GraphCompiler compiler;
+  CompilationOptions options;
+  options.dimensional_policy = DimensionalPolicy::strict;
+
+  EXPECT_NO_THROW(compiler.compile(spec, signal_ns, func_ns, options));
 }
 
 TEST(GraphCompilerTest, ParseMassSpringDamperModel) {
@@ -1160,6 +1273,129 @@ TEST(GraphCompilerTest, StrictModeAllowsSignedCustomModel) {
   options.dimensional_policy = DimensionalPolicy::strict;
 
   EXPECT_NO_THROW(compiler.compile(spec, signal_ns, func_ns, options));
+}
+
+TEST(GraphCompilerTest, StrictModeEnforcesStructuredParamValidatorHook) {
+  const std::string type = "test.strict_structured_validator_model";
+  if (!GraphCompiler::is_model_registered(type)) {
+    ModelSignature signature;
+    signature.signal_param_units["output_signal"] = "dimensionless";
+    signature.structured_param_validator =
+        [](const ModelSpec &model_spec, bool strict,
+           const CompilationOptions &options) {
+          (void)options;
+          if (model_spec.params.find("structured_block") ==
+              model_spec.params.end()) {
+            const std::string message =
+                "Missing structured parameter 'structured_block' for model '" +
+                model_spec.id + "'";
+            if (strict) {
+              throw std::runtime_error(message);
+            }
+          }
+        };
+
+    GraphCompiler::register_model_factory_with_signature(
+        type,
+        [](const ModelSpec &model_spec,
+           SignalNamespace &ns) -> std::unique_ptr<IModel> {
+          const auto output_it = model_spec.params.find("output_signal");
+          if (output_it == model_spec.params.end()) {
+            throw std::runtime_error("Missing output_signal");
+          }
+          const SignalId output_id = ns.intern(
+              variant_to_string(output_it->second, "model/output_signal"));
+          return std::make_unique<ConstantSignalModel>(model_spec.id, output_id,
+                                                       5.0, "dimensionless");
+        },
+        signature);
+  }
+
+  GraphSpec spec;
+  spec.signals.push_back({"structured.strict.output", "dimensionless"});
+  ModelSpec model;
+  model.id = "structured_strict";
+  model.type = type;
+  model.params["output_signal"] = std::string("structured.strict.output");
+  spec.models.push_back(model);
+
+  SignalNamespace signal_ns;
+  FunctionNamespace func_ns;
+  GraphCompiler compiler;
+  CompilationOptions options;
+  options.dimensional_policy = DimensionalPolicy::strict;
+
+  EXPECT_THROW(compiler.compile(spec, signal_ns, func_ns, options),
+               std::runtime_error);
+}
+
+TEST(GraphCompilerTest,
+     PermissiveModeAllowsStructuredParamValidatorWarnings) {
+  const std::string type = "test.permissive_structured_validator_model";
+  if (!GraphCompiler::is_model_registered(type)) {
+    ModelSignature signature;
+    signature.signal_param_units["output_signal"] = "dimensionless";
+    signature.structured_param_validator =
+        [](const ModelSpec &model_spec, bool strict,
+           const CompilationOptions &options) {
+          if (model_spec.params.find("structured_block") ==
+              model_spec.params.end()) {
+            const std::string message =
+                "Missing structured parameter 'structured_block' for model '" +
+                model_spec.id + "'";
+            if (strict) {
+              throw std::runtime_error(message);
+            }
+            if (options.warning_handler) {
+              options.warning_handler(message);
+            }
+          }
+        };
+
+    GraphCompiler::register_model_factory_with_signature(
+        type,
+        [](const ModelSpec &model_spec,
+           SignalNamespace &ns) -> std::unique_ptr<IModel> {
+          const auto output_it = model_spec.params.find("output_signal");
+          if (output_it == model_spec.params.end()) {
+            throw std::runtime_error("Missing output_signal");
+          }
+          const SignalId output_id = ns.intern(
+              variant_to_string(output_it->second, "model/output_signal"));
+          return std::make_unique<ConstantSignalModel>(model_spec.id, output_id,
+                                                       5.0, "dimensionless");
+        },
+        signature);
+  }
+
+  GraphSpec spec;
+  spec.signals.push_back({"structured.permissive.output", "dimensionless"});
+  ModelSpec model;
+  model.id = "structured_permissive";
+  model.type = type;
+  model.params["output_signal"] = std::string("structured.permissive.output");
+  spec.models.push_back(model);
+
+  std::vector<std::string> warnings;
+  CompilationOptions options;
+  options.dimensional_policy = DimensionalPolicy::permissive;
+  options.warning_handler = [&warnings](const std::string &warning) {
+    warnings.push_back(warning);
+  };
+
+  SignalNamespace signal_ns;
+  FunctionNamespace func_ns;
+  GraphCompiler compiler;
+  EXPECT_NO_THROW(compiler.compile(spec, signal_ns, func_ns, options));
+
+  bool saw_structured_warning = false;
+  for (const auto &warning : warnings) {
+    if (warning.find("structured_block") != std::string::npos) {
+      saw_structured_warning = true;
+      break;
+    }
+  }
+  EXPECT_TRUE(saw_structured_warning);
 }
 
 TEST(GraphCompilerTest,

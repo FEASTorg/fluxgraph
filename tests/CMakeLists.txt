@@ -19,6 +19,7 @@ add_executable(fluxgraph_tests
     unit/thermal_rc2_test.cpp
     unit/first_order_process_test.cpp
     unit/second_order_process_test.cpp
+    unit/state_space_siso_discrete_test.cpp
     unit/mass_spring_damper_test.cpp
     unit/dc_motor_test.cpp
     unit/compiler_test.cpp
@@ -29,6 +30,7 @@ add_executable(fluxgraph_tests
     analytical/thermal_rc2_analytical_test.cpp
     analytical/first_order_process_analytical_test.cpp
     analytical/second_order_process_analytical_test.cpp
+    analytical/state_space_siso_discrete_analytical_test.cpp
     analytical/mass_spring_damper_analytical_test.cpp
     analytical/dc_motor_analytical_test.cpp
     analytical/delay_analytical_test.cpp

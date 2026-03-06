@@ -30,6 +30,7 @@ void ensure_default_factories_registered_locked(FactoryRegistry &registry) {
   register_builtin_transforms(registry);
   register_builtin_models_thermal(registry);
   register_builtin_models_control(registry);
+  register_builtin_models_state_space(registry);
   register_builtin_models_mechanical(registry);
   register_builtin_models_electromechanical(registry);
 

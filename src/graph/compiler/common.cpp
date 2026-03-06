@@ -25,8 +25,21 @@ int64_t as_int64(const ParamValue &value, const std::string &path) {
   return param::as_int64(value, path);
 }
 
+bool as_bool(const ParamValue &value, const std::string &path) {
+  return param::as_bool(value, path);
+}
+
 std::string as_string(const ParamValue &value, const std::string &path) {
   return param::as_string(value, path);
+}
+
+const ParamArray &as_array(const ParamValue &value, const std::string &path) {
+  return param::as_array(value, path);
+}
+
+const ParamObject &as_object(const ParamValue &value,
+                             const std::string &path) {
+  return param::as_object(value, path);
 }
 
 void require_finite(const double value, const std::string &path) {
